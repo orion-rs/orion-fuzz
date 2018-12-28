@@ -1,10 +1,6 @@
-#![feature(int_to_from_bytes)]
-
 #[macro_use]
 extern crate honggfuzz;
 extern crate orion;
-extern crate rand_chacha;
-extern crate rand_core;
 extern crate sodiumoxide;
 pub mod utils;
 

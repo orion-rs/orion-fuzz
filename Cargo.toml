@@ -9,6 +9,7 @@ rand_chacha = "0.1.0"
 rand_core = "0.3.0"
 sodiumoxide = { git = "https://github.com/sodiumoxide/sodiumoxide" }
 ring = "0.13.5"
+blake2-rfc = "0.2.18"
 
 
 [dependencies.orion]
@@ -21,6 +22,10 @@ path = "src/high_level_api.rs"
 [[bin]]
 name = "aead"
 path = "src/aead.rs"
+
+[[bin]]
+name = "hash"
+path = "src/hash.rs"
 
 [profile.release]
 opt-level = 3

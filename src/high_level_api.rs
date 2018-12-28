@@ -1,5 +1,3 @@
-#![feature(int_to_from_bytes)]
-
 #[macro_use]
 extern crate honggfuzz;
 extern crate orion;
