@@ -1,0 +1,26 @@
+[package]
+name = "orion-fuzz"
+version = "0.1.0"
+authors = ["brycx <brycx@protonmail.com>"]
+
+[dependencies]
+honggfuzz = "0.5.35"
+rand_chacha = "0.1.0"
+rand_core = "0.3.0"
+sodiumoxide = { git = "https://github.com/sodiumoxide/sodiumoxide" }
+ring = "0.13.5"
+
+
+[dependencies.orion]
+git = "https://github.com/brycx/orion"
+
+[[bin]]
+name = "high_level_api"
+path = "src/high_level_api.rs"
+
+[[bin]]
+name = "aead"
+path = "src/aead.rs"
+
+[profile.release]
+opt-level = 3

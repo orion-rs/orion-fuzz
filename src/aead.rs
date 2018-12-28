@@ -1,0 +1,205 @@
+#![feature(int_to_from_bytes)]
+
+#[macro_use]
+extern crate honggfuzz;
+extern crate orion;
+extern crate rand_chacha;
+extern crate rand_core;
+extern crate sodiumoxide;
+
+use self::rand_chacha::ChaChaRng;
+use self::rand_core::{RngCore, SeedableRng};
+
+use orion::hazardous::aead::chacha20poly1305;
+use orion::hazardous::aead::xchacha20poly1305;
+use sodiumoxide::crypto::aead::chacha20poly1305_ietf;
+use sodiumoxide::crypto::aead::xchacha20poly1305_ietf;
+
+pub fn make_seeded_rng(fuzzer_input: &[u8]) -> ChaChaRng {
+    // We need 8 bytes worth of data to convet into u64, so start with zero and replace
+    // as much of those as there is data available.
+    let mut seed_slice = [0u8; 8];
+    if fuzzer_input.len() >= 8 {
+        seed_slice.copy_from_slice(&fuzzer_input[..8]);
+    } else {
+        seed_slice[..fuzzer_input.len()].copy_from_slice(&fuzzer_input);
+    }
+
+    let seed: u64 = u64::from_le_bytes(seed_slice);
+
+    ChaChaRng::seed_from_u64(seed)
+}
+
+/// `orion::hazardous::aead::chacha20_poly1305`
+fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+    let mut key = vec![0u8; 32];
+    seeded_rng.fill_bytes(&mut key);
+
+    let mut nonce = vec![0u8; 12];
+    seeded_rng.fill_bytes(&mut nonce);
+
+    // `ad` will be both tested as Some and None as None is the same as [0u8; 0]
+    let ad: Vec<u8> = if fuzzer_input.is_empty() {
+        vec![0u8; 0]
+    } else if fuzzer_input[0] > 127 {
+        let mut tmp = vec![0u8; fuzzer_input.len() / 8];
+        seeded_rng.fill_bytes(&mut tmp);
+        tmp
+    } else {
+        vec![0u8; 0]
+    };
+
+    let plaintext = if fuzzer_input.is_empty() {
+        vec![0u8; 1]
+    } else {
+        Vec::from(fuzzer_input)
+    };
+
+    // orion
+    let mut ciphertext_with_tag_orion: Vec<u8> = vec![0u8; plaintext.len() + 16];
+    let mut plaintext_out_orion = vec![0u8; plaintext.len()];
+
+    let orion_key = chacha20poly1305::SecretKey::from_slice(&key).unwrap();
+    let orion_nonce = chacha20poly1305::Nonce::from_slice(&nonce).unwrap();
+
+    chacha20poly1305::seal(
+        &orion_key,
+        &orion_nonce,
+        &plaintext,
+        Some(&ad),
+        &mut ciphertext_with_tag_orion,
+    ).unwrap();
+    chacha20poly1305::open(
+        &orion_key,
+        &orion_nonce,
+        &ciphertext_with_tag_orion,
+        Some(&ad),
+        &mut plaintext_out_orion,
+    ).unwrap();
+
+    // sodiumoxide
+    let sodium_key = chacha20poly1305_ietf::Key::from_slice(&key).unwrap();
+    let sodium_nonce = chacha20poly1305_ietf::Nonce::from_slice(&nonce).unwrap();
+
+    let sodium_ct_with_tag =
+        chacha20poly1305_ietf::seal(&plaintext, Some(&ad), &sodium_nonce, &sodium_key);
+    let sodium_pt =
+        chacha20poly1305_ietf::open(&sodium_ct_with_tag, Some(&ad), &sodium_nonce, &sodium_key)
+            .unwrap();
+
+    // First verify they produce same ciphertext/plaintext
+    assert_eq!(sodium_ct_with_tag, ciphertext_with_tag_orion);
+    assert_eq!(plaintext_out_orion, sodium_pt);
+    // Let sodiumoxide decrypt orion ciperthext with tag and vice versa
+    let sodium_orion_pt = chacha20poly1305_ietf::open(
+        &ciphertext_with_tag_orion,
+        Some(&ad),
+        &sodium_nonce,
+        &sodium_key,
+    ).unwrap();
+
+    chacha20poly1305::open(
+        &orion_key,
+        &orion_nonce,
+        &sodium_ct_with_tag,
+        Some(&ad),
+        &mut plaintext_out_orion,
+    ).unwrap();
+
+    // Then compare the plaintexts after they have decrypted their switched ciphertexts
+    assert_eq!(plaintext_out_orion, sodium_orion_pt);
+}
+
+/// `orion::hazardous::aead::xchacha20_poly1305`
+fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+    let mut key = vec![0u8; 32];
+    seeded_rng.fill_bytes(&mut key);
+
+    let mut nonce = vec![0u8; 24];
+    seeded_rng.fill_bytes(&mut nonce);
+
+    // `ad` will be both tested as Some and None as None is the same as [0u8; 0]
+    let ad: Vec<u8> = if fuzzer_input.is_empty() {
+        vec![0u8; 0]
+    } else if fuzzer_input[0] > 127 {
+        let mut tmp = vec![0u8; fuzzer_input.len() / 8];
+        seeded_rng.fill_bytes(&mut tmp);
+        tmp
+    } else {
+        vec![0u8; 0]
+    };
+
+    let plaintext = if fuzzer_input.is_empty() {
+        vec![0u8; 1]
+    } else {
+        Vec::from(fuzzer_input)
+    };
+
+    // orion
+    let mut ciphertext_with_tag_orion: Vec<u8> = vec![0u8; plaintext.len() + 16];
+    let mut plaintext_out_orion = vec![0u8; plaintext.len()];
+
+    let orion_key = xchacha20poly1305::SecretKey::from_slice(&key).unwrap();
+    let orion_nonce = xchacha20poly1305::Nonce::from_slice(&nonce).unwrap();
+
+    xchacha20poly1305::seal(
+        &orion_key,
+        &orion_nonce,
+        &plaintext,
+        Some(&ad),
+        &mut ciphertext_with_tag_orion,
+    ).unwrap();
+    xchacha20poly1305::open(
+        &orion_key,
+        &orion_nonce,
+        &ciphertext_with_tag_orion,
+        Some(&ad),
+        &mut plaintext_out_orion,
+    ).unwrap();
+
+    // sodiumoxide
+    let sodium_key = xchacha20poly1305_ietf::Key::from_slice(&key).unwrap();
+    let sodium_nonce = xchacha20poly1305_ietf::Nonce::from_slice(&nonce).unwrap();
+
+    let sodium_ct_with_tag =
+        xchacha20poly1305_ietf::seal(&plaintext, Some(&ad), &sodium_nonce, &sodium_key);
+    let sodium_pt =
+        xchacha20poly1305_ietf::open(&sodium_ct_with_tag, Some(&ad), &sodium_nonce, &sodium_key)
+            .unwrap();
+
+    // First verify they produce same ciphertext/plaintext
+    assert_eq!(sodium_ct_with_tag, ciphertext_with_tag_orion);
+    assert_eq!(plaintext_out_orion, sodium_pt);
+    // Let sodiumoxide decrypt orion ciperthext with tag and vice versa
+    let sodium_orion_pt = xchacha20poly1305_ietf::open(
+        &ciphertext_with_tag_orion,
+        Some(&ad),
+        &sodium_nonce,
+        &sodium_key,
+    ).unwrap();
+
+    xchacha20poly1305::open(
+        &orion_key,
+        &orion_nonce,
+        &sodium_ct_with_tag,
+        Some(&ad),
+        &mut plaintext_out_orion,
+    ).unwrap();
+
+    // Then compare the plaintexts after they have decrypted their switched ciphertexts
+    assert_eq!(plaintext_out_orion, sodium_orion_pt);
+}
+
+fn main() {
+    loop {
+        fuzz!(|data: &[u8]| {
+            // Seed the RNG
+            let mut seeded_rng = make_seeded_rng(data);
+
+            // Test `orion::hazardous::aead::chacha20_poly1305`
+            fuzz_chacha20_poly1305(data, &mut seeded_rng);
+            // Test `orion::hazardous::aead::xchacha20_poly1305`
+            fuzz_xchacha20_poly1305(data, &mut seeded_rng);
+        });
+    }
+}
