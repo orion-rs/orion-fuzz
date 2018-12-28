@@ -8,7 +8,7 @@ extern crate rand_core;
 extern crate sodiumoxide;
 pub mod utils;
 
-use utils::{ChaChaRng, make_seeded_rng};
+use utils::{ChaChaRng, make_seeded_rng, RngCore};
 use orion::hazardous::aead::chacha20poly1305;
 use orion::hazardous::aead::xchacha20poly1305;
 use sodiumoxide::crypto::aead::chacha20poly1305_ietf;

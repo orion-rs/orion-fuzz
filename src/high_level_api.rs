@@ -5,7 +5,7 @@ extern crate honggfuzz;
 extern crate orion;
 pub mod utils;
 
-use utils::{ChaChaRng, make_seeded_rng};
+use utils::{ChaChaRng, make_seeded_rng, RngCore};
 
 /// `orion::aead`
 fn fuzz_aead(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
