@@ -30,9 +30,9 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     };
 
     let plaintext = if fuzzer_input.is_empty() {
-        vec![0u8; 1]
+        &[0u8; 1]
     } else {
-        Vec::from(fuzzer_input)
+        fuzzer_input
     };
 
     // orion
@@ -110,9 +110,9 @@ fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     };
 
     let plaintext = if fuzzer_input.is_empty() {
-        vec![0u8; 1]
+        &[0u8; 1]
     } else {
-        Vec::from(fuzzer_input)
+        fuzzer_input
     };
 
     // orion

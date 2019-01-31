@@ -40,7 +40,7 @@ fn fuzz_pwhash(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         if iterations < 1 {
             assert!(orion::pwhash::hash_password(&pwhash_password, iterations).is_err());
         } else {
-            let password_hash = orion::pwhash::hash_password(&pwhash_password, iterations).unwrap();
+            let _password_hash = orion::pwhash::hash_password(&pwhash_password, iterations).unwrap();
         }
     }
 }
@@ -78,7 +78,7 @@ fn fuzz_kdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         if (iterations == 0) || (length == 0 || (length >= u32::max_value() as usize)) {
             assert!(orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, length).is_err());
         } else {
-            let password_hash =
+            let _password_hash =
                 orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, length).unwrap();
         }
     }
