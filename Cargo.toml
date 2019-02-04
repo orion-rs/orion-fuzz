@@ -4,11 +4,11 @@ version = "0.1.0"
 authors = ["brycx <brycx@protonmail.com>"]
 
 [dependencies]
-honggfuzz = "0.5.35"
-rand_chacha = "0.1.0"
+honggfuzz = "0.5.40"
+rand_chacha = "0.1.1"
 rand_core = "0.3.0"
 sodiumoxide = { git = "https://github.com/sodiumoxide/sodiumoxide" }
-ring = "0.13.5"
+ring = "0.14.5"
 blake2-rfc = "0.2.18"
 
 
@@ -26,6 +26,10 @@ path = "src/aead.rs"
 [[bin]]
 name = "hash"
 path = "src/hash.rs"
+
+[[bin]]
+name = "mac"
+path = "src/mac.rs"
 
 [profile.release]
 opt-level = 3
