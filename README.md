@@ -1,6 +1,6 @@
 These are fuzzing targets for fuzzing [orion](https://github.com/brycx/orion).
 
-Fuzzing is done using [honggfuzz](https://github.com/rust-fuzz/honggfuzz-rs).
+Fuzzing is done using [honggfuzz-rs](https://github.com/rust-fuzz/honggfuzz-rs).
 
 ### Getting started
 
