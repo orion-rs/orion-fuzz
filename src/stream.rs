@@ -156,6 +156,9 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     let will_counter_overflow: bool = check_counter_overflow(&plaintext, random_counter);
 
+    // keystream_block does not increase the counter and should therefore never panic
+    let _ = chacha20::keystream_block(&orion_key, &orion_nonce, random_counter).unwrap();
+
     // If either one fails, then both should fail.
     if will_counter_overflow {
         assert!(chacha20::encrypt(&orion_key, &orion_nonce, random_counter, &plaintext, &mut orion_ct).is_err());
@@ -175,6 +178,20 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     }
 }
 
+/// `orion::hazardous::stream::chacha20::hchacha20`
+fn fuzz_hchacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+    let mut key = [0u8; 32];
+    seeded_rng.fill_bytes(&mut key);
+
+    let orion_key = chacha20::SecretKey::from_slice(&key).unwrap();
+
+    if fuzzer_input.len() != orion::hazardous::constants::HCHACHA_NONCESIZE {
+        assert!(chacha20::hchacha20(&orion_key, fuzzer_input).is_err());
+    } else {
+        let _ = chacha20::hchacha20(&orion_key, fuzzer_input).unwrap();
+    }
+}
+
 fn main() {
     loop {
         fuzz!(|data: &[u8]| {
@@ -187,6 +204,8 @@ fn main() {
             fuzz_xchacha20(data, &mut seeded_rng);
             // `orion::hazardous::stream::xchacha20` + `orion::hazardous::stream::chacha20`
             fuzz_stream_counters(data, &mut seeded_rng);
+            // `orion::hazardous::stream::chacha20::hchacha20`
+            fuzz_hchacha20(data, &mut seeded_rng);
         });
     }
 }
