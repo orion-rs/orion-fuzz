@@ -10,7 +10,7 @@ rand_core = "0.3.0"
 sodiumoxide = { git = "https://github.com/sodiumoxide/sodiumoxide" }
 ring = "0.14.5"
 blake2-rfc = "0.2.18"
-
+chacha = "0.3.0"
 
 [dependencies.orion]
 git = "https://github.com/brycx/orion"
@@ -30,6 +30,10 @@ path = "src/hash.rs"
 [[bin]]
 name = "mac"
 path = "src/mac.rs"
+
+[[bin]]
+name = "stream"
+path = "src/stream.rs"
 
 [profile.release]
 opt-level = 3
