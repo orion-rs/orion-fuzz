@@ -6,7 +6,7 @@ authors = ["brycx <brycx@protonmail.com>"]
 [dependencies]
 honggfuzz = "0.5.40"
 rand_chacha = "0.1.1"
-rand_core = "0.3.0"
+rand_core = "0.4.0"
 sodiumoxide = { git = "https://github.com/sodiumoxide/sodiumoxide" }
 ring = "0.14.5"
 blake2-rfc = "0.2.18"
