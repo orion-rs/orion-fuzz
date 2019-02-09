@@ -8,7 +8,7 @@ pub mod utils;
 use utils::{ChaChaRng, make_seeded_rng, RngCore};
 use orion::hazardous::mac::hmac;
 use orion::hazardous::mac::poly1305;
-use orion::hazardous::constants::{SHA2_BLOCKSIZE, POLY1305_BLOCKSIZE};
+use orion::hazardous::constants::{SHA512_BLOCKSIZE, POLY1305_BLOCKSIZE};
 use sodiumoxide::crypto::onetimeauth;
 
 fn fuzz_hmac(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
@@ -28,17 +28,17 @@ fn fuzz_hmac(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 	let mut other_data: Vec<u8> = Vec::new();
 	other_data.extend_from_slice(fuzzer_input);
 
-	if fuzzer_input.len() > SHA2_BLOCKSIZE {
+	if fuzzer_input.len() > SHA512_BLOCKSIZE {
 		state.update(b"").unwrap();
         context.update(b"");
 		other_data.extend_from_slice(b"");
 	}
-	if fuzzer_input.len() > SHA2_BLOCKSIZE * 2 {
+	if fuzzer_input.len() > SHA512_BLOCKSIZE * 2 {
 		state.update(b"Extra").unwrap();
         context.update(b"Extra");
 		other_data.extend_from_slice(b"Extra");
 	}
-	if fuzzer_input.len() > SHA2_BLOCKSIZE * 3 {
+	if fuzzer_input.len() > SHA512_BLOCKSIZE * 3 {
 		state.update(&[0u8; 256]).unwrap();
         context.update(&[0u8; 256]);
 		other_data.extend_from_slice(&[0u8; 256]);

@@ -8,7 +8,7 @@ pub mod utils;
 use utils::{ChaChaRng, make_seeded_rng, RngCore};
 use orion::hazardous::hash::blake2b;
 use orion::hazardous::hash::sha512;
-use orion::hazardous::constants::{SHA2_BLOCKSIZE, BLAKE2B_BLOCKSIZE};
+use orion::hazardous::constants::{SHA512_BLOCKSIZE, BLAKE2B_BLOCKSIZE};
 
 
 fn fuzz_blake2b_non_keyed(fuzzer_input: &[u8], outsize: usize) {
@@ -102,15 +102,15 @@ fn fuzz_sha512(fuzzer_input: &[u8]) {
     other_data.extend_from_slice(fuzzer_input);
     state.update(fuzzer_input).unwrap();
 
-    if fuzzer_input.len() > SHA2_BLOCKSIZE {
+    if fuzzer_input.len() > SHA512_BLOCKSIZE {
 		other_data.extend_from_slice(b"");
 		state.update(b"").unwrap();
 	}
-	if fuzzer_input.len() > SHA2_BLOCKSIZE * 2 {
+	if fuzzer_input.len() > SHA512_BLOCKSIZE * 2 {
 		other_data.extend_from_slice(b"Extra");
 		state.update(b"Extra").unwrap();
 	}
-	if fuzzer_input.len() > SHA2_BLOCKSIZE * 3 {
+	if fuzzer_input.len() > SHA512_BLOCKSIZE * 3 {
 		other_data.extend_from_slice(&[0u8; 256]);
 		state.update(&[0u8; 256]).unwrap();
 	}
