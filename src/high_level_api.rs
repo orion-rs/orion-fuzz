@@ -34,7 +34,7 @@ fn fuzz_pwhash(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         let iterations = if fuzzer_input.is_empty() {
             10000
         } else {
-            ((fuzzer_input[0] as usize) * 100)
+            ((fuzzer_input[0] as usize) * 50)
         };
 
         if iterations < 1 {
@@ -66,13 +66,13 @@ fn fuzz_kdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         let iterations = if fuzzer_input.is_empty() {
             10000
         } else {
-            ((fuzzer_input[0] as usize) * 100)
+            ((fuzzer_input[0] as usize) * 50)
         };
 
         let length = if fuzzer_input.is_empty() {
             256
         } else {
-            ((fuzzer_input[0] as usize) * 50)
+            ((fuzzer_input[0] as usize) * 10)
         };
 
         if (iterations == 0) || (length == 0 || (length >= u32::max_value() as usize)) {
