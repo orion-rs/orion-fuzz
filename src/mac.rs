@@ -1,20 +1,20 @@
 #[macro_use]
 extern crate honggfuzz;
 extern crate orion;
-extern crate sodiumoxide; // For Poly1305
-extern crate ring; // For HMAC
+extern crate ring;
+extern crate sodiumoxide; // For Poly1305 // For HMAC
 pub mod utils;
 
-use utils::{ChaChaRng, make_seeded_rng, RngCore};
+use orion::hazardous::constants::{POLY1305_BLOCKSIZE, SHA512_BLOCKSIZE};
 use orion::hazardous::mac::hmac;
 use orion::hazardous::mac::poly1305;
-use orion::hazardous::constants::{SHA512_BLOCKSIZE, POLY1305_BLOCKSIZE};
 use sodiumoxide::crypto::onetimeauth;
+use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
 fn fuzz_hmac(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut key = vec![0u8; fuzzer_input.len()];
     seeded_rng.fill_bytes(&mut key);
-    
+
     // orion
     let orion_key = hmac::SecretKey::from_slice(&key).unwrap();
     let mut state = hmac::init(&orion_key);
@@ -25,32 +25,32 @@ fn fuzz_hmac(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut context = ring::hmac::SigningContext::with_key(&ring_key);
     context.update(fuzzer_input);
 
-	let mut other_data: Vec<u8> = Vec::new();
-	other_data.extend_from_slice(fuzzer_input);
+    let mut other_data: Vec<u8> = Vec::new();
+    other_data.extend_from_slice(fuzzer_input);
 
-	if fuzzer_input.len() > SHA512_BLOCKSIZE {
-		state.update(b"").unwrap();
+    if fuzzer_input.len() > SHA512_BLOCKSIZE {
+        state.update(b"").unwrap();
         context.update(b"");
-		other_data.extend_from_slice(b"");
-	}
-	if fuzzer_input.len() > SHA512_BLOCKSIZE * 2 {
-		state.update(b"Extra").unwrap();
+        other_data.extend_from_slice(b"");
+    }
+    if fuzzer_input.len() > SHA512_BLOCKSIZE * 2 {
+        state.update(b"Extra").unwrap();
         context.update(b"Extra");
-		other_data.extend_from_slice(b"Extra");
-	}
-	if fuzzer_input.len() > SHA512_BLOCKSIZE * 3 {
-		state.update(&[0u8; 256]).unwrap();
+        other_data.extend_from_slice(b"Extra");
+    }
+    if fuzzer_input.len() > SHA512_BLOCKSIZE * 3 {
+        state.update(&[0u8; 256]).unwrap();
         context.update(&[0u8; 256]);
-		other_data.extend_from_slice(&[0u8; 256]);
-	}
+        other_data.extend_from_slice(&[0u8; 256]);
+    }
 
-	let other_tag = context.sign();
-	let orion_tag = state.finalize().unwrap();
+    let other_tag = context.sign();
+    let orion_tag = state.finalize().unwrap();
 
     let orion_one_shot = hmac::hmac(&orion_key, &other_data).unwrap();
     let other_one_shot = ring::hmac::sign(&ring_key, &other_data);
 
-	assert_eq!(other_tag.as_ref(), orion_tag.unprotected_as_bytes());
+    assert_eq!(other_tag.as_ref(), orion_tag.unprotected_as_bytes());
     assert_eq!(orion_one_shot, orion_tag);
     assert_eq!(other_one_shot.as_ref(), orion_tag.unprotected_as_bytes());
     assert_eq!(other_one_shot.as_ref(), other_tag.as_ref());
@@ -68,28 +68,28 @@ fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     // sodiumoxide
     let sodiumoxide_key = onetimeauth::poly1305::Key::from_slice(&key).unwrap();
 
-	let mut other_data: Vec<u8> = Vec::new();
-	other_data.extend_from_slice(fuzzer_input);
+    let mut other_data: Vec<u8> = Vec::new();
+    other_data.extend_from_slice(fuzzer_input);
 
-	if fuzzer_input.len() > POLY1305_BLOCKSIZE {
-		state.update(b"").unwrap();
-		other_data.extend_from_slice(b"");
-	}
-	if fuzzer_input.len() > POLY1305_BLOCKSIZE * 2 {
-		state.update(b"Extra").unwrap();
-		other_data.extend_from_slice(b"Extra");
-	}
-	if fuzzer_input.len() > POLY1305_BLOCKSIZE * 3 {
-		state.update(&[0u8; 256]).unwrap();
-		other_data.extend_from_slice(&[0u8; 256]);
-	}
+    if fuzzer_input.len() > POLY1305_BLOCKSIZE {
+        state.update(b"").unwrap();
+        other_data.extend_from_slice(b"");
+    }
+    if fuzzer_input.len() > POLY1305_BLOCKSIZE * 2 {
+        state.update(b"Extra").unwrap();
+        other_data.extend_from_slice(b"Extra");
+    }
+    if fuzzer_input.len() > POLY1305_BLOCKSIZE * 3 {
+        state.update(&[0u8; 256]).unwrap();
+        other_data.extend_from_slice(&[0u8; 256]);
+    }
 
-	let other_tag = onetimeauth::authenticate(&other_data, &sodiumoxide_key);
-	let orion_tag = state.finalize().unwrap();
+    let other_tag = onetimeauth::authenticate(&other_data, &sodiumoxide_key);
+    let orion_tag = state.finalize().unwrap();
 
     let orion_one_shot = poly1305::poly1305(&orion_key, &other_data).unwrap();
 
-	assert_eq!(other_tag.as_ref(), orion_tag.unprotected_as_bytes());
+    assert_eq!(other_tag.as_ref(), orion_tag.unprotected_as_bytes());
     assert_eq!(orion_one_shot, orion_tag);
 }
 

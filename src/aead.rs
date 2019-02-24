@@ -4,11 +4,11 @@ extern crate orion;
 extern crate sodiumoxide;
 pub mod utils;
 
-use utils::{ChaChaRng, make_seeded_rng, RngCore};
 use orion::hazardous::aead::chacha20poly1305;
 use orion::hazardous::aead::xchacha20poly1305;
 use sodiumoxide::crypto::aead::chacha20poly1305_ietf;
 use sodiumoxide::crypto::aead::xchacha20poly1305_ietf;
+use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
 /// `orion::hazardous::aead::chacha20_poly1305`
 fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
@@ -48,14 +48,16 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         &plaintext,
         Some(&ad),
         &mut ciphertext_with_tag_orion,
-    ).unwrap();
+    )
+    .unwrap();
     chacha20poly1305::open(
         &orion_key,
         &orion_nonce,
         &ciphertext_with_tag_orion,
         Some(&ad),
         &mut plaintext_out_orion,
-    ).unwrap();
+    )
+    .unwrap();
 
     // sodiumoxide
     let sodium_key = chacha20poly1305_ietf::Key::from_slice(&key).unwrap();
@@ -76,7 +78,8 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         Some(&ad),
         &sodium_nonce,
         &sodium_key,
-    ).unwrap();
+    )
+    .unwrap();
 
     chacha20poly1305::open(
         &orion_key,
@@ -84,7 +87,8 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         &sodium_ct_with_tag,
         Some(&ad),
         &mut plaintext_out_orion,
-    ).unwrap();
+    )
+    .unwrap();
 
     // Then compare the plaintexts after they have decrypted their switched ciphertexts
     assert_eq!(plaintext_out_orion, sodium_orion_pt);
@@ -128,14 +132,16 @@ fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         &plaintext,
         Some(&ad),
         &mut ciphertext_with_tag_orion,
-    ).unwrap();
+    )
+    .unwrap();
     xchacha20poly1305::open(
         &orion_key,
         &orion_nonce,
         &ciphertext_with_tag_orion,
         Some(&ad),
         &mut plaintext_out_orion,
-    ).unwrap();
+    )
+    .unwrap();
 
     // sodiumoxide
     let sodium_key = xchacha20poly1305_ietf::Key::from_slice(&key).unwrap();
@@ -156,7 +162,8 @@ fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         Some(&ad),
         &sodium_nonce,
         &sodium_key,
-    ).unwrap();
+    )
+    .unwrap();
 
     xchacha20poly1305::open(
         &orion_key,
@@ -164,7 +171,8 @@ fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         &sodium_ct_with_tag,
         Some(&ad),
         &mut plaintext_out_orion,
-    ).unwrap();
+    )
+    .unwrap();
 
     // Then compare the plaintexts after they have decrypted their switched ciphertexts
     assert_eq!(plaintext_out_orion, sodium_orion_pt);

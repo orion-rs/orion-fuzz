@@ -3,7 +3,7 @@ extern crate honggfuzz;
 extern crate orion;
 pub mod utils;
 
-use utils::{ChaChaRng, make_seeded_rng, RngCore};
+use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
 /// `orion::aead`
 fn fuzz_aead(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
@@ -40,7 +40,8 @@ fn fuzz_pwhash(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         if iterations < 1 {
             assert!(orion::pwhash::hash_password(&pwhash_password, iterations).is_err());
         } else {
-            let _password_hash = orion::pwhash::hash_password(&pwhash_password, iterations).unwrap();
+            let _password_hash =
+                orion::pwhash::hash_password(&pwhash_password, iterations).unwrap();
         }
     }
 }
