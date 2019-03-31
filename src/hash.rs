@@ -42,17 +42,17 @@ fn fuzz_blake2b_non_keyed(fuzzer_input: &[u8], outsize: usize) {
     let other_hash = context.finalize();
     let orion_hash = state.finalize().unwrap();
 
-    assert_eq!(other_hash.as_bytes(), orion_hash.as_bytes());
+    assert_eq!(other_hash.as_bytes(), orion_hash.as_ref());
 
     if outsize == 32 {
         let orion_one_shot = blake2b::Hasher::Blake2b256.digest(&other_data).unwrap();
-        assert_eq!(other_hash.as_bytes(), orion_one_shot.as_bytes());
+        assert_eq!(other_hash.as_bytes(), orion_one_shot.as_ref());
     } else if outsize == 48 {
         let orion_one_shot = blake2b::Hasher::Blake2b384.digest(&other_data).unwrap();
-        assert_eq!(other_hash.as_bytes(), orion_one_shot.as_bytes());
+        assert_eq!(other_hash.as_bytes(), orion_one_shot.as_ref());
     } else if outsize == 64 {
         let orion_one_shot = blake2b::Hasher::Blake2b512.digest(&other_data).unwrap();
-        assert_eq!(other_hash.as_bytes(), orion_one_shot.as_bytes());
+        assert_eq!(other_hash.as_bytes(), orion_one_shot.as_ref());
     } else {
 
     }
@@ -96,7 +96,7 @@ fn fuzz_blake2b_keyed(
     let other_hash = context.finalize();
     let orion_hash = state.finalize().unwrap();
 
-    assert_eq!(other_hash.as_bytes(), orion_hash.as_bytes());
+    assert_eq!(other_hash.as_bytes(), orion_hash.as_ref());
 }
 
 fn fuzz_sha512(fuzzer_input: &[u8]) {
@@ -122,8 +122,8 @@ fn fuzz_sha512(fuzzer_input: &[u8]) {
     let digest_other = ring::digest::digest(&ring::digest::SHA512, &other_data);
     let orion_one_shot = sha512::digest(&other_data).unwrap();
 
-    assert!(orion_one_shot.as_bytes() == digest_other.as_ref());
-    assert!(state.finalize().unwrap().as_bytes() == digest_other.as_ref());
+    assert!(orion_one_shot.as_ref() == digest_other.as_ref());
+    assert!(state.finalize().unwrap().as_ref() == digest_other.as_ref());
 }
 
 fn main() {

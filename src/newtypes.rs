@@ -38,8 +38,8 @@ pub mod typedefs {
         } else {
             let nonce = Nonce::from_slice(fuzzer_input).unwrap();
 
-            assert_eq!(nonce.as_bytes(), fuzzer_input);
-            assert_eq!(nonce.as_bytes().len(), IETF_CHACHA_NONCESIZE);
+            assert_eq!(nonce.as_ref(), fuzzer_input);
+            assert_eq!(nonce.as_ref().len(), IETF_CHACHA_NONCESIZE);
             assert_eq!(nonce.get_length(), IETF_CHACHA_NONCESIZE);
         }
     }
@@ -53,8 +53,8 @@ pub mod typedefs {
         } else {
             let nonce = Nonce::from_slice(fuzzer_input).unwrap();
 
-            assert_eq!(nonce.as_bytes(), fuzzer_input);
-            assert_eq!(nonce.as_bytes().len(), XCHACHA_NONCESIZE);
+            assert_eq!(nonce.as_ref(), fuzzer_input);
+            assert_eq!(nonce.as_ref().len(), XCHACHA_NONCESIZE);
             assert_eq!(nonce.get_length(), XCHACHA_NONCESIZE);
         }
 
@@ -62,8 +62,8 @@ pub mod typedefs {
 
         if nonce_rand.is_ok() {
             let nonce_actual = nonce_rand.unwrap();
-            assert_ne!(nonce_actual.as_bytes(), &[0u8; XCHACHA_NONCESIZE]);
-            assert_eq!(nonce_actual.as_bytes().len(), XCHACHA_NONCESIZE);
+            assert_ne!(nonce_actual.as_ref(), &[0u8; XCHACHA_NONCESIZE]);
+            assert_eq!(nonce_actual.as_ref().len(), XCHACHA_NONCESIZE);
             assert_eq!(nonce_actual.get_length(), XCHACHA_NONCESIZE);
         }
     }
@@ -77,14 +77,14 @@ pub mod typedefs {
         } else {
             let hash = Digest::from_slice(fuzzer_input).unwrap();
 
-            assert_eq!(hash.as_bytes(), fuzzer_input);
-            assert_eq!(hash.as_bytes().len(), fuzzer_input.len());
+            assert_eq!(hash.as_ref(), fuzzer_input);
+            assert_eq!(hash.as_ref().len(), fuzzer_input.len());
             assert_eq!(hash.get_length(), fuzzer_input.len());
         }
     }
 
     pub fn fuzz_blake2b_secret_key(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::{BLAKE2B_BLOCKSIZE, BLAKE2B_KEYSIZE};
+        use orion::hazardous::constants::BLAKE2B_KEYSIZE;
         use orion::hazardous::hash::blake2b::SecretKey;
 
         if fuzzer_input.len() < 1 || fuzzer_input.len() > BLAKE2B_KEYSIZE {
@@ -93,12 +93,11 @@ pub mod typedefs {
             let sk = SecretKey::from_slice(fuzzer_input).unwrap();
 
             assert_eq!(
-                &sk.unprotected_as_bytes()[..sk.get_original_length()],
-                fuzzer_input
+                &sk.unprotected_as_bytes(),
+                &fuzzer_input
             );
-            assert_eq!(sk.unprotected_as_bytes().len(), BLAKE2B_BLOCKSIZE);
-            assert_eq!(sk.get_length(), BLAKE2B_BLOCKSIZE);
-            assert_eq!(sk.get_original_length(), fuzzer_input.len());
+            assert_eq!(sk.unprotected_as_bytes().len(), fuzzer_input.len());
+            assert_eq!(sk.get_length(), fuzzer_input.len());
         }
 
         let sk_rand = SecretKey::generate();
@@ -107,11 +106,10 @@ pub mod typedefs {
             let sk_actual = sk_rand.unwrap();
             assert_ne!(
                 &sk_actual.unprotected_as_bytes(),
-                &[0u8; BLAKE2B_BLOCKSIZE].as_ref()
+                &[0u8; BLAKE2B_KEYSIZE].as_ref()
             );
-            assert_eq!(sk_actual.unprotected_as_bytes().len(), BLAKE2B_BLOCKSIZE);
-            assert_eq!(sk_actual.get_length(), BLAKE2B_BLOCKSIZE);
-            assert_eq!(sk_actual.get_original_length(), BLAKE2B_KEYSIZE);
+            assert_eq!(sk_actual.unprotected_as_bytes().len(), BLAKE2B_KEYSIZE);
+            assert_eq!(sk_actual.get_length(), BLAKE2B_KEYSIZE);
         }
     }
 
@@ -124,8 +122,8 @@ pub mod typedefs {
         } else {
             let hash = Digest::from_slice(fuzzer_input).unwrap();
 
-            assert_eq!(hash.as_bytes(), fuzzer_input);
-            assert_eq!(hash.as_bytes().len(), fuzzer_input.len());
+            assert_eq!(hash.as_ref(), fuzzer_input);
+            assert_eq!(hash.as_ref().len(), fuzzer_input.len());
             assert_eq!(hash.get_length(), fuzzer_input.len());
         }
     }
@@ -146,7 +144,7 @@ pub mod typedefs {
             let digest = orion::hazardous::hash::sha512::digest(fuzzer_input).unwrap();
             assert_eq!(
                 &password.unprotected_as_bytes()[..SHA512_OUTSIZE],
-                digest.as_bytes()
+                digest.as_ref()
             );
         }
 
@@ -185,7 +183,7 @@ pub mod typedefs {
             let digest = orion::hazardous::hash::sha512::digest(fuzzer_input).unwrap();
             assert_eq!(
                 &sk.unprotected_as_bytes()[..SHA512_OUTSIZE],
-                digest.as_bytes()
+                digest.as_ref()
             );
         }
 
@@ -262,15 +260,15 @@ pub mod typedefs {
 
 pub mod hltypes {
     macro_rules! fuzz_type_variable_length {
-        ($fuzz_name:ident, $type:ident, $as_bytes_func:ident) => {
+        ($fuzz_name:ident, $type:ident, $as_ref_func:ident) => {
             pub fn $fuzz_name(fuzzer_input: &[u8]) {
                 if fuzzer_input.is_empty() {
                     assert!($type::from_slice(fuzzer_input).is_err());
                 } else {
                     let sk = $type::from_slice(fuzzer_input).unwrap();
 
-                    assert_eq!(sk.$as_bytes_func(), fuzzer_input);
-                    assert_eq!(sk.$as_bytes_func().len(), fuzzer_input.len());
+                    assert_eq!(sk.$as_ref_func(), fuzzer_input);
+                    assert_eq!(sk.$as_ref_func().len(), fuzzer_input.len());
                     assert_eq!(sk.get_length(), fuzzer_input.len());
                 }
 
@@ -291,7 +289,7 @@ pub mod hltypes {
                         // it might happen to actually generate one where the first bytes
                         // are 0.
                         let sk_actual = sk_rand.unwrap();
-                        assert_eq!(sk_actual.$as_bytes_func().len(), length);
+                        assert_eq!(sk_actual.$as_ref_func().len(), length);
                         assert_eq!(sk_actual.get_length(), length);
                     }
                 }
@@ -304,7 +302,7 @@ pub mod hltypes {
     use orion::pwhash::Password;
 
     fuzz_type_variable_length!(fuzz_secret_key, SecretKey, unprotected_as_bytes);
-    fuzz_type_variable_length!(fuzz_salt, Salt, as_bytes);
+    fuzz_type_variable_length!(fuzz_salt, Salt, as_ref);
     fuzz_type_variable_length!(fuzz_password, Password, unprotected_as_bytes);
 
     pub fn fuzz_passwordhash(fuzzer_input: &[u8]) {
