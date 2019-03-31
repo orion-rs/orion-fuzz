@@ -11,7 +11,7 @@ sodiumoxide = { git = "https://github.com/sodiumoxide/sodiumoxide" }
 ring = "0.14.6"
 blake2-rfc = "0.2.18"
 chacha = "0.3.0"
-orion = { git = "https://github.com/brycx/orion", branch = "retype" }
+orion = { git = "https://github.com/brycx/orion", branch = "master" }
 
 [[bin]]
 name = "high_level_api"
