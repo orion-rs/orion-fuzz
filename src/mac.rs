@@ -99,9 +99,9 @@ fn main() {
             // Seed the RNG
             let mut seeded_rng = make_seeded_rng(data);
 
-            // Test `orion::mac::hmac`
+            // Test `orion::hazardous::mac::hmac`
             fuzz_hmac(data, &mut seeded_rng);
-            // Test `orion::mac::poly1305`
+            // Test `orion::hazardous::mac::poly1305`
             fuzz_poly1305(data, &mut seeded_rng);
         });
     }

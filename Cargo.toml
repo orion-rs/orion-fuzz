@@ -37,5 +37,9 @@ path = "src/stream.rs"
 name = "newtypes"
 path = "src/newtypes.rs"
 
+[[bin]]
+name = "kdf"
+path = "src/kdf.rs"
+
 [profile.release]
 opt-level = 3
