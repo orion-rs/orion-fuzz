@@ -13,6 +13,10 @@ cargo install --force honggfuzz --vers 0.5.40
 By default the master branch of orion is used for fuzzing. If another version needs to be fuzzed, specify the version
 in the `Cargo.toml` accordingly.
 
+Some fuzzing targets use [sodiumoxide](https://github.com/sodiumoxide/sodiumoxide) to cross-verify results. Any target 
+that uses sodiumoxide requires libsodium to be installed on the system as well.
+
+
 #### Fuzzing with sanitizers
 To fuzz with ASan (with ODR violation detection turned off):
 
