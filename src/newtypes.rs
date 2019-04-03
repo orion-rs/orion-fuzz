@@ -72,7 +72,7 @@ pub mod typedefs {
         use orion::hazardous::constants::BLAKE2B_OUTSIZE;
         use orion::hazardous::hash::blake2b::Digest;
 
-        if fuzzer_input.len() < 1 || fuzzer_input.len() > BLAKE2B_OUTSIZE {
+        if fuzzer_input.is_empty() || fuzzer_input.len() > BLAKE2B_OUTSIZE {
             assert!(Digest::from_slice(fuzzer_input).is_err());
         } else {
             let hash = Digest::from_slice(fuzzer_input).unwrap();
@@ -87,15 +87,12 @@ pub mod typedefs {
         use orion::hazardous::constants::BLAKE2B_KEYSIZE;
         use orion::hazardous::hash::blake2b::SecretKey;
 
-        if fuzzer_input.len() < 1 || fuzzer_input.len() > BLAKE2B_KEYSIZE {
+        if fuzzer_input.is_empty() || fuzzer_input.len() > BLAKE2B_KEYSIZE {
             assert!(SecretKey::from_slice(fuzzer_input).is_err());
         } else {
             let sk = SecretKey::from_slice(fuzzer_input).unwrap();
 
-            assert_eq!(
-                &sk.unprotected_as_bytes(),
-                &fuzzer_input
-            );
+            assert_eq!(&sk.unprotected_as_bytes(), &fuzzer_input);
             assert_eq!(sk.unprotected_as_bytes().len(), fuzzer_input.len());
             assert_eq!(sk.get_length(), fuzzer_input.len());
         }
