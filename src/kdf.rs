@@ -46,11 +46,23 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     // Test extract-then-expand combination
     hkdf::derive_key(&salt, &ikm, Some(&info), &mut orion_okm).unwrap();
     ring::hkdf::extract_and_expand(&other_salt, &ikm, &info, &mut other_okm);
-
     assert_eq!(orion_okm, other_okm);
+    
+    // Verify the OKM of both orion and ring
+    let mut orion_verify_itself_out = orion_okm.clone();
+    let mut orion_verify_other_out = orion_okm.clone();
+    assert!(hkdf::verify(&orion_okm, &salt, &ikm, Some(&info), &mut orion_verify_itself_out).unwrap());
+    assert!(hkdf::verify(&other_okm, &salt, &ikm, Some(&info), &mut orion_verify_other_out).unwrap());
 }
 
-fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {}
+fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+
+
+
+
+
+
+}
 
 fn main() {
     loop {
