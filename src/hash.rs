@@ -11,8 +11,10 @@ use orion::hazardous::hash::sha512;
 use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
 fn fuzz_blake2b_non_keyed(fuzzer_input: &[u8], outsize: usize) {
-    assert!(outsize < 65);
-    assert!(outsize > 0);
+    if outsize < 1 || outsize > 64 {
+        assert!(blake2b::init(None, outsize).is_err());
+        return;
+    }
 
     let mut context = blake2_rfc::blake2b::Blake2b::new(outsize);
     context.update(fuzzer_input);
@@ -64,15 +66,19 @@ fn fuzz_blake2b_keyed(
     keysize: usize,
     seeded_rng: &mut ChaChaRng,
 ) {
-    assert!(keysize < 65);
-    assert!(keysize > 0);
-    assert!(outsize < 65);
-    assert!(outsize > 0);
+    if keysize < 1 || keysize > 64 {
+        assert!(blake2b::SecretKey::from_slice(&vec![0u8; keysize]).is_err());
+        return;
+    }
 
     let mut key = vec![0u8; keysize];
     seeded_rng.fill_bytes(&mut key);
-
     let orion_key = blake2b::SecretKey::from_slice(&key).unwrap();
+    
+    if outsize < 1 || outsize > 64 {
+        assert!(blake2b::init(Some(&orion_key), outsize).is_err());
+        return;
+    }
 
     let mut context = blake2_rfc::blake2b::Blake2b::with_key(outsize, &key);
     context.update(fuzzer_input);
@@ -132,16 +138,12 @@ fn main() {
             // Seed the RNG
             let mut seeded_rng = make_seeded_rng(data);
 
-            // Test `orion::hazardous::hash::blake2b`
-            // through all valid hash-length values
-            for outsize in 1..65 {
-                // thorugh all valid key-lengths
-                for keysize in 1..65 {
-                    fuzz_blake2b_keyed(data, outsize, keysize, &mut seeded_rng);
-                }
-                fuzz_blake2b_non_keyed(data, outsize);
-            }
+            let keysize = seeded_rng.next_u32() as usize;
+            let outsize = seeded_rng.next_u32() as usize;
 
+            // Test `orion::hazardous::hash::blake2b`
+            fuzz_blake2b_keyed(data, outsize, keysize, &mut seeded_rng);
+            fuzz_blake2b_non_keyed(data, outsize);
             // Test `orion::hazardous::hash::sha512`
             fuzz_sha512(data);
         });
