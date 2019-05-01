@@ -5,10 +5,11 @@ extern crate orion;
 extern crate ring; // For sha512
 pub mod utils;
 
-use orion::hazardous::constants::{BLAKE2B_BLOCKSIZE, SHA512_BLOCKSIZE};
 use orion::hazardous::hash::blake2b;
-use orion::hazardous::hash::sha512;
+use orion::hazardous::hash::sha512::{self, SHA512_BLOCKSIZE};
 use utils::{make_seeded_rng, ChaChaRng, RngCore};
+
+const BLAKE2B_BLOCKSIZE: usize = 128;
 
 fn fuzz_blake2b_non_keyed(fuzzer_input: &[u8], outsize: usize) {
     if outsize < 1 || outsize > 64 {
@@ -74,7 +75,7 @@ fn fuzz_blake2b_keyed(
     let mut key = vec![0u8; keysize];
     seeded_rng.fill_bytes(&mut key);
     let orion_key = blake2b::SecretKey::from_slice(&key).unwrap();
-    
+
     if outsize < 1 || outsize > 64 {
         assert!(blake2b::init(Some(&orion_key), outsize).is_err());
         return;

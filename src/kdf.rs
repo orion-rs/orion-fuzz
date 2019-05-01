@@ -4,7 +4,7 @@ extern crate orion;
 extern crate ring;
 pub mod utils;
 
-use orion::hazardous::constants::SHA512_OUTSIZE;
+use orion::hazardous::hash::sha512::SHA512_OUTSIZE;
 use orion::hazardous::kdf::{hkdf, pbkdf2};
 use utils::{make_seeded_rng, ChaChaRng, RngCore};
 

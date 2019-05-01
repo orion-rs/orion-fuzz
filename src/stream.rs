@@ -9,6 +9,9 @@ use orion::hazardous::stream::chacha20;
 use orion::hazardous::stream::xchacha20;
 use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
+const HCHACHA_NONCESIZE: usize = 16;
+const CHACHA_BLOCKSIZE: usize = 64;
+
 /// `orion::hazardous::stream::chacha20`
 fn fuzz_chacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut key = [0u8; 32];
@@ -111,7 +114,7 @@ fn check_counter_overflow(input: &[u8], initial_counter: u32) -> bool {
     let mut res = false;
     let mut counter = initial_counter;
 
-    for _ in input.chunks(orion::hazardous::constants::CHACHA_BLOCKSIZE) {
+    for _ in input.chunks(CHACHA_BLOCKSIZE) {
         if counter.checked_add(1).is_none() {
             res = true;
             return res;
@@ -226,7 +229,7 @@ fn fuzz_hchacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     let orion_key = chacha20::SecretKey::from_slice(&key).unwrap();
 
-    if fuzzer_input.len() != orion::hazardous::constants::HCHACHA_NONCESIZE {
+    if fuzzer_input.len() != HCHACHA_NONCESIZE {
         assert!(chacha20::hchacha20(&orion_key, fuzzer_input).is_err());
     } else {
         let _ = chacha20::hchacha20(&orion_key, fuzzer_input).unwrap();

@@ -6,8 +6,7 @@ pub mod typedefs {
     use super::*;
 
     pub fn fuzz_chacha20_secret_key(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::CHACHA_KEYSIZE;
-        use orion::hazardous::stream::chacha20::SecretKey;
+        use orion::hazardous::stream::chacha20::{SecretKey, CHACHA_KEYSIZE};
 
         if fuzzer_input.len() != CHACHA_KEYSIZE {
             assert!(SecretKey::from_slice(fuzzer_input).is_err());
@@ -21,17 +20,13 @@ pub mod typedefs {
 
         let sk_rand = SecretKey::generate();
 
-        if sk_rand.is_ok() {
-            let sk_actual = sk_rand.unwrap();
-            assert_ne!(sk_actual.unprotected_as_bytes(), &[0u8; CHACHA_KEYSIZE]);
-            assert_eq!(sk_actual.unprotected_as_bytes().len(), CHACHA_KEYSIZE);
-            assert_eq!(sk_actual.get_length(), CHACHA_KEYSIZE);
-        }
+        assert_ne!(sk_rand.unprotected_as_bytes(), &[0u8; CHACHA_KEYSIZE]);
+        assert_eq!(sk_rand.unprotected_as_bytes().len(), CHACHA_KEYSIZE);
+        assert_eq!(sk_rand.get_length(), CHACHA_KEYSIZE);
     }
 
     pub fn fuzz_chacha20_nonce(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::IETF_CHACHA_NONCESIZE;
-        use orion::hazardous::stream::chacha20::Nonce;
+        use orion::hazardous::stream::chacha20::{Nonce, IETF_CHACHA_NONCESIZE};
 
         if fuzzer_input.len() != IETF_CHACHA_NONCESIZE {
             assert!(Nonce::from_slice(fuzzer_input).is_err());
@@ -45,8 +40,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_xchacha20_nonce(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::XCHACHA_NONCESIZE;
-        use orion::hazardous::stream::xchacha20::Nonce;
+        use orion::hazardous::stream::xchacha20::{Nonce, XCHACHA_NONCESIZE};
 
         if fuzzer_input.len() != XCHACHA_NONCESIZE {
             assert!(Nonce::from_slice(fuzzer_input).is_err());
@@ -60,16 +54,13 @@ pub mod typedefs {
 
         let nonce_rand = Nonce::generate();
 
-        if nonce_rand.is_ok() {
-            let nonce_actual = nonce_rand.unwrap();
-            assert_ne!(nonce_actual.as_ref(), &[0u8; XCHACHA_NONCESIZE]);
-            assert_eq!(nonce_actual.as_ref().len(), XCHACHA_NONCESIZE);
-            assert_eq!(nonce_actual.get_length(), XCHACHA_NONCESIZE);
-        }
+        assert_ne!(nonce_rand.as_ref(), &[0u8; XCHACHA_NONCESIZE]);
+        assert_eq!(nonce_rand.as_ref().len(), XCHACHA_NONCESIZE);
+        assert_eq!(nonce_rand.get_length(), XCHACHA_NONCESIZE);
     }
 
     pub fn fuzz_blake2b_digest(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::BLAKE2B_OUTSIZE;
+        const BLAKE2B_OUTSIZE: usize = 64;
         use orion::hazardous::hash::blake2b::Digest;
 
         if fuzzer_input.is_empty() || fuzzer_input.len() > BLAKE2B_OUTSIZE {
@@ -84,7 +75,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_blake2b_secret_key(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::BLAKE2B_KEYSIZE;
+        const BLAKE2B_KEYSIZE: usize = 64;
         use orion::hazardous::hash::blake2b::SecretKey;
 
         if fuzzer_input.is_empty() || fuzzer_input.len() > BLAKE2B_KEYSIZE {
@@ -98,21 +89,16 @@ pub mod typedefs {
         }
 
         let sk_rand = SecretKey::generate();
-
-        if sk_rand.is_ok() {
-            let sk_actual = sk_rand.unwrap();
-            assert_ne!(
-                &sk_actual.unprotected_as_bytes(),
-                &[0u8; BLAKE2B_KEYSIZE].as_ref()
-            );
-            assert_eq!(sk_actual.unprotected_as_bytes().len(), BLAKE2B_KEYSIZE);
-            assert_eq!(sk_actual.get_length(), BLAKE2B_KEYSIZE);
-        }
+        assert_ne!(
+            &sk_rand.unprotected_as_bytes(),
+            &[0u8; BLAKE2B_KEYSIZE].as_ref()
+        );
+        assert_eq!(sk_rand.unprotected_as_bytes().len(), BLAKE2B_KEYSIZE);
+        assert_eq!(sk_rand.get_length(), BLAKE2B_KEYSIZE);
     }
 
     pub fn fuzz_sha512_digest(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::SHA512_OUTSIZE;
-        use orion::hazardous::hash::sha512::Digest;
+        use orion::hazardous::hash::sha512::{Digest, SHA512_OUTSIZE};
 
         if fuzzer_input.len() != SHA512_OUTSIZE {
             assert!(Digest::from_slice(fuzzer_input).is_err());
@@ -126,8 +112,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_pbkdf2_password(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::SHA512_BLOCKSIZE;
-        use orion::hazardous::constants::SHA512_OUTSIZE;
+        use orion::hazardous::hash::sha512::{SHA512_BLOCKSIZE, SHA512_OUTSIZE};
         use orion::hazardous::kdf::pbkdf2::Password;
 
         let password = Password::from_slice(fuzzer_input).unwrap();
@@ -150,23 +135,16 @@ pub mod typedefs {
 
         let password_rand = Password::generate();
 
-        if password_rand.is_ok() {
-            let password_actual = password_rand.unwrap();
-            assert_ne!(
-                &password_actual.unprotected_as_bytes(),
-                &[0u8; SHA512_BLOCKSIZE].as_ref()
-            );
-            assert_eq!(
-                password_actual.unprotected_as_bytes().len(),
-                SHA512_BLOCKSIZE
-            );
-            assert_eq!(password_actual.get_length(), SHA512_BLOCKSIZE);
-        }
+        assert_ne!(
+            &password_rand.unprotected_as_bytes(),
+            &[0u8; SHA512_BLOCKSIZE].as_ref()
+        );
+        assert_eq!(password_rand.unprotected_as_bytes().len(), SHA512_BLOCKSIZE);
+        assert_eq!(password_rand.get_length(), SHA512_BLOCKSIZE);
     }
 
     pub fn fuzz_hmac_secret_key(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::SHA512_BLOCKSIZE;
-        use orion::hazardous::constants::SHA512_OUTSIZE;
+        use orion::hazardous::hash::sha512::{SHA512_BLOCKSIZE, SHA512_OUTSIZE};
         use orion::hazardous::mac::hmac::SecretKey;
 
         let sk = SecretKey::from_slice(fuzzer_input).unwrap();
@@ -189,19 +167,16 @@ pub mod typedefs {
 
         let sk_rand = SecretKey::generate();
 
-        if sk_rand.is_ok() {
-            let sk_actual = sk_rand.unwrap();
-            assert_ne!(
-                &sk_actual.unprotected_as_bytes(),
-                &[0u8; SHA512_BLOCKSIZE].as_ref()
-            );
-            assert_eq!(sk_actual.unprotected_as_bytes().len(), SHA512_BLOCKSIZE);
-            assert_eq!(sk_actual.get_length(), SHA512_BLOCKSIZE);
-        }
+        assert_ne!(
+            &sk_rand.unprotected_as_bytes(),
+            &[0u8; SHA512_BLOCKSIZE].as_ref()
+        );
+        assert_eq!(sk_rand.unprotected_as_bytes().len(), SHA512_BLOCKSIZE);
+        assert_eq!(sk_rand.get_length(), SHA512_BLOCKSIZE);
     }
 
     pub fn fuzz_hmac_tag(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::SHA512_OUTSIZE;
+        use orion::hazardous::hash::sha512::SHA512_OUTSIZE;
         use orion::hazardous::mac::hmac::Tag;
 
         if fuzzer_input.len() != SHA512_OUTSIZE {
@@ -216,8 +191,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_poly1305_onetime_key(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::POLY1305_KEYSIZE;
-        use orion::hazardous::mac::poly1305::OneTimeKey;
+        use orion::hazardous::mac::poly1305::{OneTimeKey, POLY1305_KEYSIZE};
 
         if fuzzer_input.len() != POLY1305_KEYSIZE {
             assert!(OneTimeKey::from_slice(fuzzer_input).is_err());
@@ -231,17 +205,13 @@ pub mod typedefs {
 
         let sk_rand = OneTimeKey::generate();
 
-        if sk_rand.is_ok() {
-            let sk_actual = sk_rand.unwrap();
-            assert_ne!(sk_actual.unprotected_as_bytes(), &[0u8; POLY1305_KEYSIZE]);
-            assert_eq!(sk_actual.unprotected_as_bytes().len(), POLY1305_KEYSIZE);
-            assert_eq!(sk_actual.get_length(), POLY1305_KEYSIZE);
-        }
+        assert_ne!(sk_rand.unprotected_as_bytes(), &[0u8; POLY1305_KEYSIZE]);
+        assert_eq!(sk_rand.unprotected_as_bytes().len(), POLY1305_KEYSIZE);
+        assert_eq!(sk_rand.get_length(), POLY1305_KEYSIZE);
     }
 
     pub fn fuzz_poly1305_tag(fuzzer_input: &[u8]) {
-        use orion::hazardous::constants::POLY1305_OUTSIZE;
-        use orion::hazardous::mac::poly1305::Tag;
+        use orion::hazardous::mac::poly1305::{Tag, POLY1305_OUTSIZE};
 
         if fuzzer_input.len() != POLY1305_OUTSIZE {
             assert!(Tag::from_slice(fuzzer_input).is_err());

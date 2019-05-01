@@ -5,11 +5,13 @@ extern crate ring;
 extern crate sodiumoxide; // For Poly1305 // For HMAC
 pub mod utils;
 
-use orion::hazardous::constants::{POLY1305_BLOCKSIZE, SHA512_BLOCKSIZE};
+use orion::hazardous::hash::sha512::SHA512_BLOCKSIZE;
 use orion::hazardous::mac::hmac;
 use orion::hazardous::mac::poly1305;
 use sodiumoxide::crypto::onetimeauth;
 use utils::{make_seeded_rng, ChaChaRng, RngCore};
+
+const POLY1305_BLOCKSIZE: usize = 16;
 
 fn fuzz_hmac(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut key = vec![0u8; fuzzer_input.len()];
