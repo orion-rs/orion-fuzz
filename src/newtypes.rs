@@ -14,6 +14,7 @@ pub mod typedefs {
             let sk = SecretKey::from_slice(fuzzer_input).unwrap();
 
             assert_eq!(sk.unprotected_as_bytes(), fuzzer_input);
+            assert_eq!(sk, fuzzer_input);
             assert_eq!(sk.unprotected_as_bytes().len(), CHACHA_KEYSIZE);
             assert_eq!(sk.get_length(), CHACHA_KEYSIZE);
         }
@@ -21,6 +22,7 @@ pub mod typedefs {
         let sk_rand = SecretKey::generate();
 
         assert_ne!(sk_rand.unprotected_as_bytes(), &[0u8; CHACHA_KEYSIZE]);
+        assert_ne!(sk_rand, [0u8; CHACHA_KEYSIZE].as_ref());
         assert_eq!(sk_rand.unprotected_as_bytes().len(), CHACHA_KEYSIZE);
         assert_eq!(sk_rand.get_length(), CHACHA_KEYSIZE);
     }
@@ -34,6 +36,7 @@ pub mod typedefs {
             let nonce = Nonce::from_slice(fuzzer_input).unwrap();
 
             assert_eq!(nonce.as_ref(), fuzzer_input);
+            assert_eq!(nonce, fuzzer_input);
             assert_eq!(nonce.as_ref().len(), IETF_CHACHA_NONCESIZE);
             assert_eq!(nonce.get_length(), IETF_CHACHA_NONCESIZE);
         }
@@ -48,6 +51,7 @@ pub mod typedefs {
             let nonce = Nonce::from_slice(fuzzer_input).unwrap();
 
             assert_eq!(nonce.as_ref(), fuzzer_input);
+            assert_eq!(nonce, fuzzer_input);
             assert_eq!(nonce.as_ref().len(), XCHACHA_NONCESIZE);
             assert_eq!(nonce.get_length(), XCHACHA_NONCESIZE);
         }
@@ -55,6 +59,7 @@ pub mod typedefs {
         let nonce_rand = Nonce::generate();
 
         assert_ne!(nonce_rand.as_ref(), &[0u8; XCHACHA_NONCESIZE]);
+        assert_ne!(nonce_rand, [0u8; XCHACHA_NONCESIZE].as_ref());
         assert_eq!(nonce_rand.as_ref().len(), XCHACHA_NONCESIZE);
         assert_eq!(nonce_rand.get_length(), XCHACHA_NONCESIZE);
     }
@@ -69,6 +74,7 @@ pub mod typedefs {
             let hash = Digest::from_slice(fuzzer_input).unwrap();
 
             assert_eq!(hash.as_ref(), fuzzer_input);
+            assert_eq!(hash, fuzzer_input);
             assert_eq!(hash.as_ref().len(), fuzzer_input.len());
             assert_eq!(hash.get_length(), fuzzer_input.len());
         }
@@ -83,16 +89,19 @@ pub mod typedefs {
         } else {
             let sk = SecretKey::from_slice(fuzzer_input).unwrap();
 
-            assert_eq!(&sk.unprotected_as_bytes(), &fuzzer_input);
+            assert_eq!(sk.unprotected_as_bytes(), fuzzer_input);
+            assert_eq!(sk, fuzzer_input);
             assert_eq!(sk.unprotected_as_bytes().len(), fuzzer_input.len());
             assert_eq!(sk.get_length(), fuzzer_input.len());
         }
 
         let sk_rand = SecretKey::generate();
         assert_ne!(
-            &sk_rand.unprotected_as_bytes(),
-            &[0u8; BLAKE2B_KEYSIZE].as_ref()
+            sk_rand.unprotected_as_bytes(),
+            [0u8; BLAKE2B_KEYSIZE].as_ref()
         );
+
+        assert_ne!(sk_rand, [0u8; BLAKE2B_KEYSIZE].as_ref());
         assert_eq!(sk_rand.unprotected_as_bytes().len(), BLAKE2B_KEYSIZE);
         assert_eq!(sk_rand.get_length(), BLAKE2B_KEYSIZE);
     }
@@ -106,6 +115,7 @@ pub mod typedefs {
             let hash = Digest::from_slice(fuzzer_input).unwrap();
 
             assert_eq!(hash.as_ref(), fuzzer_input);
+            assert_eq!(hash, fuzzer_input);
             assert_eq!(hash.as_ref().len(), fuzzer_input.len());
             assert_eq!(hash.get_length(), fuzzer_input.len());
         }
@@ -139,6 +149,7 @@ pub mod typedefs {
             &password_rand.unprotected_as_bytes(),
             &[0u8; SHA512_BLOCKSIZE].as_ref()
         );
+        assert_ne!(password_rand, [0u8; SHA512_BLOCKSIZE].as_ref());
         assert_eq!(password_rand.unprotected_as_bytes().len(), SHA512_BLOCKSIZE);
         assert_eq!(password_rand.get_length(), SHA512_BLOCKSIZE);
     }
@@ -171,6 +182,7 @@ pub mod typedefs {
             &sk_rand.unprotected_as_bytes(),
             &[0u8; SHA512_BLOCKSIZE].as_ref()
         );
+        assert_ne!(sk_rand, [0u8; SHA512_BLOCKSIZE].as_ref());
         assert_eq!(sk_rand.unprotected_as_bytes().len(), SHA512_BLOCKSIZE);
         assert_eq!(sk_rand.get_length(), SHA512_BLOCKSIZE);
     }
@@ -185,6 +197,7 @@ pub mod typedefs {
             let tag = Tag::from_slice(fuzzer_input).unwrap();
 
             assert_eq!(tag.unprotected_as_bytes(), fuzzer_input);
+            assert_eq!(tag, fuzzer_input);
             assert_eq!(tag.unprotected_as_bytes().len(), SHA512_OUTSIZE);
             assert_eq!(tag.get_length(), SHA512_OUTSIZE);
         }
@@ -199,6 +212,7 @@ pub mod typedefs {
             let sk = OneTimeKey::from_slice(fuzzer_input).unwrap();
 
             assert_eq!(sk.unprotected_as_bytes(), fuzzer_input);
+            assert_eq!(sk, fuzzer_input);
             assert_eq!(sk.unprotected_as_bytes().len(), POLY1305_KEYSIZE);
             assert_eq!(sk.get_length(), POLY1305_KEYSIZE);
         }
@@ -206,6 +220,7 @@ pub mod typedefs {
         let sk_rand = OneTimeKey::generate();
 
         assert_ne!(sk_rand.unprotected_as_bytes(), &[0u8; POLY1305_KEYSIZE]);
+        assert_ne!(sk_rand, [0u8; POLY1305_KEYSIZE].as_ref());
         assert_eq!(sk_rand.unprotected_as_bytes().len(), POLY1305_KEYSIZE);
         assert_eq!(sk_rand.get_length(), POLY1305_KEYSIZE);
     }
@@ -219,6 +234,7 @@ pub mod typedefs {
             let tag = Tag::from_slice(fuzzer_input).unwrap();
 
             assert_eq!(tag.unprotected_as_bytes(), fuzzer_input);
+            assert_eq!(tag, fuzzer_input);
             assert_eq!(tag.unprotected_as_bytes().len(), POLY1305_OUTSIZE);
             assert_eq!(tag.get_length(), POLY1305_OUTSIZE);
         }
@@ -235,6 +251,7 @@ pub mod hltypes {
                     let sk = $type::from_slice(fuzzer_input).unwrap();
 
                     assert_eq!(sk.$as_ref_func(), fuzzer_input);
+                    assert_eq!(sk, fuzzer_input);
                     assert_eq!(sk.$as_ref_func().len(), fuzzer_input.len());
                     assert_eq!(sk.get_length(), fuzzer_input.len());
                 }
@@ -281,6 +298,7 @@ pub mod hltypes {
             let sk = PasswordHash::from_slice(fuzzer_input).unwrap();
 
             assert_eq!(sk.unprotected_as_bytes(), fuzzer_input);
+            assert_eq!(sk, fuzzer_input);
             assert_eq!(sk.unprotected_as_bytes().len(), 128);
             assert_eq!(sk.get_length(), 128);
         }
