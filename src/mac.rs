@@ -23,8 +23,8 @@ fn fuzz_hmac(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     state.update(fuzzer_input).unwrap();
 
     // ring
-    let ring_key = ring::hmac::SigningKey::new(&ring::digest::SHA512, &key);
-    let mut context = ring::hmac::SigningContext::with_key(&ring_key);
+    let ring_key = ring::hmac::Key::new(ring::hmac::HMAC_SHA512, &key);
+    let mut context = ring::hmac::Context::with_key(&ring_key);
     context.update(fuzzer_input);
 
     let mut other_data: Vec<u8> = Vec::new();

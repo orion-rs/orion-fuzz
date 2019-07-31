@@ -8,6 +8,27 @@ use orion::hazardous::hash::sha512::SHA512_OUTSIZE;
 use orion::hazardous::kdf::{hkdf, pbkdf2};
 use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
+
+/// See: https://github.com/briansmith/ring/blob/master/tests/hkdf_tests.rs
+
+/// Generic newtype wrapper that lets us implement traits for externally-defined
+/// types.
+struct RingHkdf<T>(T);
+
+impl ring::hkdf::KeyType for RingHkdf<usize> {
+    fn len(&self) -> usize {
+        self.0
+    }
+}
+
+impl From<ring::hkdf::Okm<'_, RingHkdf<usize>>> for RingHkdf<Vec<u8>> {
+    fn from(okm: ring::hkdf::Okm<RingHkdf<usize>>) -> Self {
+        let mut r = vec![0u8; okm.len().0];
+        okm.fill(&mut r).unwrap();
+        RingHkdf(r)
+    }
+}
+
 fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut ikm = vec![0u8; fuzzer_input.len() / 2];
     seeded_rng.fill_bytes(&mut ikm);
@@ -22,8 +43,6 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             vec![0u8; fuzzer_input.len() / 2]
         };
 
-    let mut other_okm = orion_okm.clone();
-
     // Empty info will be the same as None.
     let info: Vec<u8> = if fuzzer_input.is_empty() {
         vec![0u8; 0]
@@ -36,16 +55,18 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     hkdf::expand(&orion_prk, Some(&info), &mut orion_okm).unwrap();
 
     // ring
-    let other_salt = ring::hmac::SigningKey::new(&ring::digest::SHA512, &salt);
-    let other_prk = ring::hkdf::extract(&other_salt, &ikm);
-    ring::hkdf::expand(&other_prk, &info, &mut other_okm[..]);
+    let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA512, &salt);
 
-    // We cannot compare PRKs because ring's SigningKey does not offer
-    // access to internal bytes.
+    // See: https://github.com/briansmith/ring/blob/master/tests/hkdf_tests.rs
+    let RingHkdf(other_okm) = other_salt
+            .extract(&ikm)
+            .expand(&[&info], RingHkdf(orion_okm.len()))
+            .unwrap()
+            .into();
+
     assert_eq!(orion_okm, other_okm);
     // Test extract-then-expand combination
     hkdf::derive_key(&salt, &ikm, Some(&info), &mut orion_okm).unwrap();
-    ring::hkdf::extract_and_expand(&other_salt, &ikm, &info, &mut other_okm);
     assert_eq!(orion_okm, other_okm);
 }
 
@@ -78,7 +99,7 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     // ring
     ring::pbkdf2::derive(
-        &ring::digest::SHA512,
+        ring::pbkdf2::PBKDF2_HMAC_SHA512,
         std::num::NonZeroU32::new(u32::from(iterations)).unwrap(),
         &salt,
         &password,
