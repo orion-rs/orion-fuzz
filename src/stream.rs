@@ -9,7 +9,6 @@ use orion::hazardous::stream::chacha20;
 use orion::hazardous::stream::xchacha20;
 use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
-const HCHACHA_NONCESIZE: usize = 16;
 const CHACHA_BLOCKSIZE: usize = 64;
 
 /// `orion::hazardous::stream::chacha20`
@@ -222,20 +221,6 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     }
 }
 
-/// `orion::hazardous::stream::chacha20::hchacha20`
-fn fuzz_hchacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let mut key = [0u8; 32];
-    seeded_rng.fill_bytes(&mut key);
-
-    let orion_key = chacha20::SecretKey::from_slice(&key).unwrap();
-
-    if fuzzer_input.len() != HCHACHA_NONCESIZE {
-        assert!(chacha20::hchacha20(&orion_key, fuzzer_input).is_err());
-    } else {
-        let _ = chacha20::hchacha20(&orion_key, fuzzer_input).unwrap();
-    }
-}
-
 fn main() {
     loop {
         fuzz!(|data: &[u8]| {
@@ -248,8 +233,6 @@ fn main() {
             fuzz_xchacha20(data, &mut seeded_rng);
             // `orion::hazardous::stream::xchacha20` + `orion::hazardous::stream::chacha20`
             fuzz_stream_counters(data, &mut seeded_rng);
-            // `orion::hazardous::stream::chacha20::hchacha20`
-            fuzz_hchacha20(data, &mut seeded_rng);
         });
     }
 }
