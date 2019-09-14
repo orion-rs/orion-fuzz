@@ -19,7 +19,7 @@ fn fuzz_hmac(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     // orion
     let orion_key = hmac::SecretKey::from_slice(&key).unwrap();
-    let mut state = hmac::init(&orion_key);
+    let mut state = hmac::Hmac::new(&orion_key);
     state.update(fuzzer_input).unwrap();
 
     // ring
@@ -64,7 +64,7 @@ fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     // orion
     let orion_key = poly1305::OneTimeKey::from_slice(&key).unwrap();
-    let mut state = poly1305::init(&orion_key);
+    let mut state = poly1305::Poly1305::new(&orion_key);
     state.update(fuzzer_input).unwrap();
 
     // sodiumoxide

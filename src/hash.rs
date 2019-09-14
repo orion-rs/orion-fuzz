@@ -13,14 +13,14 @@ const BLAKE2B_BLOCKSIZE: usize = 128;
 
 fn fuzz_blake2b_non_keyed(fuzzer_input: &[u8], outsize: usize) {
     if outsize < 1 || outsize > 64 {
-        assert!(blake2b::init(None, outsize).is_err());
+        assert!(blake2b::Blake2b::new(None, outsize).is_err());
         return;
     }
 
     let mut context = blake2_rfc::blake2b::Blake2b::new(outsize);
     context.update(fuzzer_input);
 
-    let mut state = blake2b::init(None, outsize).unwrap();
+    let mut state = blake2b::Blake2b::new(None, outsize).unwrap();
     state.update(fuzzer_input).unwrap();
 
     let mut other_data: Vec<u8> = Vec::new();
@@ -77,14 +77,14 @@ fn fuzz_blake2b_keyed(
     let orion_key = blake2b::SecretKey::from_slice(&key).unwrap();
 
     if outsize < 1 || outsize > 64 {
-        assert!(blake2b::init(Some(&orion_key), outsize).is_err());
+        assert!(blake2b::Blake2b::new(Some(&orion_key), outsize).is_err());
         return;
     }
 
     let mut context = blake2_rfc::blake2b::Blake2b::with_key(outsize, &key);
     context.update(fuzzer_input);
 
-    let mut state = blake2b::init(Some(&orion_key), outsize).unwrap();
+    let mut state = blake2b::Blake2b::new(Some(&orion_key), outsize).unwrap();
     state.update(fuzzer_input).unwrap();
 
     if fuzzer_input.len() > BLAKE2B_BLOCKSIZE {
@@ -107,7 +107,7 @@ fn fuzz_blake2b_keyed(
 }
 
 fn fuzz_sha512(fuzzer_input: &[u8]) {
-    let mut state = sha512::init();
+    let mut state = sha512::Sha512::new();
     let mut other_data: Vec<u8> = Vec::new();
 
     other_data.extend_from_slice(fuzzer_input);
