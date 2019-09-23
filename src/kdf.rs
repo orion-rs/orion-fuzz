@@ -8,7 +8,6 @@ use orion::hazardous::hash::sha512::SHA512_OUTSIZE;
 use orion::hazardous::kdf::{hkdf, pbkdf2};
 use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
-
 /// See: https://github.com/briansmith/ring/blob/master/tests/hkdf_tests.rs
 
 /// Generic newtype wrapper that lets us implement traits for externally-defined
@@ -59,10 +58,10 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     // See: https://github.com/briansmith/ring/blob/master/tests/hkdf_tests.rs
     let RingHkdf(other_okm) = other_salt
-            .extract(&ikm)
-            .expand(&[&info], RingHkdf(orion_okm.len()))
-            .unwrap()
-            .into();
+        .extract(&ikm)
+        .expand(&[&info], RingHkdf(orion_okm.len()))
+        .unwrap()
+        .into();
 
     assert_eq!(orion_okm, other_okm);
     // Test extract-then-expand combination

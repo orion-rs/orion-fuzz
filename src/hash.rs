@@ -87,15 +87,21 @@ fn fuzz_blake2b_keyed(
     let mut state = blake2b::Blake2b::new(Some(&orion_key), outsize).unwrap();
     state.update(fuzzer_input).unwrap();
 
+    let mut data: Vec<u8> = Vec::with_capacity(fuzzer_input.len());
+    data.extend_from_slice(fuzzer_input);
+
     if fuzzer_input.len() > BLAKE2B_BLOCKSIZE {
+        data.extend_from_slice(b"");
         context.update(b"");
         state.update(b"").unwrap();
     }
     if fuzzer_input.len() > BLAKE2B_BLOCKSIZE * 2 {
+        data.extend_from_slice(b"Extra");
         context.update(b"Extra");
         state.update(b"Extra").unwrap();
     }
     if fuzzer_input.len() > BLAKE2B_BLOCKSIZE * 3 {
+        data.extend_from_slice(&[0u8; 256]);
         context.update(&[0u8; 256]);
         state.update(&[0u8; 256]).unwrap();
     }
@@ -104,6 +110,7 @@ fn fuzz_blake2b_keyed(
     let orion_hash = state.finalize().unwrap();
 
     assert_eq!(other_hash.as_bytes(), orion_hash.as_ref());
+    assert!(blake2b::verify(&orion_hash, &orion_key, outsize, &data[..]).is_ok());
 }
 
 fn fuzz_sha512(fuzzer_input: &[u8]) {
