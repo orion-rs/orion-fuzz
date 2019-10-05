@@ -57,7 +57,6 @@ fn fuzz_blake2b_non_keyed(fuzzer_input: &[u8], outsize: usize) {
         let orion_one_shot = blake2b::Hasher::Blake2b512.digest(&other_data).unwrap();
         assert_eq!(other_hash.as_bytes(), orion_one_shot.as_ref());
     } else {
-
     }
 }
 

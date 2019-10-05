@@ -11,7 +11,7 @@ sodiumoxide = "0.2.2"
 ring = "0.16.5"
 blake2-rfc = "0.2.18"
 chacha = "0.3.0"
-orion = { git = "https://github.com/brycx/orion", branch = "master" }
+orion = { git = "https://github.com/snsmac/orion" }
 
 [[bin]]
 name = "high_level_api"
@@ -40,6 +40,10 @@ path = "src/newtypes.rs"
 [[bin]]
 name = "kdf"
 path = "src/kdf.rs"
+
+[[bin]]
+name = "secret_stream"
+path = "src/secret_stream.rs"
 
 [profile.release]
 opt-level = 3
