@@ -6,7 +6,7 @@ pub mod utils;
 
 use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
-use orion::hazardous::secret_stream::xchacha20poly1305::*;
+use orion::hazardous::aead::xchacha20poly1305_stream::*;
 use orion::hazardous::stream::chacha20::SecretKey;
 
 use sodiumoxide::crypto::secretstream::xchacha20poly1305 as sodium_stream;
@@ -53,7 +53,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         {
             // Last message in the stream
             orion_state_enc
-                .encrypt_message(input_chunk, Some(&ad), &mut orion_msg, Tag::FINISH)
+                .seal_chunk(input_chunk, Some(&ad), &mut orion_msg, Tag::FINISH)
                 .unwrap();
 
             sodium_state_enc
@@ -66,7 +66,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
                 .unwrap();
         } else {
             orion_state_enc
-                .encrypt_message(input_chunk, Some(&ad), &mut orion_msg, Tag::MESSAGE)
+                .seal_chunk(input_chunk, Some(&ad), &mut orion_msg, Tag::MESSAGE)
                 .unwrap();
 
             sodium_state_enc
@@ -102,7 +102,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             vec![0u8; input_chunk.len() - SECRETSTREAM_XCHACHA20POLY1305_ABYTES];
 
         let orion_tag = orion_state_dec
-            .decrypt_message(input_chunk, Some(&ad), &mut orion_msg)
+            .open_chunk(input_chunk, Some(&ad), &mut orion_msg)
             .unwrap();
 
         let (sodium_msg, _sodium_tag) = sodium_state_dec.pull(input_chunk, Some(&ad)).unwrap();
