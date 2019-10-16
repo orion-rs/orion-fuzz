@@ -96,7 +96,7 @@ fn fuzz_auth(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         let auth_key = orion::auth::SecretKey::from_slice(&key).unwrap();
         let tag = orion::auth::authenticate(&auth_key, fuzzer_input).unwrap();
 
-        assert!(orion::auth::authenticate_verify(&tag, &auth_key, fuzzer_input).unwrap());
+        assert!(orion::auth::authenticate_verify(&tag, &auth_key, fuzzer_input).is_ok());
     }
 }
 

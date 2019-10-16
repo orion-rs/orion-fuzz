@@ -11,6 +11,22 @@ use orion::hazardous::stream::chacha20::SecretKey;
 
 use sodiumoxide::crypto::secretstream::xchacha20poly1305 as sodium_stream;
 
+/// Randomly select which tag should be passed to sealing a chunk.
+fn select_tag(seeded_rng: &mut ChaChaRng) -> (Tag, sodium_stream::Tag) {
+    let mut rand_select = [0u8; 1];
+    seeded_rng.fill_bytes(&mut rand_select);
+
+    if rand_select[0] <= 63u8 {
+        (Tag::MESSAGE, sodium_stream::Tag::Message)
+    } else if rand_select[0] <= 126u8 {
+        (Tag::PUSH, sodium_stream::Tag::Push)
+    } else if rand_select[0] <= 189u8 {
+        (Tag::REKEY, sodium_stream::Tag::Rekey)
+    } else {
+        (Tag::FINISH, sodium_stream::Tag::Final)
+    }
+}
+
 /// `orion::hazardous::` // TODO: Missing
 fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut key = vec![0u8; 32];
@@ -39,45 +55,28 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let rnd_chunksize = seeded_rng.next_u32() as usize;
     let mut collected_enc: Vec<u8> = Vec::new();
 
-    for (idx, input_chunk) in fuzzer_input.chunks(rnd_chunksize).enumerate() {
+    for input_chunk in fuzzer_input.chunks(rnd_chunksize) {
+        let (orion_tag, sodium_tag) = select_tag(seeded_rng);
+
         let mut orion_msg: Vec<u8> =
             vec![0u8; input_chunk.len() + SECRETSTREAM_XCHACHA20POLY1305_ABYTES];
         let mut sodium_msg = orion_msg.clone();
+        // Last message in the stream
+        orion_state_enc
+            .seal_chunk(input_chunk, Some(&ad), &mut orion_msg, orion_tag)
+            .unwrap();
 
-        // Check for last iteration in `.chunks()`
-        if input_chunk.len() < rnd_chunksize
-            || (input_chunk.len() * (idx + 1) == fuzzer_input.len())
-        {
-            // Last message in the stream
-            orion_state_enc
-                .seal_chunk(input_chunk, Some(&ad), &mut orion_msg, Tag::FINISH)
-                .unwrap();
-
-            sodium_state_enc
-                .push_to_vec(
-                    input_chunk,
-                    Some(&ad),
-                    sodium_stream::Tag::Final,
-                    &mut sodium_msg,
-                )
-                .unwrap();
-        } else {
-            orion_state_enc
-                .seal_chunk(input_chunk, Some(&ad), &mut orion_msg, Tag::MESSAGE)
-                .unwrap();
-
-            sodium_state_enc
-                .push_to_vec(
-                    input_chunk,
-                    Some(&ad),
-                    sodium_stream::Tag::Message,
-                    &mut sodium_msg,
-                )
-                .unwrap();
-        }
+        sodium_state_enc
+            .push_to_vec(input_chunk, Some(&ad), sodium_tag, &mut sodium_msg)
+            .unwrap();
 
         assert_eq!(orion_msg, sodium_msg);
         collected_enc.extend_from_slice(&orion_msg);
+
+        // Finalizing a sodiumoxide state with Tag:Final consumes the stream.
+        if sodium_tag == sodium_stream::Tag::Final {
+            break;
+        }
     }
 
     let mut orion_state_dec = SecretStreamXChaCha20Poly1305::new(
@@ -95,25 +94,15 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut collected_dec: Vec<u8> = Vec::new();
     let dec_rnd_chunksize = rnd_chunksize + SECRETSTREAM_XCHACHA20POLY1305_ABYTES;
 
-    for (idx, input_chunk) in collected_enc.chunks(dec_rnd_chunksize).enumerate() {
+    for input_chunk in collected_enc.chunks(dec_rnd_chunksize) {
         let mut orion_msg: Vec<u8> =
             vec![0u8; input_chunk.len() - SECRETSTREAM_XCHACHA20POLY1305_ABYTES];
 
-        let orion_tag = orion_state_dec
+        let _orion_tag = orion_state_dec
             .open_chunk(input_chunk, Some(&ad), &mut orion_msg)
             .unwrap();
 
         let (sodium_msg, _sodium_tag) = sodium_state_dec.pull(input_chunk, Some(&ad)).unwrap();
-        
-        if input_chunk.len() < dec_rnd_chunksize
-            || (input_chunk.len() * (idx + 1) == collected_enc.len())
-        {
-            // Last message in the stream
-            assert_eq!(orion_tag, Tag::FINISH);
-        } else {
-            assert_eq!(orion_tag, Tag::MESSAGE);
-        }
-
         assert_eq!(orion_msg, sodium_msg);
         collected_dec.extend_from_slice(&orion_msg);
     }
