@@ -13,10 +13,6 @@ use sodiumoxide::crypto::secretstream::xchacha20poly1305 as sodium_stream;
 
 /// `orion::hazardous::` // TODO: Missing
 fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    if fuzzer_input.is_empty() {
-        return;
-    }
-
     let mut key = vec![0u8; 32];
     seeded_rng.fill_bytes(&mut key);
 
@@ -39,7 +35,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         &Nonce::from_slice(sodium_header.as_ref()).unwrap(),
     );
 
-    // Push/Encrypt
+    // `seal_chunk()`
     let rnd_chunksize = seeded_rng.next_u32() as usize;
     let mut collected_enc: Vec<u8> = Vec::new();
 
@@ -48,6 +44,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             vec![0u8; input_chunk.len() + SECRETSTREAM_XCHACHA20POLY1305_ABYTES];
         let mut sodium_msg = orion_msg.clone();
 
+        // Check for last iteration in `.chunks()`
         if input_chunk.len() < rnd_chunksize
             || (input_chunk.len() * (idx + 1) == fuzzer_input.len())
         {
@@ -94,6 +91,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     )
     .unwrap();
 
+    // `open_chunk()`
     let mut collected_dec: Vec<u8> = Vec::new();
     let dec_rnd_chunksize = rnd_chunksize + SECRETSTREAM_XCHACHA20POLY1305_ABYTES;
 
@@ -106,7 +104,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             .unwrap();
 
         let (sodium_msg, _sodium_tag) = sodium_state_dec.pull(input_chunk, Some(&ad)).unwrap();
-
+        
         if input_chunk.len() < dec_rnd_chunksize
             || (input_chunk.len() * (idx + 1) == collected_enc.len())
         {
