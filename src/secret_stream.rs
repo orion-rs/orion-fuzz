@@ -27,21 +27,24 @@ fn select_tag(seeded_rng: &mut ChaChaRng) -> (Tag, sodium_stream::Tag) {
     }
 }
 
-/// `orion::hazardous::` // TODO: Missing
-fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let mut key = vec![0u8; 32];
-    seeded_rng.fill_bytes(&mut key);
-
+/// Select additional data to authenticate based on input chunk.
+fn select_ad(input_chunk: &[u8], seeded_rng: &mut ChaChaRng) -> Vec<u8> {
     // `ad` will be both tested as Some and None as None is the same as [0u8; 0]
-    let ad: Vec<u8> = if fuzzer_input.is_empty() {
+    if input_chunk.is_empty() {
         vec![0u8; 0]
-    } else if fuzzer_input[0] > 127 {
-        let mut tmp = vec![0u8; fuzzer_input.len() / 8];
+    } else if input_chunk[0] > 127 {
+        let mut tmp = vec![0u8; input_chunk.len() / 8];
         seeded_rng.fill_bytes(&mut tmp);
         tmp
     } else {
         vec![0u8; 0]
-    };
+    }
+}
+
+/// `orion::hazardous::` // TODO: Missing
+fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+    let mut key = vec![0u8; 32];
+    seeded_rng.fill_bytes(&mut key);
 
     let (mut sodium_state_enc, sodium_header) =
         sodium_stream::Stream::init_push(&sodium_stream::Key::from_slice(&key).unwrap()).unwrap();
@@ -54,9 +57,11 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     // `seal_chunk()`
     let rnd_chunksize = seeded_rng.next_u32() as usize;
     let mut collected_enc: Vec<u8> = Vec::new();
+    let mut collected_ad: Vec<Vec<u8>> = Vec::new();
 
     for input_chunk in fuzzer_input.chunks(rnd_chunksize) {
         let (orion_tag, sodium_tag) = select_tag(seeded_rng);
+        let ad = select_ad(input_chunk, seeded_rng);
 
         let mut orion_msg: Vec<u8> =
             vec![0u8; input_chunk.len() + SECRETSTREAM_XCHACHA20POLY1305_ABYTES];
@@ -72,6 +77,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
         assert_eq!(orion_msg, sodium_msg);
         collected_enc.extend_from_slice(&orion_msg);
+        collected_ad.push(ad);
 
         // Finalizing a sodiumoxide state with Tag:Final consumes the stream.
         if sodium_tag == sodium_stream::Tag::Final {
@@ -94,15 +100,17 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut collected_dec: Vec<u8> = Vec::new();
     let dec_rnd_chunksize = rnd_chunksize + SECRETSTREAM_XCHACHA20POLY1305_ABYTES;
 
-    for input_chunk in collected_enc.chunks(dec_rnd_chunksize) {
+    for (idx, input_chunk) in collected_enc.chunks(dec_rnd_chunksize).enumerate() {
+        let ad = collected_ad.get(idx).unwrap();
+        
         let mut orion_msg: Vec<u8> =
             vec![0u8; input_chunk.len() - SECRETSTREAM_XCHACHA20POLY1305_ABYTES];
 
         let _orion_tag = orion_state_dec
-            .open_chunk(input_chunk, Some(&ad), &mut orion_msg)
+            .open_chunk(input_chunk, Some(ad), &mut orion_msg)
             .unwrap();
 
-        let (sodium_msg, _sodium_tag) = sodium_state_dec.pull(input_chunk, Some(&ad)).unwrap();
+        let (sodium_msg, _sodium_tag) = sodium_state_dec.pull(input_chunk, Some(ad)).unwrap();
         assert_eq!(orion_msg, sodium_msg);
         collected_dec.extend_from_slice(&orion_msg);
     }
