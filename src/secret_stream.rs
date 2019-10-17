@@ -41,7 +41,6 @@ fn select_ad(input_chunk: &[u8], seeded_rng: &mut ChaChaRng) -> Vec<u8> {
     }
 }
 
-/// `orion::hazardous::` // TODO: Missing
 fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut key = vec![0u8; 32];
     seeded_rng.fill_bytes(&mut key);
@@ -124,7 +123,7 @@ fn main() {
             // Seed the RNG
             let mut seeded_rng = make_seeded_rng(data);
 
-            // Test `orion::hazardous::` // TODO: Missing
+            // Test `orion::hazardous::aead::xchacha20poly1305_stream`
             fuzz_secret_stream(data, &mut seeded_rng);
         });
     }
