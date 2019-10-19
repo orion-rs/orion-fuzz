@@ -96,7 +96,6 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     .unwrap();
 
     // `open_chunk()`
-    let mut collected_dec: Vec<u8> = Vec::new();
     let dec_rnd_chunksize = rnd_chunksize + SECRETSTREAM_XCHACHA20POLY1305_ABYTES;
 
     for (idx, input_chunk) in collected_enc.chunks(dec_rnd_chunksize).enumerate() {
@@ -111,10 +110,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
         let (sodium_msg, _sodium_tag) = sodium_state_dec.pull(input_chunk, Some(ad)).unwrap();
         assert_eq!(orion_msg, sodium_msg);
-        collected_dec.extend_from_slice(&orion_msg);
     }
-
-    assert_eq!(fuzzer_input, &collected_dec[..]);
 }
 
 fn main() {
