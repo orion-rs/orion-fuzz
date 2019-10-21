@@ -6,24 +6,24 @@ pub mod utils;
 
 use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
-use orion::hazardous::aead::xchacha20poly1305_stream::*;
+use orion::hazardous::aead::streaming::*;
 use orion::hazardous::stream::chacha20::SecretKey;
 
 use sodiumoxide::crypto::secretstream::xchacha20poly1305 as sodium_stream;
 
 /// Randomly select which tag should be passed to sealing a chunk.
-fn select_tag(seeded_rng: &mut ChaChaRng) -> (Tag, sodium_stream::Tag) {
+fn select_tag(seeded_rng: &mut ChaChaRng) -> (StreamTag, sodium_stream::Tag) {
     let mut rand_select = [0u8; 1];
     seeded_rng.fill_bytes(&mut rand_select);
 
     if rand_select[0] <= 63u8 {
-        (Tag::MESSAGE, sodium_stream::Tag::Message)
+        (StreamTag::MESSAGE, sodium_stream::Tag::Message)
     } else if rand_select[0] <= 126u8 {
-        (Tag::PUSH, sodium_stream::Tag::Push)
+        (StreamTag::PUSH, sodium_stream::Tag::Push)
     } else if rand_select[0] <= 189u8 {
-        (Tag::REKEY, sodium_stream::Tag::Rekey)
+        (StreamTag::REKEY, sodium_stream::Tag::Rekey)
     } else {
-        (Tag::FINISH, sodium_stream::Tag::Final)
+        (StreamTag::FINISH, sodium_stream::Tag::Final)
     }
 }
 
@@ -48,7 +48,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let (mut sodium_state_enc, sodium_header) =
         sodium_stream::Stream::init_push(&sodium_stream::Key::from_slice(&key).unwrap()).unwrap();
 
-    let mut orion_state_enc = SecretStreamXChaCha20Poly1305::new(
+    let mut orion_state_enc = StreamXChaCha20Poly1305::new(
         &SecretKey::from_slice(&key[..]).unwrap(),
         &Nonce::from_slice(sodium_header.as_ref()).unwrap(),
     );
@@ -63,7 +63,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         let ad = select_ad(input_chunk, seeded_rng);
 
         let mut orion_msg: Vec<u8> =
-            vec![0u8; input_chunk.len() + SECRETSTREAM_XCHACHA20POLY1305_ABYTES];
+            vec![0u8; input_chunk.len() + ABYTES];
         let mut sodium_msg = orion_msg.clone();
         // Last message in the stream
         orion_state_enc
@@ -84,7 +84,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         }
     }
 
-    let mut orion_state_dec = SecretStreamXChaCha20Poly1305::new(
+    let mut orion_state_dec = StreamXChaCha20Poly1305::new(
         &SecretKey::from_slice(&key[..]).unwrap(),
         &Nonce::from_slice(sodium_header.as_ref()).unwrap(),
     );
@@ -96,13 +96,13 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     .unwrap();
 
     // `open_chunk()`
-    let dec_rnd_chunksize = rnd_chunksize + SECRETSTREAM_XCHACHA20POLY1305_ABYTES;
+    let dec_rnd_chunksize = rnd_chunksize + ABYTES;
 
     for (idx, input_chunk) in collected_enc.chunks(dec_rnd_chunksize).enumerate() {
         let ad = collected_ad.get(idx).unwrap();
         
         let mut orion_msg: Vec<u8> =
-            vec![0u8; input_chunk.len() - SECRETSTREAM_XCHACHA20POLY1305_ABYTES];
+            vec![0u8; input_chunk.len() - ABYTES];
 
         let _orion_tag = orion_state_dec
             .open_chunk(input_chunk, Some(ad), &mut orion_msg)
@@ -119,7 +119,7 @@ fn main() {
             // Seed the RNG
             let mut seeded_rng = make_seeded_rng(data);
 
-            // Test `orion::hazardous::aead::xchacha20poly1305_stream`
+            // Test `orion::hazardous::aead::streaming`
             fuzz_secret_stream(data, &mut seeded_rng);
         });
     }

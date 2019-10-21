@@ -11,7 +11,7 @@ sodiumoxide = "0.2.2"
 ring = "0.16.5"
 blake2-rfc = "0.2.18"
 chacha = "0.3.0"
-orion = { git = "https://github.com/snsmac/orion" }
+orion = { path = "../orion/" }
 
 [[bin]]
 name = "high_level_api"
