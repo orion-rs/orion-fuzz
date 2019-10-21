@@ -42,8 +42,8 @@ name = "kdf"
 path = "src/kdf.rs"
 
 [[bin]]
-name = "secret_stream"
-path = "src/secret_stream.rs"
+name = "aead_stream"
+path = "src/aead_stream.rs"
 
 [profile.release]
 opt-level = 3
