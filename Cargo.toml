@@ -41,5 +41,9 @@ path = "src/newtypes.rs"
 name = "kdf"
 path = "src/kdf.rs"
 
+[[bin]]
+name = "aead_stream"
+path = "src/aead_stream.rs"
+
 [profile.release]
 opt-level = 3
