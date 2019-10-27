@@ -101,8 +101,8 @@ pub mod typedefs {
         );
 
         assert_ne!(sk_rand, [0u8; BLAKE2B_KEYSIZE].as_ref());
-        assert_eq!(sk_rand.unprotected_as_bytes().len(), BLAKE2B_KEYSIZE);
-        assert_eq!(sk_rand.len(), BLAKE2B_KEYSIZE);
+        assert_eq!(sk_rand.unprotected_as_bytes().len(), BLAKE2B_KEYSIZE / 2);
+        assert_eq!(sk_rand.len(), BLAKE2B_KEYSIZE / 2);
     }
 
     pub fn fuzz_sha512_digest(fuzzer_input: &[u8]) {
