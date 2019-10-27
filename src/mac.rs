@@ -2,7 +2,7 @@
 extern crate honggfuzz;
 extern crate orion;
 extern crate ring;
-extern crate sodiumoxide; // For Poly1305 // For HMAC
+extern crate sodiumoxide; // For Poly1305
 pub mod utils;
 
 use orion::hazardous::hash::sha512::SHA512_BLOCKSIZE;

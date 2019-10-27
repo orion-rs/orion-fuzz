@@ -17,33 +17,33 @@ fn fuzz_blake2b_non_keyed(fuzzer_input: &[u8], outsize: usize) {
         return;
     }
 
-    let mut context = blake2_rfc::blake2b::Blake2b::new(outsize);
-    context.update(fuzzer_input);
+    let mut other = blake2_rfc::blake2b::Blake2b::new(outsize);
+    other.update(fuzzer_input);
 
-    let mut state = blake2b::Blake2b::new(None, outsize).unwrap();
-    state.update(fuzzer_input).unwrap();
+    let mut orion = blake2b::Blake2b::new(None, outsize).unwrap();
+    orion.update(fuzzer_input).unwrap();
 
     let mut other_data: Vec<u8> = Vec::new();
     other_data.extend_from_slice(fuzzer_input);
 
     if fuzzer_input.len() > BLAKE2B_BLOCKSIZE {
-        context.update(b"");
-        state.update(b"").unwrap();
+        other.update(b"");
+        orion.update(b"").unwrap();
         other_data.extend_from_slice(b"");
     }
     if fuzzer_input.len() > BLAKE2B_BLOCKSIZE * 2 {
-        context.update(b"Extra");
-        state.update(b"Extra").unwrap();
+        other.update(b"Extra");
+        orion.update(b"Extra").unwrap();
         other_data.extend_from_slice(b"Extra");
     }
     if fuzzer_input.len() > BLAKE2B_BLOCKSIZE * 3 {
-        context.update(&[0u8; 256]);
-        state.update(&[0u8; 256]).unwrap();
+        other.update(&[0u8; 256]);
+        orion.update(&[0u8; 256]).unwrap();
         other_data.extend_from_slice(&[0u8; 256]);
     }
 
-    let other_hash = context.finalize();
-    let orion_hash = state.finalize().unwrap();
+    let other_hash = other.finalize();
+    let orion_hash = orion.finalize().unwrap();
 
     assert_eq!(other_hash.as_bytes(), orion_hash.as_ref());
 
@@ -80,33 +80,33 @@ fn fuzz_blake2b_keyed(
         return;
     }
 
-    let mut context = blake2_rfc::blake2b::Blake2b::with_key(outsize, &key);
-    context.update(fuzzer_input);
+    let mut other = blake2_rfc::blake2b::Blake2b::with_key(outsize, &key);
+    other.update(fuzzer_input);
 
-    let mut state = blake2b::Blake2b::new(Some(&orion_key), outsize).unwrap();
-    state.update(fuzzer_input).unwrap();
+    let mut orion = blake2b::Blake2b::new(Some(&orion_key), outsize).unwrap();
+    orion.update(fuzzer_input).unwrap();
 
     let mut data: Vec<u8> = Vec::with_capacity(fuzzer_input.len());
     data.extend_from_slice(fuzzer_input);
 
     if fuzzer_input.len() > BLAKE2B_BLOCKSIZE {
         data.extend_from_slice(b"");
-        context.update(b"");
-        state.update(b"").unwrap();
+        other.update(b"");
+        orion.update(b"").unwrap();
     }
     if fuzzer_input.len() > BLAKE2B_BLOCKSIZE * 2 {
         data.extend_from_slice(b"Extra");
-        context.update(b"Extra");
-        state.update(b"Extra").unwrap();
+        other.update(b"Extra");
+        orion.update(b"Extra").unwrap();
     }
     if fuzzer_input.len() > BLAKE2B_BLOCKSIZE * 3 {
         data.extend_from_slice(&[0u8; 256]);
-        context.update(&[0u8; 256]);
-        state.update(&[0u8; 256]).unwrap();
+        other.update(&[0u8; 256]);
+        orion.update(&[0u8; 256]).unwrap();
     }
 
-    let other_hash = context.finalize();
-    let orion_hash = state.finalize().unwrap();
+    let other_hash = other.finalize();
+    let orion_hash = orion.finalize().unwrap();
 
     assert_eq!(other_hash.as_bytes(), orion_hash.as_ref());
     assert!(blake2b::Blake2b::verify(&orion_hash, &orion_key, outsize, &data[..]).is_ok());
