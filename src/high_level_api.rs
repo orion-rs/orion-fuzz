@@ -94,9 +94,12 @@ fn fuzz_auth(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         assert!(orion::auth::SecretKey::from_slice(&key).is_err());
     } else {
         let auth_key = orion::auth::SecretKey::from_slice(&key).unwrap();
-        let tag = orion::auth::authenticate(&auth_key, fuzzer_input).unwrap();
-
-        assert!(orion::auth::authenticate_verify(&tag, &auth_key, fuzzer_input).is_ok());
+        if auth_key.len() < 32 || auth_key.len() > 64 {
+            assert!(orion::auth::authenticate(&auth_key, fuzzer_input).is_err());
+        } else {
+            let tag = orion::auth::authenticate(&auth_key, fuzzer_input).unwrap();
+            assert!(orion::auth::authenticate_verify(&tag, &auth_key, fuzzer_input).is_ok());
+        }
     }
 }
 
@@ -119,7 +122,7 @@ fn main() {
             fuzz_kdf(data, &mut seeded_rng);
             // Test `orion::auth`
             fuzz_auth(data, &mut seeded_rng);
-            // Test `orion::has`
+            // Test `orion::hash`
             fuzz_hash(data);
         });
     }
