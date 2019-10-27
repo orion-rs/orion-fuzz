@@ -49,7 +49,7 @@ fn fuzz_hmac(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let other_tag = context.sign();
     let orion_tag = state.finalize().unwrap();
 
-    let orion_one_shot = hmac::hmac(&orion_key, &other_data).unwrap();
+    let orion_one_shot = hmac::Hmac::hmac(&orion_key, &other_data).unwrap();
     let other_one_shot = ring::hmac::sign(&ring_key, &other_data);
 
     assert_eq!(other_tag.as_ref(), orion_tag.unprotected_as_bytes());
@@ -89,7 +89,7 @@ fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let other_tag = onetimeauth::authenticate(&other_data, &sodiumoxide_key);
     let orion_tag = state.finalize().unwrap();
 
-    let orion_one_shot = poly1305::poly1305(&orion_key, &other_data).unwrap();
+    let orion_one_shot = poly1305::Poly1305::poly1305(&orion_key, &other_data).unwrap();
 
     assert_eq!(other_tag.as_ref(), orion_tag.unprotected_as_bytes());
     assert_eq!(orion_one_shot, orion_tag);

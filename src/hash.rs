@@ -109,7 +109,7 @@ fn fuzz_blake2b_keyed(
     let orion_hash = state.finalize().unwrap();
 
     assert_eq!(other_hash.as_bytes(), orion_hash.as_ref());
-    assert!(blake2b::verify(&orion_hash, &orion_key, outsize, &data[..]).is_ok());
+    assert!(blake2b::Blake2b::verify(&orion_hash, &orion_key, outsize, &data[..]).is_ok());
 }
 
 fn fuzz_sha512(fuzzer_input: &[u8]) {
@@ -133,7 +133,7 @@ fn fuzz_sha512(fuzzer_input: &[u8]) {
     }
 
     let digest_other = ring::digest::digest(&ring::digest::SHA512, &other_data);
-    let orion_one_shot = sha512::digest(&other_data).unwrap();
+    let orion_one_shot = sha512::Sha512::digest(&other_data).unwrap();
 
     assert!(orion_one_shot.as_ref() == digest_other.as_ref());
     assert!(state.finalize().unwrap().as_ref() == digest_other.as_ref());

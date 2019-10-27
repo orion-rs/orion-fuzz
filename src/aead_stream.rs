@@ -62,8 +62,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         let (orion_tag, sodium_tag) = select_tag(seeded_rng);
         let ad = select_ad(input_chunk, seeded_rng);
 
-        let mut orion_msg: Vec<u8> =
-            vec![0u8; input_chunk.len() + ABYTES];
+        let mut orion_msg: Vec<u8> = vec![0u8; input_chunk.len() + ABYTES];
         let mut sodium_msg = orion_msg.clone();
         // Last message in the stream
         orion_state_enc
@@ -100,9 +99,8 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     for (idx, input_chunk) in collected_enc.chunks(dec_rnd_chunksize).enumerate() {
         let ad = collected_ad.get(idx).unwrap();
-        
-        let mut orion_msg: Vec<u8> =
-            vec![0u8; input_chunk.len() - ABYTES];
+
+        let mut orion_msg: Vec<u8> = vec![0u8; input_chunk.len() - ABYTES];
 
         let _orion_tag = orion_state_dec
             .open_chunk(input_chunk, Some(ad), &mut orion_msg)
