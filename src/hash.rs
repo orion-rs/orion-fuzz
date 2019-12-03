@@ -45,17 +45,17 @@ fn fuzz_blake2b_non_keyed(fuzzer_input: &[u8], outsize: usize) {
     let other_hash = other.finalize();
     let orion_hash = orion.finalize().unwrap();
 
-    assert_eq!(other_hash.as_bytes(), orion_hash.as_ref());
+    assert!(orion_hash == other_hash.as_bytes());
 
     if outsize == 32 {
         let orion_one_shot = blake2b::Hasher::Blake2b256.digest(&other_data).unwrap();
-        assert_eq!(other_hash.as_bytes(), orion_one_shot.as_ref());
+        assert!(orion_one_shot == other_hash.as_bytes());
     } else if outsize == 48 {
         let orion_one_shot = blake2b::Hasher::Blake2b384.digest(&other_data).unwrap();
-        assert_eq!(other_hash.as_bytes(), orion_one_shot.as_ref());
+        assert!(orion_one_shot == other_hash.as_bytes());
     } else if outsize == 64 {
         let orion_one_shot = blake2b::Hasher::Blake2b512.digest(&other_data).unwrap();
-        assert_eq!(other_hash.as_bytes(), orion_one_shot.as_ref());
+        assert!(orion_one_shot == other_hash.as_bytes());
     } else {
     }
 }
@@ -108,7 +108,7 @@ fn fuzz_blake2b_keyed(
     let other_hash = other.finalize();
     let orion_hash = orion.finalize().unwrap();
 
-    assert_eq!(other_hash.as_bytes(), orion_hash.as_ref());
+    assert!(orion_hash == other_hash.as_bytes());
     assert!(blake2b::Blake2b::verify(&orion_hash, &orion_key, outsize, &data[..]).is_ok());
 }
 
@@ -135,8 +135,8 @@ fn fuzz_sha512(fuzzer_input: &[u8]) {
     let digest_other = ring::digest::digest(&ring::digest::SHA512, &other_data);
     let orion_one_shot = sha512::Sha512::digest(&other_data).unwrap();
 
-    assert!(orion_one_shot.as_ref() == digest_other.as_ref());
-    assert!(state.finalize().unwrap().as_ref() == digest_other.as_ref());
+    assert!(orion_one_shot == digest_other.as_ref());
+    assert!(state.finalize().unwrap() == digest_other.as_ref());
 }
 
 fn main() {
@@ -145,8 +145,8 @@ fn main() {
             // Seed the RNG
             let mut seeded_rng = make_seeded_rng(data);
 
-            let keysize = seeded_rng.next_u32() as usize;
-            let outsize = seeded_rng.next_u32() as usize;
+            let keysize = (seeded_rng.next_u32() as u8) as usize;
+            let outsize = (seeded_rng.next_u32() as u8) as usize;
 
             // Test `orion::hazardous::hash::blake2b`
             fuzz_blake2b_keyed(data, outsize, keysize, &mut seeded_rng);
