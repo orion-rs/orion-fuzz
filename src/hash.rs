@@ -108,7 +108,7 @@ fn fuzz_blake2b_keyed(
     let other_hash = other.finalize();
     let orion_hash = orion.finalize().unwrap();
 
-    assert_eq!(other_hash.as_bytes(), orion_hash.as_ref());
+    assert!(orion_hash == other_hash.as_bytes());
     assert!(blake2b::Blake2b::verify(&orion_hash, &orion_key, outsize, &data[..]).is_ok());
 }
 
@@ -145,8 +145,8 @@ fn main() {
             // Seed the RNG
             let mut seeded_rng = make_seeded_rng(data);
 
-            let keysize = seeded_rng.next_u32() as usize;
-            let outsize = seeded_rng.next_u32() as usize;
+            let keysize = (seeded_rng.next_u32() as u8) as usize;
+            let outsize = (seeded_rng.next_u32() as u8) as usize;
 
             // Test `orion::hazardous::hash::blake2b`
             fuzz_blake2b_keyed(data, outsize, keysize, &mut seeded_rng);
