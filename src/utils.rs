@@ -18,3 +18,14 @@ pub fn make_seeded_rng(fuzzer_input: &[u8]) -> ChaChaRng {
 
     ChaChaRng::seed_from_u64(seed)
 }
+
+/// Generate random u32 within the lower and upper bound (inclusive).
+pub fn rand_in_range(rng: &mut ChaChaRng, lb: u32, ub: u32) -> u32 {
+    let mut res = rng.next_u32();
+
+    while res < lb || res > ub {
+        res = rng.next_u32();
+    }
+
+    res
+}

@@ -11,7 +11,8 @@ sodiumoxide = "0.2.5"
 ring = "0.16.9"
 blake2-rfc = "0.2.18"
 chacha = "0.3.0"
-orion = { git = "https://github.com/brycx/orion", branch = "master" }
+orion = { git = "https://github.com/brycx/orion", branch = "argon" }
+rust-argon2 = "0.7.0"
 
 [[bin]]
 name = "high_level_api"

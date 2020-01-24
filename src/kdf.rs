@@ -1,12 +1,14 @@
 #[macro_use]
 extern crate honggfuzz;
+extern crate argon2;
 extern crate orion;
 extern crate ring;
 pub mod utils;
 
+use argon2::{Config, ThreadMode, Variant, Version};
 use orion::hazardous::hash::sha512::SHA512_OUTSIZE;
-use orion::hazardous::kdf::{hkdf, pbkdf2};
-use utils::{make_seeded_rng, ChaChaRng, RngCore};
+use orion::hazardous::kdf::{argon2 as orion_argon2, hkdf, pbkdf2};
+use utils::{make_seeded_rng, rand_in_range, ChaChaRng, RngCore};
 
 /// See: https://github.com/briansmith/ring/blob/master/tests/hkdf_tests.rs
 
@@ -108,6 +110,60 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     assert_eq!(orion_dk, other_dk);
 }
 
+fn fuzz_argon2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+    let lanes = 1;
+
+    let password = fuzzer_input;
+
+    let mut salt = vec![0u8; 16];
+    seeded_rng.fill_bytes(&mut salt);
+
+    let mut secret_value = vec![0u8; 16];
+    seeded_rng.fill_bytes(&mut secret_value);
+
+    let mut associated_data = vec![0u8; 16];
+    seeded_rng.fill_bytes(&mut associated_data);
+
+    let outsize: u32 = if fuzzer_input.len() >= 4 {
+        fuzzer_input.len() as u32
+    } else {
+        32
+    };
+
+    let mem = rand_in_range(seeded_rng, 8, 8192);
+    let passes = 3;
+
+    // Other
+    let config = Config {
+        variant: Variant::Argon2i,
+        version: Version::Version13,
+        mem_cost: mem,
+        time_cost: passes,
+        lanes,
+        thread_mode: ThreadMode::Sequential,
+        secret: &secret_value,
+        ad: &associated_data,
+        hash_length: outsize,
+    };
+
+    let other_hash = argon2::hash_raw(&password[..], &salt[..], &config).unwrap();
+
+    // Orion
+    let mut dst_out = vec![0u8; outsize as usize];
+    orion_argon2::derive_key(
+        &password,
+        &salt,
+        passes,
+        mem,
+        Some(&secret_value),
+        Some(&associated_data),
+        &mut dst_out,
+    )
+    .unwrap();
+
+    assert_eq!(other_hash, dst_out);
+}
+
 fn main() {
     loop {
         fuzz!(|data: &[u8]| {
@@ -118,6 +174,8 @@ fn main() {
             fuzz_hkdf(data, &mut seeded_rng);
             // Test `orion::hazardous::kdf::pbkdf2`
             fuzz_pbkdf2(data, &mut seeded_rng);
+            // Test `orion::hazardous::kdf::argon2`
+            fuzz_argon2(data, &mut seeded_rng);
         });
     }
 }
