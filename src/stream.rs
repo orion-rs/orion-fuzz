@@ -13,10 +13,10 @@ const CHACHA_BLOCKSIZE: usize = 64;
 
 /// `orion::hazardous::stream::chacha20`
 fn fuzz_chacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let mut key = [0u8; 32];
+    let mut key = [0u8; chacha20::CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
 
-    let mut nonce = [0u8; 12];
+    let mut nonce = [0u8; chacha20::IETF_CHACHA_NONCESIZE];
     seeded_rng.fill_bytes(&mut nonce);
 
     let plaintext = if fuzzer_input.is_empty() {
@@ -60,10 +60,10 @@ fn fuzz_chacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
 /// `orion::hazardous::stream::xchacha20`
 fn fuzz_xchacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let mut key = [0u8; 32];
+    let mut key = [0u8; chacha20::CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
 
-    let mut nonce = [0u8; 24];
+    let mut nonce = [0u8; xchacha20::XCHACHA_NONCESIZE];
     seeded_rng.fill_bytes(&mut nonce);
 
     let plaintext = if fuzzer_input.is_empty() {
@@ -129,13 +129,13 @@ fn check_counter_overflow(input: &[u8], initial_counter: u32) -> bool {
 /// Because there seem to be no crates that support different initial counters,
 /// we need to test it seperately here.
 fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let mut key = [0u8; 32];
+    let mut key = [0u8; chacha20::CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
 
-    let mut nonce = [0u8; 12];
+    let mut nonce = [0u8; chacha20::IETF_CHACHA_NONCESIZE];
     seeded_rng.fill_bytes(&mut nonce);
 
-    let mut x_nonce = [0u8; 24];
+    let mut x_nonce = [0u8; xchacha20::XCHACHA_NONCESIZE];
     seeded_rng.fill_bytes(&mut x_nonce);
 
     let random_counter: u32 = seeded_rng.next_u32();
