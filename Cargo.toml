@@ -2,11 +2,12 @@
 name = "orion-fuzz"
 version = "0.1.0"
 authors = ["brycx <brycx@protonmail.com>"]
+edition = "2018"
 
 [dependencies]
 honggfuzz = "0.5.45"
+rand = "0.7.3"
 rand_chacha = "0.2.1"
-rand_core = "0.5.1"
 sodiumoxide = "0.2.5"
 ring = "0.16.9"
 blake2-rfc = "0.2.18"
