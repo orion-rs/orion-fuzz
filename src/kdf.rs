@@ -6,7 +6,7 @@ extern crate ring;
 pub mod utils;
 
 use argon2::{Config, ThreadMode, Variant, Version};
-use orion::hazardous::kdf::{argon2 as orion_argon2, hkdf, pbkdf2};
+use orion::hazardous::kdf::{argon2i as orion_argon2i, hkdf, pbkdf2};
 use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, Rng};
 
 /// See: https://github.com/briansmith/ring/blob/master/tests/hkdf_tests.rs
@@ -103,7 +103,7 @@ fn fuzz_argon2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     // orion
     let mut orion_dk = vec![0u8; outsize as usize];
-    orion_argon2::derive_key(
+    orion_argon2i::derive_key(
         &password,
         &salt,
         passes,

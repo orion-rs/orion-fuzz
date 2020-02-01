@@ -30,16 +30,19 @@ fn fuzz_pwhash(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         assert!(orion::pwhash::Password::from_slice(&password).is_err());
     } else {
         let pwhash_password = orion::pwhash::Password::from_slice(&password).unwrap();
-        let iterations: usize = seeded_rng.gen_range(0, 1000 + 1);
+        let memory: u32 = seeded_rng.gen_range(0, 1024 + 1);
+        let iterations: u32 = seeded_rng.gen_range(0, 10 + 1);
 
-        if iterations < 1 {
-            assert!(orion::pwhash::hash_password(&pwhash_password, iterations).is_err());
+        if iterations < 3 || memory < 8 {
+            assert!(orion::pwhash::hash_password(&pwhash_password, iterations, memory).is_err());
         } else {
-            let password_hash = orion::pwhash::hash_password(&pwhash_password, iterations).unwrap();
+            let password_hash =
+                orion::pwhash::hash_password(&pwhash_password, iterations, memory).unwrap();
             assert!(orion::pwhash::hash_password_verify(
                 &password_hash,
                 &pwhash_password,
-                iterations
+                iterations,
+                memory
             )
             .is_ok());
         }
@@ -62,19 +65,26 @@ fn fuzz_kdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     } else {
         let kdf_password = orion::kdf::Password::from_slice(&password).unwrap();
         let kdf_salt = orion::kdf::Salt::from_slice(&salt).unwrap();
-        let iterations: usize = seeded_rng.gen_range(0, 1000 + 1);
-        let length = seeded_rng.gen_range(0, 256 + 1);
+        let memory: u32 = seeded_rng.gen_range(0, 1024 + 1);
+        let iterations: u32 = seeded_rng.gen_range(0, 10 + 1);
+        let length: u32 = seeded_rng.gen_range(0, 768);
 
-        if (iterations == 0) || (length == 0 || (length >= u32::max_value() as usize)) {
-            assert!(orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, length).is_err());
+        if iterations < 3 || length < 4 || memory < 8 || salt.len() < 8 {
+            assert!(
+                orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, memory, length)
+                    .is_err()
+            );
         } else {
+            dbg!(password, salt, iterations, memory, length);
             let password_hash =
-                orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, length).unwrap();
+                orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, memory, length)
+                    .unwrap();
             assert!(orion::kdf::derive_key_verify(
                 &password_hash,
                 &kdf_password,
                 &kdf_salt,
-                iterations
+                iterations,
+                memory
             )
             .is_ok());
         }
