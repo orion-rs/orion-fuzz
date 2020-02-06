@@ -291,15 +291,12 @@ pub mod hltypes {
     pub fn fuzz_passwordhash(fuzzer_input: &[u8]) {
         use orion::pwhash::PasswordHash;
 
-        if fuzzer_input.len() != 128 {
-            assert!(PasswordHash::from_slice(fuzzer_input).is_err());
-        } else {
-            let sk = PasswordHash::from_slice(fuzzer_input).unwrap();
-
-            assert_eq!(sk.unprotected_as_bytes(), fuzzer_input);
-            assert_eq!(sk, fuzzer_input);
-            assert_eq!(sk.unprotected_as_bytes().len(), 128);
-            assert_eq!(sk.len(), 128);
+        let input = String::from_utf8_lossy(fuzzer_input);
+        match PasswordHash::from_encoded(&input) {
+            Ok(hash) => {
+                assert!(hash.unprotected_as_encoded() == input);
+            }
+            Err(orion::errors::UnknownCryptoError) => (),
         }
     }
 }

@@ -4,40 +4,20 @@ extern crate orion;
 extern crate sodiumoxide;
 pub mod utils;
 
-use utils::{make_seeded_rng, ChaChaRng, RngCore};
-
 use orion::hazardous::aead::streaming::*;
 use orion::hazardous::stream::chacha20::SecretKey;
-
 use sodiumoxide::crypto::secretstream::xchacha20poly1305 as sodium_stream;
+use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, Rng, RngCore};
 
 /// Randomly select which tag should be passed to sealing a chunk.
 fn select_tag(seeded_rng: &mut ChaChaRng) -> (StreamTag, sodium_stream::Tag) {
-    let mut rand_select = [0u8; 1];
-    seeded_rng.fill_bytes(&mut rand_select);
-
-    if rand_select[0] <= 63u8 {
-        (StreamTag::MESSAGE, sodium_stream::Tag::Message)
-    } else if rand_select[0] <= 126u8 {
-        (StreamTag::PUSH, sodium_stream::Tag::Push)
-    } else if rand_select[0] <= 189u8 {
-        (StreamTag::REKEY, sodium_stream::Tag::Rekey)
-    } else {
-        (StreamTag::FINISH, sodium_stream::Tag::Final)
-    }
-}
-
-/// Select additional data to authenticate based on input chunk.
-fn select_ad(input_chunk: &[u8], seeded_rng: &mut ChaChaRng) -> Vec<u8> {
-    // `ad` will be both tested as Some and None as None is the same as [0u8; 0]
-    if input_chunk.is_empty() {
-        vec![0u8; 0]
-    } else if input_chunk[0] > 127 {
-        let mut tmp = vec![0u8; input_chunk.len() / 8];
-        seeded_rng.fill_bytes(&mut tmp);
-        tmp
-    } else {
-        vec![0u8; 0]
+    let rnd_choice: u8 = seeded_rng.gen_range(0, 4);
+    match rnd_choice {
+        0 => (StreamTag::MESSAGE, sodium_stream::Tag::Message),
+        1 => (StreamTag::PUSH, sodium_stream::Tag::Push),
+        2 => (StreamTag::REKEY, sodium_stream::Tag::Rekey),
+        3 => (StreamTag::FINISH, sodium_stream::Tag::Final),
+        _ => panic!("SeededRng could generated number out of bounds"),
     }
 }
 
@@ -60,7 +40,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     for input_chunk in fuzzer_input.chunks(rnd_chunksize) {
         let (orion_tag, sodium_tag) = select_tag(seeded_rng);
-        let ad = select_ad(input_chunk, seeded_rng);
+        let ad = rand_vec_in_range(seeded_rng, 0, 64);
 
         let mut orion_msg: Vec<u8> = vec![0u8; input_chunk.len() + ABYTES];
         let mut sodium_msg = orion_msg.clone();

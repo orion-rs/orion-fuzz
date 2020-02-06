@@ -6,29 +6,24 @@ pub mod utils;
 
 use orion::hazardous::aead::chacha20poly1305;
 use orion::hazardous::aead::xchacha20poly1305;
+use orion::hazardous::stream::{
+    chacha20::{CHACHA_KEYSIZE, IETF_CHACHA_NONCESIZE},
+    xchacha20::XCHACHA_NONCESIZE,
+};
 use sodiumoxide::crypto::aead::chacha20poly1305_ietf;
 use sodiumoxide::crypto::aead::xchacha20poly1305_ietf;
-use utils::{make_seeded_rng, ChaChaRng, RngCore};
+use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, RngCore};
 
-/// `orion::hazardous::aead::chacha20_poly1305`
+/// `orion::hazardous::aead::chacha20poly1305`
 fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let mut key = vec![0u8; 32];
+    let mut key = vec![0u8; CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
 
-    let mut nonce = vec![0u8; 12];
+    let mut nonce = vec![0u8; IETF_CHACHA_NONCESIZE];
     seeded_rng.fill_bytes(&mut nonce);
 
     // `ad` will be both tested as Some and None as None is the same as [0u8; 0]
-    let ad: Vec<u8> = if fuzzer_input.is_empty() {
-        vec![0u8; 0]
-    } else if fuzzer_input[0] > 127 {
-        let mut tmp = vec![0u8; fuzzer_input.len() / 8];
-        seeded_rng.fill_bytes(&mut tmp);
-        tmp
-    } else {
-        vec![0u8; 0]
-    };
-
+    let ad = rand_vec_in_range(seeded_rng, 0, 64);
     let plaintext = if fuzzer_input.is_empty() {
         &[0u8; 1]
     } else {
@@ -36,7 +31,7 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     };
 
     // orion
-    let mut ciphertext_with_tag_orion: Vec<u8> = vec![0u8; plaintext.len() + 16];
+    let mut ciphertext_with_tag_orion = vec![0u8; plaintext.len() + 16];
     let mut plaintext_out_orion = vec![0u8; plaintext.len()];
 
     let orion_key = chacha20poly1305::SecretKey::from_slice(&key).unwrap();
@@ -94,25 +89,16 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     assert_eq!(plaintext_out_orion, sodium_orion_pt);
 }
 
-/// `orion::hazardous::aead::xchacha20_poly1305`
+/// `orion::hazardous::aead::xchacha20poly1305`
 fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let mut key = vec![0u8; 32];
+    let mut key = vec![0u8; CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
 
-    let mut nonce = vec![0u8; 24];
+    let mut nonce = vec![0u8; XCHACHA_NONCESIZE];
     seeded_rng.fill_bytes(&mut nonce);
 
     // `ad` will be both tested as Some and None as None is the same as [0u8; 0]
-    let ad: Vec<u8> = if fuzzer_input.is_empty() {
-        vec![0u8; 0]
-    } else if fuzzer_input[0] > 127 {
-        let mut tmp = vec![0u8; fuzzer_input.len() / 8];
-        seeded_rng.fill_bytes(&mut tmp);
-        tmp
-    } else {
-        vec![0u8; 0]
-    };
-
+    let ad = rand_vec_in_range(seeded_rng, 0, 64);
     let plaintext = if fuzzer_input.is_empty() {
         &[0u8; 1]
     } else {
@@ -184,9 +170,9 @@ fn main() {
             // Seed the RNG
             let mut seeded_rng = make_seeded_rng(data);
 
-            // Test `orion::hazardous::aead::chacha20_poly1305`
+            // Test `orion::hazardous::aead::chacha20poly1305`
             fuzz_chacha20_poly1305(data, &mut seeded_rng);
-            // Test `orion::hazardous::aead::xchacha20_poly1305`
+            // Test `orion::hazardous::aead::xchacha20poly1305`
             fuzz_xchacha20_poly1305(data, &mut seeded_rng);
         });
     }
