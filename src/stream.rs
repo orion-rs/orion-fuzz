@@ -157,9 +157,6 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     let will_counter_overflow: bool = check_counter_overflow(&plaintext, random_counter);
 
-    // keystream_block does not increase the counter and should therefore never panic
-    let _ = chacha20::keystream_block(&orion_key, &orion_nonce, random_counter).unwrap();
-
     // If either one fails, then both should fail.
     if will_counter_overflow {
         assert!(chacha20::encrypt(
