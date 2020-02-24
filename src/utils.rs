@@ -5,7 +5,7 @@ pub use self::rand::{Rng, RngCore, SeedableRng};
 pub use self::rand_chacha::ChaChaRng;
 
 pub fn make_seeded_rng(fuzzer_input: &[u8]) -> ChaChaRng {
-    // We need 8 bytes worth of data to convet into u64, so start with zero and replace
+    // We need 8 bytes worth of data to convert into u64, so start with zero and replace
     // as much of those as there is data available.
     let mut seed_slice = [0u8; 8];
     if fuzzer_input.len() >= 8 {

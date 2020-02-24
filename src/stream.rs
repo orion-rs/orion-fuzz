@@ -127,7 +127,7 @@ fn check_counter_overflow(input: &[u8], initial_counter: u32) -> bool {
 
 /// `orion::hazardous::stream::xchacha20` + `orion::hazardous::stream::chacha20`
 /// Because there seem to be no crates that support different initial counters,
-/// we need to test it seperately here.
+/// we need to test it separately here.
 fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut key = [0u8; chacha20::CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
