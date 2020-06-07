@@ -7,7 +7,7 @@ Fuzzing is done using [honggfuzz-rs](https://github.com/rust-fuzz/honggfuzz-rs).
 To start fuzzing, you must install the same version of honggfuzz as the one  specified in the `Cargo.toml`:
 
 ```
-cargo install --force honggfuzz --vers 0.5.40
+cargo install --force honggfuzz --vers 0.5.49
 ```
 
 By default the master branch of orion is used for fuzzing. If another version needs to be fuzzed, specify the version
