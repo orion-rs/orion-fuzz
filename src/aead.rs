@@ -24,11 +24,7 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     // `ad` will be both tested as Some and None as None is the same as [0u8; 0]
     let ad = rand_vec_in_range(seeded_rng, 0, 64);
-    let plaintext = if fuzzer_input.is_empty() {
-        &[0u8; 1]
-    } else {
-        fuzzer_input
-    };
+    let plaintext = fuzzer_input;
 
     // orion
     let mut ciphertext_with_tag_orion = vec![0u8; plaintext.len() + 16];
@@ -99,11 +95,7 @@ fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     // `ad` will be both tested as Some and None as None is the same as [0u8; 0]
     let ad = rand_vec_in_range(seeded_rng, 0, 64);
-    let plaintext = if fuzzer_input.is_empty() {
-        &[0u8; 1]
-    } else {
-        fuzzer_input
-    };
+    let plaintext = fuzzer_input;
 
     // orion
     let mut ciphertext_with_tag_orion: Vec<u8> = vec![0u8; plaintext.len() + 16];
