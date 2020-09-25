@@ -39,3 +39,9 @@ RUSTFLAGS="-Z sanitizer=address" ASAN_OPTIONS="detect_odr_violation=0" HFUZZ_RUN
 where `-t 30` is in seconds.
 
 All the above examples run the `aead` target. This can be any fuzzing target in `src/` that is not `util`.
+
+#### Corpus minimization
+
+```
+HFUZZ_RUN_ARGS="--minimize" cargo hfuzz run aead
+```
