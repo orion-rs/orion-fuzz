@@ -105,7 +105,35 @@ pub mod typedefs {
         assert_eq!(sk_rand.len(), BLAKE2B_KEYSIZE / 2);
     }
 
-    // TODO: Add SHA256/384
+    pub fn fuzz_sha256_digest(fuzzer_input: &[u8]) {
+        use orion::hazardous::hash::sha2::sha256::{Digest, SHA256_OUTSIZE};
+
+        if fuzzer_input.len() != SHA256_OUTSIZE {
+            assert!(Digest::from_slice(fuzzer_input).is_err());
+        } else {
+            let hash = Digest::from_slice(fuzzer_input).unwrap();
+
+            assert_eq!(hash.as_ref(), fuzzer_input);
+            assert_eq!(hash, fuzzer_input);
+            assert_eq!(hash.as_ref().len(), fuzzer_input.len());
+            assert_eq!(hash.len(), fuzzer_input.len());
+        }
+    }
+
+    pub fn fuzz_sha384_digest(fuzzer_input: &[u8]) {
+        use orion::hazardous::hash::sha2::sha384::{Digest, SHA384_OUTSIZE};
+
+        if fuzzer_input.len() != SHA384_OUTSIZE {
+            assert!(Digest::from_slice(fuzzer_input).is_err());
+        } else {
+            let hash = Digest::from_slice(fuzzer_input).unwrap();
+
+            assert_eq!(hash.as_ref(), fuzzer_input);
+            assert_eq!(hash, fuzzer_input);
+            assert_eq!(hash.as_ref().len(), fuzzer_input.len());
+            assert_eq!(hash.len(), fuzzer_input.len());
+        }
+    }
 
     pub fn fuzz_sha512_digest(fuzzer_input: &[u8]) {
         use orion::hazardous::hash::sha2::sha512::{Digest, SHA512_OUTSIZE};
