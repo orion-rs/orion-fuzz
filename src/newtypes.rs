@@ -105,8 +105,10 @@ pub mod typedefs {
         assert_eq!(sk_rand.len(), BLAKE2B_KEYSIZE / 2);
     }
 
+    // TODO: Add SHA256/384
+
     pub fn fuzz_sha512_digest(fuzzer_input: &[u8]) {
-        use orion::hazardous::hash::sha512::{Digest, SHA512_OUTSIZE};
+        use orion::hazardous::hash::sha2::sha512::{Digest, SHA512_OUTSIZE};
 
         if fuzzer_input.len() != SHA512_OUTSIZE {
             assert!(Digest::from_slice(fuzzer_input).is_err());
@@ -121,7 +123,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_pbkdf2_password(fuzzer_input: &[u8]) {
-        use orion::hazardous::hash::sha512::{Sha512, SHA512_BLOCKSIZE, SHA512_OUTSIZE};
+        use orion::hazardous::hash::sha2::sha512::{Sha512, SHA512_BLOCKSIZE, SHA512_OUTSIZE};
         use orion::hazardous::kdf::pbkdf2::Password;
 
         let password = Password::from_slice(fuzzer_input).unwrap();
@@ -154,7 +156,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_hmac_secret_key(fuzzer_input: &[u8]) {
-        use orion::hazardous::hash::sha512::{Sha512, SHA512_BLOCKSIZE, SHA512_OUTSIZE};
+        use orion::hazardous::hash::sha2::sha512::{Sha512, SHA512_BLOCKSIZE, SHA512_OUTSIZE};
         use orion::hazardous::mac::hmac::SecretKey;
 
         let sk = SecretKey::from_slice(fuzzer_input).unwrap();
@@ -187,7 +189,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_hmac_tag(fuzzer_input: &[u8]) {
-        use orion::hazardous::hash::sha512::SHA512_OUTSIZE;
+        use orion::hazardous::hash::sha2::sha512::SHA512_OUTSIZE;
         use orion::hazardous::mac::hmac::Tag;
 
         if fuzzer_input.len() != SHA512_OUTSIZE {

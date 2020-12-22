@@ -5,7 +5,7 @@ extern crate ring;
 extern crate sodiumoxide;
 pub mod utils;
 
-use orion::hazardous::hash::sha512::SHA512_BLOCKSIZE;
+use orion::hazardous::hash::sha2::sha512::SHA512_BLOCKSIZE;
 use orion::hazardous::mac::hmac;
 use orion::hazardous::mac::poly1305;
 use sodiumoxide::crypto::onetimeauth;
