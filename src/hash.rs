@@ -6,8 +6,8 @@ extern crate ring;
 pub mod utils;
 
 use orion::hazardous::hash::sha2;
-use orion::hazardous::hash::sha2::sha512::{self, SHA512_BLOCKSIZE};
 use orion::{errors::UnknownCryptoError, hazardous::hash::blake2b};
+use std::marker::PhantomData;
 use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, Rng};
 
 const BLAKE2B_BLOCKSIZE: usize = 128;
@@ -72,21 +72,21 @@ fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 }
 
 // A wrapper trait to reduce duplicate functional test-code when fuzzing SHA256/384/512.
-trait Sha2FuzzType {
-    fn new() -> Self;
+trait Sha2FuzzType<T: PartialEq> {
+    fn reset(&mut self);
 
     fn update(&mut self, data: &[u8]) -> Result<(), UnknownCryptoError>;
 
-    fn finalize(&mut self) -> Result<T: PartialEq, UnknownCryptoError>;
+    fn finalize(&mut self) -> Result<T, UnknownCryptoError>;
 
-    fn digest(data: &[u8]) -> Result<T: PartialEq, UnknownCryptoError>;
+    fn digest(&self, data: &[u8]) -> Result<T, UnknownCryptoError>;
 
     fn get_blocksize() -> usize;
 }
 
-impl Sha2FuzzType for sha2::sha256::Sha256 {
-    fn new() -> Self {
-        return sha2::sha256::Sha256::new();
+impl Sha2FuzzType<sha2::sha256::Digest> for sha2::sha256::Sha256 {
+    fn reset(&mut self) {
+        self.reset();
     }
 
     fn update(&mut self, data: &[u8]) -> Result<(), UnknownCryptoError> {
@@ -97,7 +97,7 @@ impl Sha2FuzzType for sha2::sha256::Sha256 {
         self.finalize()
     }
 
-    fn digest(data: &[u8]) -> Result<sha2::sha256::Digest, UnknownCryptoError> {
+    fn digest(&self, data: &[u8]) -> Result<sha2::sha256::Digest, UnknownCryptoError> {
         sha2::sha256::Sha256::digest(data)
     }
 
@@ -106,9 +106,9 @@ impl Sha2FuzzType for sha2::sha256::Sha256 {
     }
 }
 
-impl Sha2FuzzType for sha2::sha384::Sha384 {
-    fn new() -> Self {
-        return sha2::sha384::Sha384::new();
+impl Sha2FuzzType<sha2::sha384::Digest> for sha2::sha384::Sha384 {
+    fn reset(&mut self) {
+        self.reset();
     }
 
     fn update(&mut self, data: &[u8]) -> Result<(), UnknownCryptoError> {
@@ -119,7 +119,7 @@ impl Sha2FuzzType for sha2::sha384::Sha384 {
         self.finalize()
     }
 
-    fn digest(data: &[u8]) -> Result<sha2::sha384::Digest, UnknownCryptoError> {
+    fn digest(&self, data: &[u8]) -> Result<sha2::sha384::Digest, UnknownCryptoError> {
         sha2::sha384::Sha384::digest(data)
     }
 
@@ -128,9 +128,9 @@ impl Sha2FuzzType for sha2::sha384::Sha384 {
     }
 }
 
-impl Sha2FuzzType for sha2::sha512::Sha512 {
-    fn new() -> Self {
-        return sha2::sha512::Sha512::new();
+impl Sha2FuzzType<sha2::sha512::Digest> for sha2::sha512::Sha512 {
+    fn reset(&mut self) {
+        self.reset();
     }
 
     fn update(&mut self, data: &[u8]) -> Result<(), UnknownCryptoError> {
@@ -141,7 +141,7 @@ impl Sha2FuzzType for sha2::sha512::Sha512 {
         self.finalize()
     }
 
-    fn digest(data: &[u8]) -> Result<sha2::sha512::Digest, UnknownCryptoError> {
+    fn digest(&self, data: &[u8]) -> Result<sha2::sha512::Digest, UnknownCryptoError> {
         sha2::sha512::Sha512::digest(data)
     }
 
@@ -150,38 +150,71 @@ impl Sha2FuzzType for sha2::sha512::Sha512 {
     }
 }
 
-fn fuzz_sha2(fuzzer_input: &[u8], orion_impl: Sha2FuzzType, ring_impl: ring::digest::Algorithm) {
-    let mut orion_ctx = orion_impl::new();
-    let mut collected_data: Vec<u8> = Vec::new();
+/// A SHA2 fuzzer.
+struct Sha2Fuzzer<R, T> {
+    _return_type: PhantomData<R>,
+    // The initial context to base further calls upon.
+    own_context: T,
 
-    collected_data.extend_from_slice(fuzzer_input);
-    orion_ctx.update(fuzzer_input).unwrap();
+    ring_digest: &'static ring::digest::Algorithm,
+}
 
-    if fuzzer_input.len() > orion_impl::get_blocksize() {
-        collected_data.extend_from_slice(b"");
-        orion_ctx.update(b"").unwrap();
-    }
-    if fuzzer_input.len() > orion_impl::get_blocksize() * 2 {
-        collected_data.extend_from_slice(b"Extra");
-        orion_ctx.update(b"Extra").unwrap();
-    }
-    if fuzzer_input.len() > orion_impl::get_blocksize() * 3 {
-        collected_data.extend_from_slice(&[0u8; 256]);
-        orion_ctx.update(&[0u8; 256]).unwrap();
-    }
-    if fuzzer_input.len() > orion_impl::get_blocksize() * 4 {
-        collected_data.extend_from_slice(vec![0u8; orion_impl::get_blocksize() - 1]);
-        orion_ctx.update(&vec![0u8; orion_impl::get_blocksize() - 1]).unwrap();
+impl<R, T> Sha2Fuzzer<R, T>
+where
+    R: PartialEq + AsRef<[u8]>,
+    T: Sha2FuzzType<R>,
+{
+    pub fn new(sha2_initial_state: T, ring_digest: &'static ring::digest::Algorithm) -> Self {
+        Self {
+            _return_type: PhantomData,
+            own_context: sha2_initial_state,
+            ring_digest,
+        }
     }
 
-    let digest_other = ring::digest::digest(&ring_impl, &collected_data);
-    let orion_one_shot = orion_impl::digest(&collected_data).unwrap();
+    /// Fuzz the Orion implementation and check results with ring.
+    pub fn fuzz(&mut self, fuzzer_input: &[u8]) {
+        // Clear the state
+        self.own_context.reset();
 
-    assert!(orion_one_shot == digest_other.as_ref());
-    assert!(orion_ctx.finalize().unwrap() == digest_other.as_ref());
+        let mut collected_data: Vec<u8> = Vec::new();
+
+        collected_data.extend_from_slice(fuzzer_input);
+        self.own_context.update(fuzzer_input).unwrap();
+
+        if fuzzer_input.len() > T::get_blocksize() {
+            collected_data.extend_from_slice(b"");
+            self.own_context.update(b"").unwrap();
+        }
+        if fuzzer_input.len() > T::get_blocksize() * 2 {
+            collected_data.extend_from_slice(b"Extra");
+            self.own_context.update(b"Extra").unwrap();
+        }
+        if fuzzer_input.len() > T::get_blocksize() * 3 {
+            collected_data.extend_from_slice(&[0u8; 256]);
+            self.own_context.update(&[0u8; 256]).unwrap();
+        }
+        if fuzzer_input.len() > T::get_blocksize() * 4 {
+            collected_data.extend_from_slice(&vec![0u8; T::get_blocksize() - 1]);
+            self.own_context
+                .update(&vec![0u8; T::get_blocksize() - 1])
+                .unwrap();
+        }
+
+        let digest_other = ring::digest::digest(self.ring_digest, &collected_data);
+        let orion_one_shot = self.own_context.digest(&collected_data).unwrap();
+
+        assert!(orion_one_shot.as_ref() == digest_other.as_ref());
+        assert!(self.own_context.finalize().unwrap().as_ref() == digest_other.as_ref());
+    }
 }
 
 fn main() {
+    // Setup SHA2
+    let mut sha256_fuzzer = Sha2Fuzzer::new(sha2::sha256::Sha256::new(), &ring::digest::SHA256);
+    let mut sha384_fuzzer = Sha2Fuzzer::new(sha2::sha384::Sha384::new(), &ring::digest::SHA384);
+    let mut sha512_fuzzer = Sha2Fuzzer::new(sha2::sha512::Sha512::new(), &ring::digest::SHA512);
+
     loop {
         fuzz!(|data: &[u8]| {
             // Seed the RNG
@@ -190,9 +223,9 @@ fn main() {
             // Test `orion::hazardous::hash::blake2b`
             fuzz_blake2b(data, &mut seeded_rng);
             // Test `orion::hazardous::hash::sha2`
-            fuzz_sha2(data, sha2::sha256::Sha256, ring::digest::SHA256);
-            fuzz_sha2(data, sha2::sha384::Sha382, ring::digest::SHA384);
-            fuzz_sha2(data, sha2::sha512::Sha512, ring::digest::SHA512);
+            sha256_fuzzer.fuzz(data);
+            sha384_fuzzer.fuzz(data);
+            sha512_fuzzer.fuzz(data);
         });
     }
 }
