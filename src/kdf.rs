@@ -6,7 +6,7 @@ extern crate ring;
 pub mod utils;
 
 use argon2::{Config, ThreadMode, Variant, Version};
-use orion::hazardous::kdf::{argon2i as orion_argon2i, hkdf, pbkdf2};
+use orion::hazardous::{hash::sha2::{sha256::{SHA256_BLOCKSIZE, SHA256_OUTSIZE}, sha384::SHA384_OUTSIZE, sha512::SHA512_OUTSIZE}, kdf::{argon2i as orion_argon2i, hkdf, pbkdf2}};
 use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, Rng};
 
 /// See: https://github.com/briansmith/ring/blob/master/tests/hkdf_tests.rs
@@ -36,8 +36,52 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let info = rand_vec_in_range(seeded_rng, 0, 128);
     let mut orion_okm = vec![0u8; outsize];
 
+    // SHA-256
+
     // orion
-    hkdf::derive_key(&salt, &ikm, Some(&info), &mut orion_okm).unwrap();
+    if orion_okm.len() > 255 * SHA256_OUTSIZE {
+        assert!(hkdf::sha256::derive_key(&salt, &ikm, Some(&info), &mut orion_okm).is_err());
+        return;
+    }
+    hkdf::sha256::derive_key(&salt, &ikm, Some(&info), &mut orion_okm).unwrap();
+
+    // ring
+    let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA256, &salt);
+    let RingHkdf(other_okm) = other_salt
+        .extract(&ikm)
+        .expand(&[&info], RingHkdf(orion_okm.len()))
+        .unwrap()
+        .into();
+
+    assert_eq!(orion_okm, other_okm);
+
+    // SHA-384
+
+    // orion
+    if orion_okm.len() > 255 * SHA384_OUTSIZE {
+        assert!(hkdf::sha384::derive_key(&salt, &ikm, Some(&info), &mut orion_okm).is_err());
+        return;
+    }
+    hkdf::sha384::derive_key(&salt, &ikm, Some(&info), &mut orion_okm).unwrap();
+
+    // ring
+    let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA384, &salt);
+    let RingHkdf(other_okm) = other_salt
+        .extract(&ikm)
+        .expand(&[&info], RingHkdf(orion_okm.len()))
+        .unwrap()
+        .into();
+
+    assert_eq!(orion_okm, other_okm);
+
+    // SHA-512
+
+    // orion
+    if orion_okm.len() > 255 * SHA512_OUTSIZE {
+        assert!(hkdf::sha512::derive_key(&salt, &ikm, Some(&info), &mut orion_okm).is_err());
+        return;
+    }
+    hkdf::sha512::derive_key(&salt, &ikm, Some(&info), &mut orion_okm).unwrap();
 
     // ring
     let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA512, &salt);
@@ -59,9 +103,45 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut orion_dk = vec![0u8; outsize];
     let mut other_dk = vec![0u8; outsize];
 
+    // SHA-256
+
     // orion
-    let orion_password = pbkdf2::Password::from_slice(&password).unwrap();
-    pbkdf2::derive_key(&orion_password, &salt, iterations as usize, &mut orion_dk).unwrap();
+    let orion_password = pbkdf2::sha256::Password::from_slice(&password).unwrap();
+    pbkdf2::sha256::derive_key(&orion_password, &salt, iterations as usize, &mut orion_dk).unwrap();
+
+    // ring
+    ring::pbkdf2::derive(
+        ring::pbkdf2::PBKDF2_HMAC_SHA256,
+        std::num::NonZeroU32::new(iterations).unwrap(),
+        &salt,
+        &password,
+        &mut other_dk,
+    );
+
+    assert_eq!(orion_dk, other_dk);
+
+    // SHA-384
+
+    // orion
+    let orion_password = pbkdf2::sha384::Password::from_slice(&password).unwrap();
+    pbkdf2::sha384::derive_key(&orion_password, &salt, iterations as usize, &mut orion_dk).unwrap();
+
+    // ring
+    ring::pbkdf2::derive(
+        ring::pbkdf2::PBKDF2_HMAC_SHA384,
+        std::num::NonZeroU32::new(iterations).unwrap(),
+        &salt,
+        &password,
+        &mut other_dk,
+    );
+
+    assert_eq!(orion_dk, other_dk);
+
+    // SHA-512
+
+    // orion
+    let orion_password = pbkdf2::sha512::Password::from_slice(&password).unwrap();
+    pbkdf2::sha512::derive_key(&orion_password, &salt, iterations as usize, &mut orion_dk).unwrap();
 
     // ring
     ring::pbkdf2::derive(
@@ -128,7 +208,7 @@ fn main() {
             // Test `orion::hazardous::kdf::pbkdf2`
             fuzz_pbkdf2(data, &mut seeded_rng);
             // Test `orion::hazardous::kdf::argon2`
-            fuzz_argon2(data, &mut seeded_rng);
+            //fuzz_argon2(data, &mut seeded_rng);
         });
     }
 }
