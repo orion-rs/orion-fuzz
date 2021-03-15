@@ -41,8 +41,6 @@ fn fuzz_pwhash(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             assert!(orion::pwhash::hash_password_verify(
                 &password_hash,
                 &pwhash_password,
-                iterations,
-                memory
             )
             .is_ok());
         }
