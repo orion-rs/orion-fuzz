@@ -70,17 +70,13 @@ fn fuzz_kdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             );
         } else {
             dbg!(password, salt, iterations, memory, length);
-            let password_hash =
+            let password_hash_first =
                 orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, memory, length)
                     .unwrap();
-            assert!(orion::kdf::derive_key_verify(
-                &password_hash,
-                &kdf_password,
-                &kdf_salt,
-                iterations,
-                memory
-            )
-            .is_ok());
+                let password_hash_second =
+                    orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, memory, length)
+                        .unwrap();
+            assert_eq!(password_hash_first, password_hash_second);
         }
     }
 }
