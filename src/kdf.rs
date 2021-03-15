@@ -182,7 +182,7 @@ fn fuzz_argon2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         hash_length: outsize,
     };
 
-    let other_dk = argon2::hash_raw(&password[..], &salt[..], &config).unwrap();
+    let other_dk = argon2::hash_raw(password, &salt[..], &config).unwrap();
 
     // orion
     let mut orion_dk = vec![0u8; outsize as usize];
@@ -211,7 +211,7 @@ fn main() {
             // Test `orion::hazardous::kdf::pbkdf2`
             fuzz_pbkdf2(data, &mut seeded_rng);
             // Test `orion::hazardous::kdf::argon2`
-            //fuzz_argon2(data, &mut seeded_rng);
+            fuzz_argon2(data, &mut seeded_rng);
         });
     }
 }
