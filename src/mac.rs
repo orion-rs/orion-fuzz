@@ -13,7 +13,6 @@ use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, RngCore};
 
 const POLY1305_BLOCKSIZE: usize = 16;
 
-
 fn fuzz_hmac_sha256(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let key = rand_vec_in_range(seeded_rng, 0, 256);
 
@@ -57,7 +56,6 @@ fn fuzz_hmac_sha256(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     assert_eq!(other_one_shot.as_ref(), orion_tag.unprotected_as_bytes());
 }
 
-
 fn fuzz_hmac_sha384(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let key = rand_vec_in_range(seeded_rng, 0, 256);
 
@@ -100,7 +98,6 @@ fn fuzz_hmac_sha384(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     assert_eq!(orion_one_shot, orion_tag);
     assert_eq!(other_one_shot.as_ref(), orion_tag.unprotected_as_bytes());
 }
-
 
 fn fuzz_hmac_sha512(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let key = rand_vec_in_range(seeded_rng, 0, 256);

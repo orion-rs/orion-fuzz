@@ -6,7 +6,10 @@ extern crate ring;
 pub mod utils;
 
 use argon2::{Config, ThreadMode, Variant, Version};
-use orion::hazardous::{hash::sha2::{sha256::{SHA256_BLOCKSIZE, SHA256_OUTSIZE}, sha384::SHA384_OUTSIZE, sha512::SHA512_OUTSIZE}, kdf::{argon2i as orion_argon2i, hkdf, pbkdf2}};
+use orion::hazardous::{
+    hash::sha2::{sha256::SHA256_OUTSIZE, sha384::SHA384_OUTSIZE, sha512::SHA512_OUTSIZE},
+    kdf::{argon2i as orion_argon2i, hkdf, pbkdf2},
+};
 use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, Rng};
 
 /// See: https://github.com/briansmith/ring/blob/master/tests/hkdf_tests.rs
@@ -29,7 +32,7 @@ impl From<ring::hkdf::Okm<'_, RingHkdf<usize>>> for RingHkdf<Vec<u8>> {
 }
 
 fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1, 16320 + 1);
+    let outsize: usize = seeded_rng.gen_range(1..=16320);
 
     let ikm = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 0, 128);
@@ -95,8 +98,8 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 }
 
 fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1, 256 + 1);
-    let iterations: u32 = seeded_rng.gen_range(1, 1000 + 1);
+    let outsize: usize = seeded_rng.gen_range(1..=256);
+    let iterations: u32 = seeded_rng.gen_range(1..=1000);
 
     let password = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 0, 128);
@@ -157,9 +160,9 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
 fn fuzz_argon2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let lanes = 1;
-    let outsize: u32 = seeded_rng.gen_range(4, 256 + 1);
-    let memory: u32 = seeded_rng.gen_range(8, 1024 + 1);
-    let passes: u32 = seeded_rng.gen_range(1, 10 + 1);
+    let outsize: u32 = seeded_rng.gen_range(4..=256);
+    let memory: u32 = seeded_rng.gen_range(8..=1024);
+    let passes: u32 = seeded_rng.gen_range(1..=10);
 
     let password = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 8, 32);
