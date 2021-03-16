@@ -73,9 +73,9 @@ fn fuzz_kdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             let password_hash_first =
                 orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, memory, length)
                     .unwrap();
-                let password_hash_second =
-                    orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, memory, length)
-                        .unwrap();
+            let password_hash_second =
+                orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, memory, length)
+                    .unwrap();
             assert_eq!(password_hash_first, password_hash_second);
         }
     }
