@@ -21,7 +21,7 @@ pub fn make_seeded_rng(fuzzer_input: &[u8]) -> ChaChaRng {
 
 /// Generate a vector of random length within the lower and upper bound (both inclusive) and fill it with random data.
 pub fn rand_vec_in_range(seeded_rng: &mut ChaChaRng, lb: usize, ub: usize) -> Vec<u8> {
-    let rand_len: usize = seeded_rng.gen_range(lb, ub + 1);
+    let rand_len: usize = seeded_rng.gen_range(lb..=ub);
     let mut bytes = vec![0u8; rand_len];
     seeded_rng.fill_bytes(&mut bytes);
 
