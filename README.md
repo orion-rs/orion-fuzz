@@ -1,4 +1,4 @@
-These are fuzzing targets for fuzzing [orion](https://github.com/brycx/orion).
+These are fuzzing targets for fuzzing [orion](https://github.com/orion-rs/orion).
 
 Fuzzing is done using [honggfuzz-rs](https://github.com/rust-fuzz/honggfuzz-rs).
 
@@ -10,7 +10,7 @@ To start fuzzing, you must install the same version of honggfuzz as the one  spe
 cargo install --force honggfuzz --vers 0.5.51
 ```
 
-By default the master branch of orion is used for fuzzing. If another version needs to be fuzzed, specify the version
+By default, the master branch of orion is used for fuzzing. If another version needs to be fuzzed, specify the version
 in the `Cargo.toml` accordingly.
 
 Some fuzzing targets use [sodiumoxide](https://github.com/sodiumoxide/sodiumoxide) to cross-verify results. Any target 
