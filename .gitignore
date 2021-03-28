@@ -10,3 +10,5 @@ Cargo.lock
 **/*.rs.bk
 
 /hfuzz_target/
+
+.idea/

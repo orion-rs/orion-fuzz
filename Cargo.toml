@@ -12,7 +12,7 @@ sodiumoxide = "0.2.6"
 ring = "0.16.20"
 blake2-rfc = "0.2.18"
 chacha = "0.3.0"
-orion = { git = "https://github.com/orion-rs/orion", branch = "v016" }
+orion = { git = "https://github.com/orion-rs/orion", branch = "master" }
 rust-argon2 = "0.8.3"
 
 [[bin]]
