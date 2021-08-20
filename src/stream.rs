@@ -33,7 +33,7 @@ fn fuzz_chacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut orion_ct = vec![0u8; plaintext.len()];
 
     // Counter must be 0, as that is what the chacha crate uses.
-    chacha20::encrypt(&orion_key, &orion_nonce, 0, &plaintext, &mut orion_ct).unwrap();
+    chacha20::encrypt(&orion_key, &orion_nonce, 0, plaintext, &mut orion_ct).unwrap();
     chacha20::decrypt(&orion_key, &orion_nonce, 0, &orion_ct, &mut orion_pt).unwrap();
     assert_eq!(&orion_pt[..], plaintext);
 
@@ -80,7 +80,7 @@ fn fuzz_xchacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut orion_ct = vec![0u8; plaintext.len()];
 
     // Counter must be 0, as that is what the chacha crate uses.
-    xchacha20::encrypt(&orion_key, &orion_nonce, 0, &plaintext, &mut orion_ct).unwrap();
+    xchacha20::encrypt(&orion_key, &orion_nonce, 0, plaintext, &mut orion_ct).unwrap();
     xchacha20::decrypt(&orion_key, &orion_nonce, 0, &orion_ct, &mut orion_pt).unwrap();
     assert_eq!(&orion_pt[..], plaintext);
 
@@ -155,7 +155,7 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let mut orion_ct = vec![0u8; plaintext.len()];
     let mut x_orion_ct = vec![0u8; plaintext.len()];
 
-    let will_counter_overflow: bool = check_counter_overflow(&plaintext, random_counter);
+    let will_counter_overflow: bool = check_counter_overflow(plaintext, random_counter);
 
     // If either one fails, then both should fail.
     if will_counter_overflow {
@@ -163,7 +163,7 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             &orion_key,
             &orion_nonce,
             random_counter,
-            &plaintext,
+            plaintext,
             &mut orion_ct
         )
         .is_err());
@@ -171,7 +171,7 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             &orion_key,
             &x_orion_nonce,
             random_counter,
-            &plaintext,
+            plaintext,
             &mut x_orion_ct
         )
         .is_err());
@@ -180,7 +180,7 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             &orion_key,
             &orion_nonce,
             random_counter,
-            &plaintext,
+            plaintext,
             &mut orion_ct,
         )
         .unwrap();
@@ -188,7 +188,7 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
             &orion_key,
             &x_orion_nonce,
             random_counter,
-            &plaintext,
+            plaintext,
             &mut x_orion_ct,
         )
         .unwrap();

@@ -11,7 +11,7 @@ pub fn make_seeded_rng(fuzzer_input: &[u8]) -> ChaChaRng {
     if fuzzer_input.len() >= 8 {
         seed_slice.copy_from_slice(&fuzzer_input[..8]);
     } else {
-        seed_slice[..fuzzer_input.len()].copy_from_slice(&fuzzer_input);
+        seed_slice[..fuzzer_input.len()].copy_from_slice(fuzzer_input);
     }
 
     let seed: u64 = u64::from_le_bytes(seed_slice);

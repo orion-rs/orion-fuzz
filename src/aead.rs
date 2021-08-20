@@ -36,7 +36,7 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     chacha20poly1305::seal(
         &orion_key,
         &orion_nonce,
-        &plaintext,
+        plaintext,
         Some(&ad),
         &mut ciphertext_with_tag_orion,
     )
@@ -55,7 +55,7 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let sodium_nonce = chacha20poly1305_ietf::Nonce::from_slice(&nonce).unwrap();
 
     let sodium_ct_with_tag =
-        chacha20poly1305_ietf::seal(&plaintext, Some(&ad), &sodium_nonce, &sodium_key);
+        chacha20poly1305_ietf::seal(plaintext, Some(&ad), &sodium_nonce, &sodium_key);
     let sodium_pt =
         chacha20poly1305_ietf::open(&sodium_ct_with_tag, Some(&ad), &sodium_nonce, &sodium_key)
             .unwrap();
@@ -107,7 +107,7 @@ fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     xchacha20poly1305::seal(
         &orion_key,
         &orion_nonce,
-        &plaintext,
+        plaintext,
         Some(&ad),
         &mut ciphertext_with_tag_orion,
     )
@@ -126,7 +126,7 @@ fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let sodium_nonce = xchacha20poly1305_ietf::Nonce::from_slice(&nonce).unwrap();
 
     let sodium_ct_with_tag =
-        xchacha20poly1305_ietf::seal(&plaintext, Some(&ad), &sodium_nonce, &sodium_key);
+        xchacha20poly1305_ietf::seal(plaintext, Some(&ad), &sodium_nonce, &sodium_key);
     let sodium_pt =
         xchacha20poly1305_ietf::open(&sodium_ct_with_tag, Some(&ad), &sodium_nonce, &sodium_key)
             .unwrap();

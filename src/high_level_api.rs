@@ -13,7 +13,7 @@ fn fuzz_aead(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let aead_key = orion::aead::SecretKey::from_slice(&key).unwrap();
 
     if fuzzer_input.is_empty() {
-        assert!(orion::aead::seal(&aead_key, &fuzzer_input).is_err());
+        assert!(orion::aead::seal(&aead_key, fuzzer_input).is_err());
     } else {
         let aead_ciphertext = orion::aead::seal(&aead_key, fuzzer_input).unwrap();
         let aead_decrypted = orion::aead::open(&aead_key, &aead_ciphertext).unwrap();
