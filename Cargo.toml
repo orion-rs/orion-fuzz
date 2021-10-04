@@ -14,6 +14,7 @@ blake2-rfc = "0.2.18"
 chacha = "0.3.0"
 orion = { git = "https://github.com/orion-rs/orion", branch = "master" }
 rust-argon2 = "0.8.3"
+x25519-dalek = "1.2.0"
 
 [[bin]]
 name = "high_level_api"
@@ -46,6 +47,10 @@ path = "src/kdf.rs"
 [[bin]]
 name = "aead_stream"
 path = "src/aead_stream.rs"
+
+[[bin]]
+name = "ecc"
+path = "src/ecc.rs"
 
 [profile.release]
 opt-level = 3
