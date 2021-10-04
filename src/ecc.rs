@@ -5,7 +5,7 @@ extern crate x25519_dalek;
 
 use orion::hazardous::ecc::x25519;
 use std::convert::{TryFrom, TryInto};
-use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, RngCore};
+use utils::{make_seeded_rng, ChaChaRng, RngCore};
 
 pub mod utils;
 
@@ -33,8 +33,8 @@ fn fuzz_x25519(seeded_rng: &mut ChaChaRng) {
     let dalek_alice_shared = x25519_dalek::x25519(alice_k, dalek_bob_public);
     let dalek_bob_shared = x25519_dalek::x25519(bob_k, dalek_alice_public);
 
-    assert_eq!(alice_shared, &dalek_alice_shared);
-    assert_eq!(bob_shared, &dalek_bob_shared);
+    assert_eq!(alice_shared, dalek_alice_shared.as_ref());
+    assert_eq!(bob_shared, dalek_bob_shared.as_ref());
 }
 
 fn main() {
