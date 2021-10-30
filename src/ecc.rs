@@ -46,21 +46,21 @@ fn fuzz_kex() {
 
     // orion - keys
     let client_session = kex::EphemeralClientSession::new().unwrap();
-    let client_public_key = client_session.get_public();
+    let client_public_key = client_session.public_key().clone();
     let server_session = kex::EphemeralServerSession::new().unwrap();
-    let server_public_key = server_session.get_public();
+    let server_public_key = server_session.public_key();
 
     // sodiumoxide - keys
     let client_sk = kx::SecretKey::from_slice(
         client_session
-            .unprotected_private_key()
+            .private_key()
             .unprotected_as_bytes(),
     )
     .unwrap();
     let client_pk = kx::PublicKey::from_slice(&client_public_key.to_bytes()).unwrap();
     let server_sk = kx::SecretKey::from_slice(
         server_session
-            .unprotected_private_key()
+            .private_key()
             .unprotected_as_bytes(),
     )
     .unwrap();
@@ -87,19 +87,19 @@ fn fuzz_kex() {
         .unwrap();
 
     assert_eq!(
-        client_shared.get_receiving().unprotected_as_bytes(),
+        client_shared.receiving().unprotected_as_bytes(),
         client_recv.as_ref()
     );
     assert_eq!(
-        client_shared.get_transport().unprotected_as_bytes(),
+        client_shared.transport().unprotected_as_bytes(),
         client_trans.as_ref()
     );
     assert_eq!(
-        server_shared.get_receiving().unprotected_as_bytes(),
+        server_shared.receiving().unprotected_as_bytes(),
         server_recv.as_ref()
     );
     assert_eq!(
-        server_shared.get_transport().unprotected_as_bytes(),
+        server_shared.transport().unprotected_as_bytes(),
         server_trans.as_ref()
     );
 }
