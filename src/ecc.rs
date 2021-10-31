@@ -51,19 +51,11 @@ fn fuzz_kex() {
     let server_public_key = server_session.public_key();
 
     // sodiumoxide - keys
-    let client_sk = kx::SecretKey::from_slice(
-        client_session
-            .private_key()
-            .unprotected_as_bytes(),
-    )
-    .unwrap();
+    let client_sk =
+        kx::SecretKey::from_slice(client_session.private_key().unprotected_as_bytes()).unwrap();
     let client_pk = kx::PublicKey::from_slice(&client_public_key.to_bytes()).unwrap();
-    let server_sk = kx::SecretKey::from_slice(
-        server_session
-            .private_key()
-            .unprotected_as_bytes(),
-    )
-    .unwrap();
+    let server_sk =
+        kx::SecretKey::from_slice(server_session.private_key().unprotected_as_bytes()).unwrap();
     let server_pk = kx::PublicKey::from_slice(&server_public_key.to_bytes()).unwrap();
 
     // sodiumoxide - key exchange
@@ -80,7 +72,7 @@ fn fuzz_kex() {
 
     // orion - key exchange
     let client_shared = client_session
-        .establish_with_server(&server_public_key)
+        .establish_with_server(server_public_key)
         .unwrap();
     let server_shared = server_session
         .establish_with_client(&client_public_key)
