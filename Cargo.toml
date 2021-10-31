@@ -12,9 +12,15 @@ sodiumoxide = "0.2.6"
 ring = "0.16.20"
 blake2-rfc = "0.2.18"
 chacha = "0.3.0"
-orion = { git = "https://github.com/orion-rs/orion", branch = "master" }
 rust-argon2 = "0.8.3"
 x25519-dalek = "1.2.0"
+bincode = "1.3.3"
+serde = "1.0.124"
+
+[dependencies.orion]
+git = "https://github.com/orion-rs/orion"
+branch = "master"
+features = ["serde"]
 
 [[bin]]
 name = "high_level_api"
@@ -51,6 +57,10 @@ path = "src/aead_stream.rs"
 [[bin]]
 name = "ecc"
 path = "src/ecc.rs"
+
+[[bin]]
+name = "serde"
+path = "src/serde.rs"
 
 [profile.release]
 opt-level = 3
