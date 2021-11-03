@@ -12,20 +12,16 @@ use std::convert::TryFrom;
 fn fuzz_serde_impl<'a, T: Serialize + DeserializeOwned + PartialEq + Debug + TryFrom<&'a [u8]>>(
     fuzzer_input: &'a [u8],
 ) {
-    if let Ok(newtype) = T::try_from(fuzzer_input) {
-        // Serializing the raw input bytes should be the same as the newtype,
-        // because the newtype is created from the raw bytes.
-        match (
-            bincode::serialize(fuzzer_input),
-            bincode::serialize(&newtype),
-        ) {
-            (Ok(from_raw), Ok(from_type)) => {
-                assert_eq!(from_raw, from_type);
-                let newtype_roundtrip: T = bincode::deserialize(&from_raw).unwrap();
-                assert_eq!(newtype_roundtrip, newtype);
-            }
-            _ => panic!("Failed serialization after successful try_from()"),
-        }
+    // Test that serialize->deserialize roundtrip starting from a valid newtype always passes.
+    if let Ok(newtype_from_bytes) = T::try_from(fuzzer_input) {
+        let serialized = bincode::serialize(&newtype_from_bytes)
+            .expect("Failed to serialize a newtype that was successful with try_from()");
+        let newtype_roundtrip: T = bincode::deserialize(&serialized)
+            .expect("Failed to deserialized a valid serialized type");
+        assert_eq!(
+            newtype_from_bytes, newtype_roundtrip,
+            "Roundtrip gave different newtypes"
+        );
     }
 }
 
@@ -51,6 +47,7 @@ fn fuzz_serde_impl_password_hash(fuzzer_input: &[u8]) {
 fn main() {
     loop {
         fuzz!(|data: &[u8]| {
+            fuzz_serde_impl::<orion::hazardous::ecc::x25519::PublicKey>(data);
             fuzz_serde_impl::<orion::hazardous::stream::chacha20::Nonce>(data);
             fuzz_serde_impl::<orion::hazardous::stream::xchacha20::Nonce>(data);
             fuzz_serde_impl::<orion::hazardous::mac::poly1305::Tag>(data);
