@@ -54,18 +54,18 @@ fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let other_hash = other_ctx.finalize();
     let orion_hash = orion_ctx.finalize().unwrap();
 
-    assert!(orion_hash == other_hash.as_bytes());
+    assert_eq!(orion_hash, other_hash.as_bytes());
 
     if !keyed {
         if outsize == 32 {
             let orion_one_shot = blake2b::Hasher::Blake2b256.digest(&collected_data).unwrap();
-            assert!(orion_one_shot == other_hash.as_bytes());
+            assert_eq!(orion_one_shot, other_hash.as_bytes());
         } else if outsize == 48 {
             let orion_one_shot = blake2b::Hasher::Blake2b384.digest(&collected_data).unwrap();
-            assert!(orion_one_shot == other_hash.as_bytes());
+            assert_eq!(orion_one_shot, other_hash.as_bytes());
         } else if outsize == 64 {
             let orion_one_shot = blake2b::Hasher::Blake2b512.digest(&collected_data).unwrap();
-            assert!(orion_one_shot == other_hash.as_bytes());
+            assert_eq!(orion_one_shot, other_hash.as_bytes());
         } else {
         }
     }
@@ -204,8 +204,8 @@ where
         let digest_other = ring::digest::digest(self.ring_digest, &collected_data);
         let orion_one_shot = self.own_context.digest(&collected_data).unwrap();
 
-        assert!(orion_one_shot.as_ref() == digest_other.as_ref());
-        assert!(self.own_context.finalize().unwrap().as_ref() == digest_other.as_ref());
+        assert_eq!(orion_one_shot.as_ref(), digest_other.as_ref());
+        assert_eq!(self.own_context.finalize().unwrap().as_ref(), digest_other.as_ref());
     }
 }
 
