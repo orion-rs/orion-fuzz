@@ -19,7 +19,7 @@ serde = "1.0.124"
 
 [dependencies.orion]
 git = "https://github.com/orion-rs/orion"
-branch = "blakeb-tag"
+branch = "master"
 features = ["serde"]
 
 [[bin]]
