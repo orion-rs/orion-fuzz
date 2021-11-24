@@ -8,10 +8,11 @@ pub mod utils;
 use std::marker::PhantomData;
 
 use orion::errors::UnknownCryptoError;
+use orion::hazardous::mac::blake2b;
 use orion::hazardous::mac::hmac;
 use orion::hazardous::mac::poly1305;
 use sodiumoxide::crypto::onetimeauth;
-use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, RngCore};
+use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, Rng, RngCore};
 
 const POLY1305_BLOCKSIZE: usize = 16;
 
@@ -277,6 +278,47 @@ fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     assert_eq!(other_tag.as_ref(), orion_one_shot.unprotected_as_bytes());
 }
 
+const BLAKE2B_BLOCKSIZE: usize = 128;
+
+fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+    let outsize: usize = seeded_rng.gen_range(1..=64);
+
+    let mut orion_ctx: blake2b::Blake2b;
+    let mut other_ctx: blake2_rfc::blake2b::Blake2b;
+
+    let key = rand_vec_in_range(seeded_rng, 1, 64);
+    let orion_key = blake2b::SecretKey::from_slice(&key).unwrap();
+    orion_ctx = blake2b::Blake2b::new(&orion_key, outsize).unwrap();
+    other_ctx = blake2_rfc::blake2b::Blake2b::with_key(outsize, &key);
+
+    other_ctx.update(fuzzer_input);
+    orion_ctx.update(fuzzer_input).unwrap();
+
+    let mut collected_data: Vec<u8> = Vec::new();
+    collected_data.extend_from_slice(fuzzer_input);
+
+    if fuzzer_input.len() > BLAKE2B_BLOCKSIZE {
+        other_ctx.update(b"");
+        orion_ctx.update(b"").unwrap();
+        collected_data.extend_from_slice(b"");
+    }
+    if fuzzer_input.len() > BLAKE2B_BLOCKSIZE * 2 {
+        other_ctx.update(b"Extra");
+        orion_ctx.update(b"Extra").unwrap();
+        collected_data.extend_from_slice(b"Extra");
+    }
+    if fuzzer_input.len() > BLAKE2B_BLOCKSIZE * 3 {
+        other_ctx.update(&[0u8; 256]);
+        orion_ctx.update(&[0u8; 256]).unwrap();
+        collected_data.extend_from_slice(&[0u8; 256]);
+    }
+
+    let other_hash = other_ctx.finalize();
+    let orion_hash = orion_ctx.finalize().unwrap();
+
+    assert_eq!(orion_hash, other_hash.as_bytes());
+}
+
 fn main() {
     // Setup SHA2
     let hmac_sha256_fuzzer: HmacFuzzer<
@@ -306,6 +348,8 @@ fn main() {
             hmac_sha512_fuzzer.fuzz(&mut seeded_rng, data);
             // Test `orion::hazardous::mac::poly1305`
             fuzz_poly1305(data, &mut seeded_rng);
+            // Test `orion::hazardous::blake2b`
+            fuzz_blake2b(data, &mut seeded_rng);
         });
     }
 }
