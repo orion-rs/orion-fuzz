@@ -12,3 +12,5 @@ Cargo.lock
 /hfuzz_target/
 
 .idea/
+
+/hfuzz_workspace

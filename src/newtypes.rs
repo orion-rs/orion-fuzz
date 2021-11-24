@@ -70,7 +70,7 @@ pub mod typedefs {
 
     pub fn fuzz_blake2b_digest(fuzzer_input: &[u8]) {
         const BLAKE2B_OUTSIZE: usize = 64;
-        use orion::hazardous::hash::blake2b::Digest;
+        use orion::hazardous::hash::blake2::blake2b::Digest;
 
         if fuzzer_input.is_empty() || fuzzer_input.len() > BLAKE2B_OUTSIZE {
             assert!(Digest::from_slice(fuzzer_input).is_err());
@@ -85,9 +85,26 @@ pub mod typedefs {
         }
     }
 
+    pub fn fuzz_blake2b_tag(fuzzer_input: &[u8]) {
+        const BLAKE2B_OUTSIZE: usize = 64;
+        use orion::hazardous::mac::blake2b::Tag;
+
+        if fuzzer_input.is_empty() || fuzzer_input.len() > BLAKE2B_OUTSIZE {
+            assert!(Tag::from_slice(fuzzer_input).is_err());
+        } else {
+            let hash = Tag::from_slice(fuzzer_input).unwrap();
+
+            assert_eq!(hash.unprotected_as_bytes(), fuzzer_input);
+            assert_eq!(hash, fuzzer_input);
+            assert_eq!(hash.unprotected_as_bytes().len(), fuzzer_input.len());
+            assert_eq!(hash.len(), fuzzer_input.len());
+            assert!(!hash.is_empty());
+        }
+    }
+
     pub fn fuzz_blake2b_secret_key(fuzzer_input: &[u8]) {
         const BLAKE2B_KEYSIZE: usize = 64;
-        use orion::hazardous::hash::blake2b::SecretKey;
+        use orion::hazardous::mac::blake2b::SecretKey;
 
         if fuzzer_input.is_empty() || fuzzer_input.len() > BLAKE2B_KEYSIZE {
             assert!(SecretKey::from_slice(fuzzer_input).is_err());

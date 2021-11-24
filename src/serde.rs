@@ -51,13 +51,14 @@ fn main() {
             fuzz_serde_impl::<orion::hazardous::stream::chacha20::Nonce>(data);
             fuzz_serde_impl::<orion::hazardous::stream::xchacha20::Nonce>(data);
             fuzz_serde_impl::<orion::hazardous::mac::poly1305::Tag>(data);
-            fuzz_serde_impl::<orion::hazardous::hash::blake2b::Digest>(data);
+            fuzz_serde_impl::<orion::hazardous::hash::blake2::blake2b::Digest>(data);
             fuzz_serde_impl::<orion::hazardous::hash::sha2::sha256::Digest>(data);
             fuzz_serde_impl::<orion::hazardous::hash::sha2::sha384::Digest>(data);
             fuzz_serde_impl::<orion::hazardous::hash::sha2::sha512::Digest>(data);
             fuzz_serde_impl::<orion::hazardous::mac::hmac::sha256::Tag>(data);
             fuzz_serde_impl::<orion::hazardous::mac::hmac::sha384::Tag>(data);
             fuzz_serde_impl::<orion::hazardous::mac::hmac::sha512::Tag>(data);
+            fuzz_serde_impl::<orion::hazardous::mac::blake2b::Tag>(data);
             fuzz_serde_impl::<orion::kdf::Salt>(data);
             fuzz_serde_impl::<orion::auth::Tag>(data);
 
