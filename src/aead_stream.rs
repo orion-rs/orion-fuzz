@@ -51,7 +51,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         let mut sodium_msg = orion_msg.clone();
         // Last message in the stream
         orion_state_enc
-            .seal_chunk(input_chunk, Some(&ad), &mut orion_msg, orion_tag)
+            .seal_chunk(input_chunk, Some(&ad), &mut orion_msg, &orion_tag)
             .unwrap();
 
         sodium_state_enc
