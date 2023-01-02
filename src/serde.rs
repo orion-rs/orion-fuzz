@@ -28,7 +28,7 @@ fn fuzz_serde_impl<'a, T: Serialize + DeserializeOwned + PartialEq + Debug + Try
 fn fuzz_serde_impl_password_hash(fuzzer_input: &[u8]) {
     use orion::pwhash::PasswordHash;
 
-    let input = String::from_utf8_lossy(fuzzer_input).to_owned();
+    let input = String::from_utf8_lossy(fuzzer_input).into_owned();
     if let Ok(newtype) = PasswordHash::from_encoded(&input) {
         match (
             bincode::serialize(fuzzer_input),
