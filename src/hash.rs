@@ -5,7 +5,23 @@ extern crate orion;
 extern crate ring;
 pub mod utils;
 
-use orion::hazardous::hash::sha2;
+use orion::hazardous::hash::sha2::sha256::{Digest as Sha256Digest, Sha256, SHA256_BLOCKSIZE};
+use orion::hazardous::hash::sha2::sha384::{Digest as Sha384Digest, Sha384, SHA384_BLOCKSIZE};
+use orion::hazardous::hash::sha2::sha512::{Digest as Sha512Digest, Sha512, SHA512_BLOCKSIZE};
+
+use orion::hazardous::hash::sha3::sha224::{
+    Digest as Sha3_224Digest, Sha224 as Sha3_224, SHA3_224_RATE,
+};
+use orion::hazardous::hash::sha3::sha256::{
+    Digest as Sha3_256Digest, Sha256 as Sha3_256, SHA3_256_RATE,
+};
+use orion::hazardous::hash::sha3::sha384::{
+    Digest as Sha3_384Digest, Sha384 as Sha3_384, SHA3_384_RATE,
+};
+use orion::hazardous::hash::sha3::sha512::{
+    Digest as Sha3_512Digest, Sha512 as Sha3_512, SHA3_512_RATE,
+};
+
 use orion::{errors::UnknownCryptoError, hazardous::hash::blake2::blake2b};
 use std::marker::PhantomData;
 use utils::{make_seeded_rng, ChaChaRng, Rng};
@@ -74,71 +90,38 @@ trait Sha2FuzzType<T: PartialEq> {
     fn get_blocksize() -> usize;
 }
 
-impl Sha2FuzzType<sha2::sha256::Digest> for sha2::sha256::Sha256 {
-    fn reset(&mut self) {
-        self.reset();
-    }
+macro_rules! impl_sha_fuzztype_trait (($sha_variant:ident, $sha_digest:ident, $sha_bs:expr) => (
+    impl Sha2FuzzType<$sha_digest> for $sha_variant {
+        fn reset(&mut self) {
+            self.reset();
+        }
 
-    fn update(&mut self, data: &[u8]) -> Result<(), UnknownCryptoError> {
-        self.update(data)
-    }
+        fn update(&mut self, data: &[u8]) -> Result<(), UnknownCryptoError> {
+            self.update(data)
+        }
 
-    fn finalize(&mut self) -> Result<sha2::sha256::Digest, UnknownCryptoError> {
-        self.finalize()
-    }
+        fn finalize(&mut self) -> Result<$sha_digest, UnknownCryptoError> {
+            self.finalize()
+        }
 
-    fn digest(&self, data: &[u8]) -> Result<sha2::sha256::Digest, UnknownCryptoError> {
-        sha2::sha256::Sha256::digest(data)
-    }
+        fn digest(&self, data: &[u8]) -> Result<$sha_digest, UnknownCryptoError> {
+            $sha_variant::digest(data)
+        }
 
-    fn get_blocksize() -> usize {
-        sha2::sha256::SHA256_BLOCKSIZE
+        fn get_blocksize() -> usize {
+            $sha_bs
+        }
     }
-}
+));
 
-impl Sha2FuzzType<sha2::sha384::Digest> for sha2::sha384::Sha384 {
-    fn reset(&mut self) {
-        self.reset();
-    }
+impl_sha_fuzztype_trait!(Sha256, Sha256Digest, SHA256_BLOCKSIZE);
+impl_sha_fuzztype_trait!(Sha384, Sha384Digest, SHA384_BLOCKSIZE);
+impl_sha_fuzztype_trait!(Sha512, Sha512Digest, SHA512_BLOCKSIZE);
 
-    fn update(&mut self, data: &[u8]) -> Result<(), UnknownCryptoError> {
-        self.update(data)
-    }
-
-    fn finalize(&mut self) -> Result<sha2::sha384::Digest, UnknownCryptoError> {
-        self.finalize()
-    }
-
-    fn digest(&self, data: &[u8]) -> Result<sha2::sha384::Digest, UnknownCryptoError> {
-        sha2::sha384::Sha384::digest(data)
-    }
-
-    fn get_blocksize() -> usize {
-        sha2::sha384::SHA384_BLOCKSIZE
-    }
-}
-
-impl Sha2FuzzType<sha2::sha512::Digest> for sha2::sha512::Sha512 {
-    fn reset(&mut self) {
-        self.reset();
-    }
-
-    fn update(&mut self, data: &[u8]) -> Result<(), UnknownCryptoError> {
-        self.update(data)
-    }
-
-    fn finalize(&mut self) -> Result<sha2::sha512::Digest, UnknownCryptoError> {
-        self.finalize()
-    }
-
-    fn digest(&self, data: &[u8]) -> Result<sha2::sha512::Digest, UnknownCryptoError> {
-        sha2::sha512::Sha512::digest(data)
-    }
-
-    fn get_blocksize() -> usize {
-        sha2::sha512::SHA512_BLOCKSIZE
-    }
-}
+impl_sha_fuzztype_trait!(Sha3_224, Sha3_224Digest, SHA3_224_RATE);
+impl_sha_fuzztype_trait!(Sha3_256, Sha3_256Digest, SHA3_256_RATE);
+impl_sha_fuzztype_trait!(Sha3_384, Sha3_384Digest, SHA3_384_RATE);
+impl_sha_fuzztype_trait!(Sha3_512, Sha3_512Digest, SHA3_512_RATE);
 
 /// A SHA2 fuzzer.
 struct Sha2Fuzzer<R, T> {
@@ -204,9 +187,9 @@ where
 
 fn main() {
     // Setup SHA2
-    let mut sha256_fuzzer = Sha2Fuzzer::new(sha2::sha256::Sha256::new(), &ring::digest::SHA256);
-    let mut sha384_fuzzer = Sha2Fuzzer::new(sha2::sha384::Sha384::new(), &ring::digest::SHA384);
-    let mut sha512_fuzzer = Sha2Fuzzer::new(sha2::sha512::Sha512::new(), &ring::digest::SHA512);
+    let mut sha256_fuzzer = Sha2Fuzzer::new(Sha256::new(), &ring::digest::SHA256);
+    let mut sha384_fuzzer = Sha2Fuzzer::new(Sha384::new(), &ring::digest::SHA384);
+    let mut sha512_fuzzer = Sha2Fuzzer::new(Sha512::new(), &ring::digest::SHA512);
 
     loop {
         fuzz!(|data: &[u8]| {

@@ -5,7 +5,7 @@ authors = ["brycx <brycx@protonmail.com>"]
 edition = "2018"
 
 [dependencies]
-honggfuzz = "0.5.54"
+honggfuzz = "0.5.55"
 rand = "0.8.3"
 rand_chacha = "0.3.0"
 sodiumoxide = "0.2.6"
@@ -16,10 +16,11 @@ rust-argon2 = "0.8.3"
 x25519-dalek = "1.2.0"
 bincode = "1.3.3"
 serde = "1.0.124"
+sha3 = "0.10.6"
 
 [dependencies.orion]
 git = "https://github.com/orion-rs/orion"
-branch = "master"
+branch = "sha3"
 features = ["serde"]
 
 [[bin]]
