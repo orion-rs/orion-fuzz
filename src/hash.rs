@@ -85,7 +85,7 @@ trait ShaFuzzType<T: PartialEq> {
 }
 
 /// A trait for the other implementation that Orion should be fuzzed against.
-/// This is used for SHA3 as it's not compatible with the apporahc used for SHA2.
+/// This is used for SHA3 as it's not compatible with the approach used for SHA2.
 trait ShaComparableType<T>
 where
     T: AsRef<[u8]>,
@@ -249,10 +249,10 @@ where
     T: ShaFuzzType<R>,
     O: ShaComparableType<R>,
 {
-    pub fn new(sha2_initial_state: T) -> Self {
+    pub fn new(sha3_initial_state: T) -> Self {
         Self {
             _return_type: PhantomData,
-            own_context: sha2_initial_state,
+            own_context: sha3_initial_state,
             _other_impl: PhantomData,
         }
     }

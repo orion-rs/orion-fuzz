@@ -20,7 +20,7 @@ sha3 = "0.10.6"
 
 [dependencies.orion]
 git = "https://github.com/orion-rs/orion"
-branch = "master"
+branch = "shake-xofs"
 features = ["serde"]
 
 [[bin]]
@@ -62,6 +62,10 @@ path = "src/ecc.rs"
 [[bin]]
 name = "serde"
 path = "src/serde.rs"
+
+[[bin]]
+name = "xof"
+path = "src/xof.rs"
 
 [profile.release]
 opt-level = 3
