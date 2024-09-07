@@ -11,18 +11,10 @@ use orion::hazardous::hash::sha2::sha256::{Digest as Sha256Digest, Sha256, SHA25
 use orion::hazardous::hash::sha2::sha384::{Digest as Sha384Digest, Sha384, SHA384_BLOCKSIZE};
 use orion::hazardous::hash::sha2::sha512::{Digest as Sha512Digest, Sha512, SHA512_BLOCKSIZE};
 
-use orion::hazardous::hash::sha3::sha3_224::{
-    Digest as Sha3_224Digest, Sha3_224, SHA3_224_RATE,
-};
-use orion::hazardous::hash::sha3::sha3_256::{
-    Digest as Sha3_256Digest, Sha3_256, SHA3_256_RATE,
-};
-use orion::hazardous::hash::sha3::sha3_384::{
-    Digest as Sha3_384Digest, Sha3_384, SHA3_384_RATE,
-};
-use orion::hazardous::hash::sha3::sha3_512::{
-    Digest as Sha3_512Digest, Sha3_512, SHA3_512_RATE,
-};
+use orion::hazardous::hash::sha3::sha3_224::{Digest as Sha3_224Digest, Sha3_224, SHA3_224_RATE};
+use orion::hazardous::hash::sha3::sha3_256::{Digest as Sha3_256Digest, Sha3_256, SHA3_256_RATE};
+use orion::hazardous::hash::sha3::sha3_384::{Digest as Sha3_384Digest, Sha3_384, SHA3_384_RATE};
+use orion::hazardous::hash::sha3::sha3_512::{Digest as Sha3_512Digest, Sha3_512, SHA3_512_RATE};
 
 use orion::{errors::UnknownCryptoError, hazardous::hash::blake2::blake2b};
 use std::marker::PhantomData;
