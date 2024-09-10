@@ -20,7 +20,7 @@ sha3 = "0.10.6"
 
 [dependencies.orion]
 git = "https://github.com/orion-rs/orion"
-branch = "shake-xofs"
+branch = "master"
 features = ["serde"]
 
 [[bin]]
