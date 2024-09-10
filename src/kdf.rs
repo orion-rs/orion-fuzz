@@ -5,7 +5,7 @@ extern crate orion;
 extern crate ring;
 pub mod utils;
 
-use argon2::{Config, ThreadMode, Variant, Version};
+use argon2::{Config, Variant, Version};
 use orion::hazardous::{
     hash::sha2::{sha256::SHA256_OUTSIZE, sha384::SHA384_OUTSIZE, sha512::SHA512_OUTSIZE},
     kdf::{argon2i as orion_argon2i, hkdf, pbkdf2},
@@ -176,7 +176,6 @@ fn fuzz_argon2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         mem_cost: memory,
         time_cost: passes,
         lanes,
-        thread_mode: ThreadMode::Sequential,
         secret: &secret,
         ad: &ad,
         hash_length: outsize,

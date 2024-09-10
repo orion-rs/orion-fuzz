@@ -11,18 +11,10 @@ use orion::hazardous::hash::sha2::sha256::{Digest as Sha256Digest, Sha256, SHA25
 use orion::hazardous::hash::sha2::sha384::{Digest as Sha384Digest, Sha384, SHA384_BLOCKSIZE};
 use orion::hazardous::hash::sha2::sha512::{Digest as Sha512Digest, Sha512, SHA512_BLOCKSIZE};
 
-use orion::hazardous::hash::sha3::sha3_224::{
-    Digest as Sha3_224Digest, Sha3_224, SHA3_224_RATE,
-};
-use orion::hazardous::hash::sha3::sha3_256::{
-    Digest as Sha3_256Digest, Sha3_256, SHA3_256_RATE,
-};
-use orion::hazardous::hash::sha3::sha3_384::{
-    Digest as Sha3_384Digest, Sha3_384, SHA3_384_RATE,
-};
-use orion::hazardous::hash::sha3::sha3_512::{
-    Digest as Sha3_512Digest, Sha3_512, SHA3_512_RATE,
-};
+use orion::hazardous::hash::sha3::sha3_224::{Digest as Sha3_224Digest, Sha3_224, SHA3_224_RATE};
+use orion::hazardous::hash::sha3::sha3_256::{Digest as Sha3_256Digest, Sha3_256, SHA3_256_RATE};
+use orion::hazardous::hash::sha3::sha3_384::{Digest as Sha3_384Digest, Sha3_384, SHA3_384_RATE};
+use orion::hazardous::hash::sha3::sha3_512::{Digest as Sha3_512Digest, Sha3_512, SHA3_512_RATE};
 
 use orion::{errors::UnknownCryptoError, hazardous::hash::blake2::blake2b};
 use std::marker::PhantomData;
@@ -93,7 +85,7 @@ trait ShaFuzzType<T: PartialEq> {
 }
 
 /// A trait for the other implementation that Orion should be fuzzed against.
-/// This is used for SHA3 as it's not compatible with the apporahc used for SHA2.
+/// This is used for SHA3 as it's not compatible with the approach used for SHA2.
 trait ShaComparableType<T>
 where
     T: AsRef<[u8]>,
@@ -257,10 +249,10 @@ where
     T: ShaFuzzType<R>,
     O: ShaComparableType<R>,
 {
-    pub fn new(sha2_initial_state: T) -> Self {
+    pub fn new(sha3_initial_state: T) -> Self {
         Self {
             _return_type: PhantomData,
-            own_context: sha2_initial_state,
+            own_context: sha3_initial_state,
             _other_impl: PhantomData,
         }
     }
