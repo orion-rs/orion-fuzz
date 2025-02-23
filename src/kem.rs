@@ -10,8 +10,15 @@ use utils::{make_seeded_rng, ChaChaRng, RngCore};
 pub mod utils;
 
 /// `orion::hazardous::kem::mlkem512`
-fn fuzz_mlkem512(seeded_rng: &mut ChaChaRng) {
+fn fuzz_mlkem512(seeded_rng: &mut ChaChaRng, data: &[u8]) {
     use orion::hazardous::kem::mlkem512::*;
+
+    if let (Ok(_ek), Ok(_dk)) = (
+        EncapsulationKey::from_slice(data),
+        DecapsulationKey::unchecked_from_slice(data),
+    ) {
+        panic!("this should never happen")
+    }
 
     // Generate seeds
     let mut dz = [0u8; 64];
@@ -62,8 +69,15 @@ fn fuzz_mlkem512(seeded_rng: &mut ChaChaRng) {
 }
 
 /// `orion::hazardous::kem::mlkem768`
-fn fuzz_mlkem768(seeded_rng: &mut ChaChaRng) {
+fn fuzz_mlkem768(seeded_rng: &mut ChaChaRng, data: &[u8]) {
     use orion::hazardous::kem::mlkem768::*;
+
+    if let (Ok(_ek), Ok(_dk)) = (
+        EncapsulationKey::from_slice(data),
+        DecapsulationKey::unchecked_from_slice(data),
+    ) {
+        panic!("this should never happen")
+    }
 
     // Generate seeds
     let mut dz = [0u8; 64];
@@ -114,8 +128,15 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaChaRng) {
 }
 
 /// `orion::hazardous::kem::mlkem1024`
-fn fuzz_mlkem1024(seeded_rng: &mut ChaChaRng) {
+fn fuzz_mlkem1024(seeded_rng: &mut ChaChaRng, data: &[u8]) {
     use orion::hazardous::kem::mlkem1024::*;
+
+    if let (Ok(_ek), Ok(_dk)) = (
+        EncapsulationKey::from_slice(data),
+        DecapsulationKey::unchecked_from_slice(data),
+    ) {
+        panic!("this should never happen")
+    }
 
     // Generate seeds
     let mut dz = [0u8; 64];
@@ -172,9 +193,9 @@ fn main() {
             let mut seeded_rng = make_seeded_rng(data);
 
             // Test `orion::hazardous::kem::mlkem*`
-            fuzz_mlkem512(&mut seeded_rng);
-            fuzz_mlkem768(&mut seeded_rng);
-            fuzz_mlkem1024(&mut seeded_rng);
+            fuzz_mlkem512(&mut seeded_rng, data);
+            fuzz_mlkem768(&mut seeded_rng, data);
+            fuzz_mlkem1024(&mut seeded_rng, data);
         });
     }
 }
