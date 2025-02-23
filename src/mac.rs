@@ -167,6 +167,7 @@ impl HmacFuzzType<hmac::sha512::Tag, hmac::sha512::SecretKey> for hmac::sha512::
     }
 }
 
+#[derive(Clone)]
 /// A HMAC fuzzer.
 struct HmacFuzzer<R, S, T> {
     _return_type: PhantomData<R>,
@@ -179,7 +180,7 @@ impl<R, S, T> HmacFuzzer<R, S, T>
 where
     R: PartialEq + HmacTagAsBytes + core::fmt::Debug,
     S: HmacKey,
-    T: HmacFuzzType<R, S>,
+    T: HmacFuzzType<R, S> + Clone,
 {
     pub fn new(ring_digest: &'static ring::hmac::Algorithm) -> Self {
         Self {
@@ -230,6 +231,11 @@ where
             collected_data.extend_from_slice(&vec![0u8; T::get_blocksize() - 1]);
         }
 
+        let mut orion_reset_to_oneshot = orion_ctx.clone();
+        orion_reset_to_oneshot.reset();
+        orion_reset_to_oneshot.update(&collected_data).unwrap();
+        let orion_tag_with_reset = orion_reset_to_oneshot.finalize().unwrap();
+
         let other_tag = other_ctx.sign();
         let orion_tag = orion_ctx.finalize().unwrap();
 
@@ -238,6 +244,7 @@ where
 
         assert_eq!(other_tag.as_ref(), orion_tag.as_bytes());
         assert_eq!(orion_one_shot, orion_tag);
+        assert_eq!(orion_one_shot, orion_tag_with_reset);
         assert_eq!(other_one_shot.as_ref(), orion_tag.as_bytes());
     }
 }
@@ -270,11 +277,17 @@ fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         collected_data.extend_from_slice(&[0u8; 256]);
     }
 
+    let mut orion_reset_to_oneshot = orion_ctx.clone();
+    orion_reset_to_oneshot.reset();
+    orion_reset_to_oneshot.update(&collected_data).unwrap();
+    let orion_tag_with_reset = orion_reset_to_oneshot.finalize().unwrap();
+
     let other_tag = onetimeauth::authenticate(&collected_data, &sodiumoxide_key);
     let orion_tag = orion_ctx.finalize().unwrap();
     let orion_one_shot = poly1305::Poly1305::poly1305(&orion_key, &collected_data).unwrap();
 
     assert_eq!(other_tag.as_ref(), orion_tag.unprotected_as_bytes());
+    assert_eq!(orion_one_shot, orion_tag_with_reset);
     assert_eq!(other_tag.as_ref(), orion_one_shot.unprotected_as_bytes());
 }
 

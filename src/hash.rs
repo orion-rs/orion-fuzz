@@ -61,13 +61,14 @@ fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     if outsize == 32 {
         let orion_one_shot = blake2b::Hasher::Blake2b256.digest(&collected_data).unwrap();
         assert_eq!(orion_one_shot, other_hash.as_bytes());
-    } else if outsize == 48 {
+    }
+    if outsize == 48 {
         let orion_one_shot = blake2b::Hasher::Blake2b384.digest(&collected_data).unwrap();
         assert_eq!(orion_one_shot, other_hash.as_bytes());
-    } else if outsize == 64 {
+    }
+    if outsize == 64 {
         let orion_one_shot = blake2b::Hasher::Blake2b512.digest(&collected_data).unwrap();
         assert_eq!(orion_one_shot, other_hash.as_bytes());
-    } else {
     }
 }
 
