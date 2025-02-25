@@ -21,7 +21,7 @@ fips203 = "0.4.2"
 
 [dependencies.orion]
 git = "https://github.com/orion-rs/orion"
-branch = "mlkem"
+branch = "master"
 features = ["serde"]
 
 [[bin]]
