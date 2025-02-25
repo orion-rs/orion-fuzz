@@ -360,12 +360,9 @@ pub mod hltypes {
         use orion::pwhash::PasswordHash;
 
         let input = String::from_utf8_lossy(fuzzer_input);
-        match PasswordHash::from_encoded(&input) {
-            Ok(hash) => {
-                assert_eq!(hash.unprotected_as_encoded(), input);
-                assert!(!hash.is_empty());
-            }
-            Err(orion::errors::UnknownCryptoError) => (),
+        if let Ok(hash) = PasswordHash::from_encoded(&input) {
+            assert_eq!(hash.unprotected_as_encoded(), input);
+            assert!(!hash.is_empty());
         }
     }
 }
