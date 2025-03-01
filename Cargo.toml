@@ -23,7 +23,7 @@ kem = "0.3.0-pre.0"
 
 [dependencies.orion]
 git = "https://github.com/orion-rs/orion"
-branch = "xwing"
+branch = "master"
 features = ["serde"]
 
 [[bin]]
