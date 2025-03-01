@@ -186,6 +186,51 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaChaRng, data: &[u8]) {
     );
 }
 
+/// `orion::hazardous::kem::xwing`
+fn fuzz_xwing(seeded_rng: &mut ChaChaRng) {
+    use kem::{Decapsulate, Encapsulate};
+    use orion::hazardous::kem::xwing::*;
+
+    // Generate seeds
+    let mut seed = [0u8; 32];
+    seeded_rng.fill_bytes(&mut seed);
+    let mut eseed = [0u8; 64];
+    seeded_rng.fill_bytes(&mut eseed);
+
+    let orion_seed = Seed::from_slice(&seed).unwrap();
+    let orion_kp = KeyPair::try_from(&orion_seed).unwrap();
+
+    let other_decapkey = x_wing::DecapsulationKey::from(seed);
+    let other_encapkey = other_decapkey.encapsulation_key();
+    assert_eq!(
+        orion_kp.private().unprotected_as_bytes(),
+        orion_seed.unprotected_as_bytes()
+    );
+    assert_eq!(
+        orion_kp.public().as_ref(),
+        &other_encapkey.clone().as_bytes()
+    );
+
+    // We encaspulate using x-wing-crateand decapsulate with Orion
+    // because x-wing doesn't allow to deterministically encapsulate.
+    let (orion_ss, orion_ct) = XWing::encap_deterministic(orion_kp.public(), &eseed).unwrap();
+    let (other_ct, other_ss) = other_encapkey.encapsulate(seeded_rng).unwrap();
+
+    // We can't do this equivalence check becuase x-wing crate doesn't allow deterministic
+    //assert_eq!(orion_ct, &other_ct.clone().into_bytes()[..]);
+    //assert_eq!(orion_ss, &other_ss.clone().into_bytes()[..]);
+
+    let orion_ss_other =
+        XWing::decap(orion_kp.private(), &Ciphertext::from(other_ct.as_bytes())).unwrap();
+    let ctbytes: [u8; CIPHERTEXT_SIZE] = orion_ct.as_ref().try_into().unwrap();
+    let other_ss_orion = other_decapkey
+        .decapsulate(&x_wing::Ciphertext::from(&ctbytes))
+        .unwrap();
+
+    assert_eq!(orion_ss_other.unprotected_as_bytes(), &other_ss[..]);
+    assert_eq!(&other_ss_orion[..], orion_ss.unprotected_as_bytes());
+}
+
 fn main() {
     loop {
         fuzz!(|data: &[u8]| {
@@ -196,6 +241,8 @@ fn main() {
             fuzz_mlkem512(&mut seeded_rng, data);
             fuzz_mlkem768(&mut seeded_rng, data);
             fuzz_mlkem1024(&mut seeded_rng, data);
+            // Test `orion::hazardous::kem::xwing`
+            fuzz_xwing(&mut seeded_rng);
         });
     }
 }
