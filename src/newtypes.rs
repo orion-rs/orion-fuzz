@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate honggfuzz;
-extern crate orion;
 
 pub mod typedefs {
 

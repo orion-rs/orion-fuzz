@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate honggfuzz;
-extern crate chacha;
-extern crate orion;
+
 pub mod utils;
 
 use chacha::{ChaCha, KeyStream};

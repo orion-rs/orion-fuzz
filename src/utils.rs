@@ -1,8 +1,5 @@
-extern crate rand;
-extern crate rand_chacha;
-
-pub use self::rand::{Rng, RngCore, SeedableRng};
-pub use self::rand_chacha::ChaChaRng;
+pub use rand::{Rng, RngCore, SeedableRng};
+pub use rand_chacha::ChaChaRng;
 
 pub fn make_seeded_rng(fuzzer_input: &[u8]) -> ChaChaRng {
     // We need 8 bytes worth of data to convert into u64, so start with zero and replace
@@ -21,7 +18,7 @@ pub fn make_seeded_rng(fuzzer_input: &[u8]) -> ChaChaRng {
 
 /// Generate a vector of random length within the lower and upper bound (both inclusive) and fill it with random data.
 pub fn rand_vec_in_range(seeded_rng: &mut ChaChaRng, lb: usize, ub: usize) -> Vec<u8> {
-    let rand_len: usize = seeded_rng.gen_range(lb..=ub);
+    let rand_len: usize = seeded_rng.random_range(lb..=ub);
     let mut bytes = vec![0u8; rand_len];
     seeded_rng.fill_bytes(&mut bytes);
 

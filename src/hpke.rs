@@ -123,10 +123,7 @@ fn fuzz_dhkem_x25519_hkdf_sha256_modepsk(seeded_rng: &mut ChaChaRng, data: &[u8]
 
     let (other_encapsulated_key, mut other_hpke_context_sender) =
         hpke::setup_sender::<ChaCha20Poly1305, HkdfSha256, X25519HkdfSha256, _>(
-            &OpModeS::Psk(PskBundle {
-                psk: &psk,
-                psk_id: &psk_id,
-            }),
+            &OpModeS::Psk(PskBundle::new(&psk, &psk_id).unwrap()),
             &other_recipient_kp.1,
             &info,
             seeded_rng,
@@ -147,10 +144,7 @@ fn fuzz_dhkem_x25519_hkdf_sha256_modepsk(seeded_rng: &mut ChaChaRng, data: &[u8]
 
     let mut other_hpke_context_recipient =
         hpke::setup_receiver::<ChaCha20Poly1305, HkdfSha256, X25519HkdfSha256>(
-            &OpModeR::Psk(PskBundle {
-                psk: &psk,
-                psk_id: &psk_id,
-            }),
+            &OpModeR::Psk(PskBundle::new(&psk, &psk_id).unwrap()),
             &other_recipient_kp.0,
             &<X25519HkdfSha256 as Kem>::EncappedKey::from_bytes(&orion_encapped_key.to_bytes())
                 .unwrap(),
@@ -345,10 +339,7 @@ fn fuzz_dhkem_x25519_hkdf_sha256_modeauthpsk(seeded_rng: &mut ChaChaRng, data: &
         hpke::setup_sender::<ChaCha20Poly1305, HkdfSha256, X25519HkdfSha256, _>(
             &OpModeS::AuthPsk(
                 other_sender_kp.clone(),
-                PskBundle {
-                    psk: &psk,
-                    psk_id: &psk_id,
-                },
+                PskBundle::new(&psk, &psk_id).unwrap(),
             ),
             &other_recipient_kp.1,
             &info,
@@ -374,10 +365,7 @@ fn fuzz_dhkem_x25519_hkdf_sha256_modeauthpsk(seeded_rng: &mut ChaChaRng, data: &
             &OpModeR::AuthPsk(
                 <X25519HkdfSha256 as Kem>::PublicKey::from_bytes(&sender_public.to_bytes())
                     .unwrap(),
-                PskBundle {
-                    psk: &psk,
-                    psk_id: &psk_id,
-                },
+                PskBundle::new(&psk, &psk_id).unwrap(),
             ),
             &other_recipient_kp.0,
             &<X25519HkdfSha256 as Kem>::EncappedKey::from_bytes(&orion_encapped_key.to_bytes())

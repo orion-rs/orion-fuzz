@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate honggfuzz;
-extern crate orion;
-extern crate sodiumoxide;
+
 pub mod utils;
 
 use core::convert::TryFrom;
@@ -12,7 +11,7 @@ use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, Rng, RngCore};
 
 /// Randomly select which tag should be passed to sealing a chunk.
 fn select_tag(seeded_rng: &mut ChaChaRng) -> (StreamTag, sodium_stream::Tag) {
-    let rnd_choice: u8 = seeded_rng.gen_range(0..4);
+    let rnd_choice: u8 = seeded_rng.random_range(0..4);
 
     let orion_tag = StreamTag::try_from(rnd_choice).expect("UNEXPECTED: RNG range number invalid");
     let other_tag = match rnd_choice {
