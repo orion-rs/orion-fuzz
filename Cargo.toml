@@ -20,6 +20,7 @@ sha3 = "0.10.6"
 fips203 = "0.4.2"
 x-wing = "0.0.1-pre.1"
 kem = "0.3.0-pre.0"
+hpke = "0.12.0"
 
 [dependencies.orion]
 git = "https://github.com/orion-rs/orion"
@@ -73,6 +74,10 @@ path = "src/xof.rs"
 [[bin]]
 name = "kem"
 path = "src/kem.rs"
+
+[[bin]]
+name = "hpke"
+path = "src/hpke.rs"
 
 [profile.release]
 opt-level = 3
