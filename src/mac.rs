@@ -1,8 +1,5 @@
 #[macro_use]
 extern crate honggfuzz;
-extern crate orion;
-extern crate ring;
-extern crate sodiumoxide;
 pub mod utils;
 
 use std::marker::PhantomData;
@@ -294,7 +291,7 @@ fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 const BLAKE2B_BLOCKSIZE: usize = 128;
 
 fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1..=64);
+    let outsize: usize = seeded_rng.random_range(1..=64);
 
     let mut orion_ctx: blake2b::Blake2b;
     let mut other_ctx: blake2_rfc::blake2b::Blake2b;

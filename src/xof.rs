@@ -1,13 +1,12 @@
 #[macro_use]
 extern crate honggfuzz;
 
-extern crate orion;
-use sha3 as other_sha3;
-
 pub mod utils;
+
 use orion::errors::UnknownCryptoError;
 use orion::hazardous::hash::sha3::shake128::{Shake128, SHAKE_128_RATE};
 use orion::hazardous::hash::sha3::shake256::{Shake256, SHAKE_256_RATE};
+use sha3 as other_sha3;
 use std::marker::PhantomData;
 use utils::{make_seeded_rng, ChaChaRng, Rng};
 
@@ -121,8 +120,8 @@ where
         }
 
         // Incremental squeezing:
-        let dest_size: usize = seeded_rng.gen_range(1..=16320);
-        let squeeze_size: usize = seeded_rng.gen_range(1..=dest_size);
+        let dest_size: usize = seeded_rng.random_range(1..=16320);
+        let squeeze_size: usize = seeded_rng.random_range(1..=dest_size);
 
         let mut squeeze_dest_own = vec![0u8; dest_size];
         let mut squeeze_dest_other = vec![0u8; dest_size];

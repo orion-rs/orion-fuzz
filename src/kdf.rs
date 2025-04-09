@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate honggfuzz;
-extern crate argon2;
-extern crate orion;
-extern crate ring;
+
 pub mod utils;
 
 use argon2::{Config, Variant, Version};
@@ -32,7 +30,7 @@ impl From<ring::hkdf::Okm<'_, RingHkdf<usize>>> for RingHkdf<Vec<u8>> {
 }
 
 fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1..=16320);
+    let outsize: usize = seeded_rng.random_range(1..=16320);
 
     let ikm = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 0, 128);
@@ -98,8 +96,8 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 }
 
 fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1..=256);
-    let iterations: u32 = seeded_rng.gen_range(1..=1000);
+    let outsize: usize = seeded_rng.random_range(1..=256);
+    let iterations: u32 = seeded_rng.random_range(1..=1000);
 
     let password = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 0, 128);
@@ -160,9 +158,9 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
 fn fuzz_argon2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     let lanes = 1;
-    let outsize: u32 = seeded_rng.gen_range(4..=256);
-    let memory: u32 = seeded_rng.gen_range(8..=1024);
-    let passes: u32 = seeded_rng.gen_range(1..=10);
+    let outsize: u32 = seeded_rng.random_range(4..=256);
+    let memory: u32 = seeded_rng.random_range(8..=1024);
+    let passes: u32 = seeded_rng.random_range(1..=10);
 
     let password = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 8, 32);

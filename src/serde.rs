@@ -1,9 +1,5 @@
 #[macro_use]
 extern crate honggfuzz;
-extern crate bincode;
-extern crate orion;
-extern crate serde;
-
 use core::fmt::Debug;
 use serde::de::DeserializeOwned;
 use serde::Serialize;
@@ -12,14 +8,19 @@ use std::convert::TryFrom;
 fn fuzz_serde_impl<'a, T: Serialize + DeserializeOwned + PartialEq + Debug + TryFrom<&'a [u8]>>(
     fuzzer_input: &'a [u8],
 ) {
+    let config = bincode::config::standard()
+        .with_little_endian()
+        .with_fixed_int_encoding();
+
     // Test that serialize->deserialize roundtrip starting from a valid newtype always passes.
     if let Ok(newtype_from_bytes) = T::try_from(fuzzer_input) {
-        let serialized = bincode::serialize(&newtype_from_bytes)
+        let serialized = bincode::serde::encode_to_vec(&newtype_from_bytes, config)
             .expect("Failed to serialize a newtype that was successful with try_from()");
-        let newtype_roundtrip: T = bincode::deserialize(&serialized)
-            .expect("Failed to deserialized a valid serialized type");
+        let newtype_roundtrip: (T, _) =
+            bincode::serde::decode_from_slice(serialized.as_slice(), config)
+                .expect("Failed to deserialized a valid serialized type");
         assert_eq!(
-            newtype_from_bytes, newtype_roundtrip,
+            newtype_from_bytes, newtype_roundtrip.0,
             "Roundtrip gave different newtypes"
         );
     }
@@ -28,16 +29,22 @@ fn fuzz_serde_impl<'a, T: Serialize + DeserializeOwned + PartialEq + Debug + Try
 fn fuzz_serde_impl_password_hash(fuzzer_input: &[u8]) {
     use orion::pwhash::PasswordHash;
 
+    let config = bincode::config::standard()
+        .with_little_endian()
+        .with_fixed_int_encoding();
+
     let input = String::from_utf8_lossy(fuzzer_input).into_owned();
     if let Ok(newtype) = PasswordHash::from_encoded(&input) {
         match (
-            bincode::serialize(fuzzer_input),
-            bincode::serialize(&newtype),
+            bincode::serde::encode_to_vec(&fuzzer_input, config),
+            bincode::serde::encode_to_vec(&newtype, config),
         ) {
             (Ok(from_raw), Ok(from_type)) => {
                 assert_eq!(from_raw, from_type);
-                let newtype_roundtrip: PasswordHash = bincode::deserialize(&from_raw).unwrap();
-                assert_eq!(newtype_roundtrip, newtype);
+                let newtype_roundtrip: (PasswordHash, _) =
+                    bincode::serde::decode_from_slice(from_raw.as_slice(), config)
+                        .expect("Failed to deserialized a valid serialized type");
+                assert_eq!(newtype_roundtrip.0, newtype);
             }
             _ => panic!("Failed serialization after successful try_from()"),
         }

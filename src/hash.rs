@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate honggfuzz;
-extern crate blake2_rfc;
-extern crate orion;
-extern crate ring;
+
 pub mod utils;
 
 use sha3 as other_sha3;
@@ -23,7 +21,7 @@ use utils::{make_seeded_rng, ChaChaRng, Rng};
 const BLAKE2B_BLOCKSIZE: usize = 128;
 
 fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1..=64);
+    let outsize: usize = seeded_rng.random_range(1..=64);
 
     let mut orion_ctx: blake2b::Blake2b;
     let mut other_ctx: blake2_rfc::blake2b::Blake2b;
