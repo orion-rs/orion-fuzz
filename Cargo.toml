@@ -24,8 +24,8 @@ hpke = "0.12.0"
 scrypt = "0.11.0"
 
 [dependencies.orion]
-git = "https://github.com/finfet/orion"
-branch = "scrypt"
+git = "https://github.com/orion-rs/orion"
+branch = "master"
 features = ["serde"]
 
 [[bin]]
