@@ -10,7 +10,7 @@ use orion::hazardous::{
     hash::sha2::{sha256::SHA256_OUTSIZE, sha384::SHA384_OUTSIZE, sha512::SHA512_OUTSIZE},
     kdf::{argon2i as orion_argon2i, hkdf, pbkdf2, scrypt as orion_scrypt},
 };
-use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, Rng};
+use utils::*;
 
 /// See: https://github.com/briansmith/ring/blob/master/tests/hkdf_tests.rs
 /// Generic newtype wrapper that lets us implement traits for externally-defined
@@ -31,8 +31,8 @@ impl From<ring::hkdf::Okm<'_, RingHkdf<usize>>> for RingHkdf<Vec<u8>> {
     }
 }
 
-fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1..=16320);
+fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
+    let outsize: usize = seeded_rng.random_range(1..=16320);
 
     let ikm = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 0, 128);
@@ -97,9 +97,9 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     assert_eq!(orion_okm, other_okm);
 }
 
-fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1..=256);
-    let iterations: u32 = seeded_rng.gen_range(1..=1000);
+fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
+    let outsize: usize = seeded_rng.random_range(1..=256);
+    let iterations: u32 = seeded_rng.random_range(1..=1000);
 
     let password = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 0, 128);
@@ -158,11 +158,11 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     assert_eq!(orion_dk, other_dk);
 }
 
-fn fuzz_argon2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+fn fuzz_argon2(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let lanes = 1;
-    let outsize: u32 = seeded_rng.gen_range(4..=256);
-    let memory: u32 = seeded_rng.gen_range(8..=1024);
-    let passes: u32 = seeded_rng.gen_range(1..=10);
+    let outsize: u32 = seeded_rng.random_range(4..=256);
+    let memory: u32 = seeded_rng.random_range(8..=1024);
+    let passes: u32 = seeded_rng.random_range(1..=10);
 
     let password = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 8, 32);
@@ -179,6 +179,7 @@ fn fuzz_argon2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
         secret: &secret,
         ad: &ad,
         hash_length: outsize,
+        thread_mode: argon2::ThreadMode::Sequential,
     };
 
     let other_dk = argon2::hash_raw(password, &salt[..], &config).unwrap();
@@ -199,11 +200,11 @@ fn fuzz_argon2(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     assert_eq!(other_dk, orion_dk);
 }
 
-fn fuzz_scrypt(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1..=32);
-    let log2_n: u8 = seeded_rng.gen_range(1..=16);
-    let r: u32 = seeded_rng.gen_range(1..=16);
-    let p: u32 = seeded_rng.gen_range(1..=16);
+fn fuzz_scrypt(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
+    let outsize: usize = seeded_rng.random_range(1..=32);
+    let log2_n: u8 = seeded_rng.random_range(1..=16);
+    let r: u32 = seeded_rng.random_range(1..=16);
+    let p: u32 = seeded_rng.random_range(1..=16);
     let password = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 0, 64);
     let mut orion_dk = vec![0u8; outsize];
@@ -213,8 +214,7 @@ fn fuzz_scrypt(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
     orion_scrypt::derive_key(password, &salt, (1 << log2_n) as u32, r, p, &mut orion_dk).unwrap();
 
     // RustCrypto
-    let unused_min_len = 10usize; // This length isn't used here, but meant for the use of PasswordHash type they provide.
-    let params = scrypt::Params::new(log2_n, r, p, unused_min_len).unwrap();
+    let params = scrypt::Params::new(log2_n, r, p).unwrap();
     scrypt::scrypt(password, &salt, &params, &mut other_dk).unwrap();
 
     assert_eq!(orion_dk, other_dk);

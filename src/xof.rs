@@ -2,14 +2,13 @@
 extern crate honggfuzz;
 
 extern crate orion;
-use sha3 as other_sha3;
 
 pub mod utils;
 use orion::errors::UnknownCryptoError;
-use orion::hazardous::hash::sha3::shake128::{Shake128, SHAKE_128_RATE};
-use orion::hazardous::hash::sha3::shake256::{Shake256, SHAKE_256_RATE};
+use orion::hazardous::hash::sha3::shake128::{SHAKE_128_RATE, Shake128};
+use orion::hazardous::hash::sha3::shake256::{SHAKE_256_RATE, Shake256};
 use std::marker::PhantomData;
-use utils::{make_seeded_rng, ChaChaRng, Rng};
+use utils::*;
 
 // A wrapper trait to reduce duplicate functional test-code when fuzzing SHAKE128/SHAK256.
 trait XofFuzzType {
@@ -50,22 +49,22 @@ macro_rules! impl_shake_fuzztype_trait (($shake_variant:ident, $shake_bs:expr) =
 impl_shake_fuzztype_trait!(Shake128, SHAKE_128_RATE);
 impl_shake_fuzztype_trait!(Shake256, SHAKE_256_RATE);
 
-impl XofComparableType for other_sha3::Shake128 {
+impl XofComparableType for shake::Shake128 {
     fn digest(data: &[u8], dest: &mut [u8]) {
-        use other_sha3::digest::{ExtendableOutput, Update, XofReader};
+        use shake::digest::{ExtendableOutput, Update, XofReader};
 
-        let mut hasher = other_sha3::Shake128::default();
+        let mut hasher = shake::Shake128::default();
         hasher.update(data);
         let mut reader = hasher.finalize_xof();
         reader.read(dest);
     }
 }
 
-impl XofComparableType for other_sha3::Shake256 {
+impl XofComparableType for shake::Shake256 {
     fn digest(data: &[u8], dest: &mut [u8]) {
-        use other_sha3::digest::{ExtendableOutput, Update, XofReader};
+        use shake::digest::{ExtendableOutput, Update, XofReader};
 
-        let mut hasher = other_sha3::Shake256::default();
+        let mut hasher = shake::Shake256::default();
         hasher.update(data);
         let mut reader = hasher.finalize_xof();
         reader.read(dest);
@@ -92,7 +91,7 @@ where
     }
 
     /// Fuzz the Orion implementation and check results with RustCrypto's `sha3` crate.
-    pub fn fuzz(&mut self, fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+    pub fn fuzz(&mut self, fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
         // Clear the state
         self.own_context.reset();
         let mut collected_data: Vec<u8> = Vec::new();
@@ -121,8 +120,8 @@ where
         }
 
         // Incremental squeezing:
-        let dest_size: usize = seeded_rng.gen_range(1..=16320);
-        let squeeze_size: usize = seeded_rng.gen_range(1..=dest_size);
+        let dest_size: usize = seeded_rng.random_range(1..=16320);
+        let squeeze_size: usize = seeded_rng.random_range(1..=dest_size);
 
         let mut squeeze_dest_own = vec![0u8; dest_size];
         let mut squeeze_dest_other = vec![0u8; dest_size];
@@ -138,9 +137,9 @@ where
 }
 
 fn main() {
-    let mut shake128_fuzzer: ShakeFuzzer<Shake128, other_sha3::Shake128> =
+    let mut shake128_fuzzer: ShakeFuzzer<Shake128, shake::Shake128> =
         ShakeFuzzer::new(Shake128::new());
-    let mut shake256_fuzzer: ShakeFuzzer<Shake256, other_sha3::Shake256> =
+    let mut shake256_fuzzer: ShakeFuzzer<Shake256, shake::Shake256> =
         ShakeFuzzer::new(Shake256::new());
 
     loop {

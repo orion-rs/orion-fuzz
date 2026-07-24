@@ -4,13 +4,15 @@ extern crate fips203;
 extern crate orion;
 
 use fips203::traits::{Decaps, Encaps, KeyGen, SerDes};
+use kem::Decapsulator;
+use kem::KeyExport;
 use orion::hazardous::kem::*;
-use utils::{make_seeded_rng, ChaChaRng, RngCore};
+use utils::*;
 
 pub mod utils;
 
 /// `orion::hazardous::kem::mlkem512`
-fn fuzz_mlkem512(seeded_rng: &mut ChaChaRng, data: &[u8]) {
+fn fuzz_mlkem512(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::kem::mlkem512::*;
 
     if let (Ok(_ek), Ok(_dk)) = (
@@ -69,7 +71,7 @@ fn fuzz_mlkem512(seeded_rng: &mut ChaChaRng, data: &[u8]) {
 }
 
 /// `orion::hazardous::kem::mlkem768`
-fn fuzz_mlkem768(seeded_rng: &mut ChaChaRng, data: &[u8]) {
+fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::kem::mlkem768::*;
 
     if let (Ok(_ek), Ok(_dk)) = (
@@ -128,7 +130,7 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaChaRng, data: &[u8]) {
 }
 
 /// `orion::hazardous::kem::mlkem1024`
-fn fuzz_mlkem1024(seeded_rng: &mut ChaChaRng, data: &[u8]) {
+fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::kem::mlkem1024::*;
 
     if let (Ok(_ek), Ok(_dk)) = (
@@ -187,7 +189,7 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaChaRng, data: &[u8]) {
 }
 
 /// `orion::hazardous::kem::xwing`
-fn fuzz_xwing(seeded_rng: &mut ChaChaRng) {
+fn fuzz_xwing(seeded_rng: &mut ChaCha8Rng) {
     use kem::{Decapsulate, Encapsulate};
     use orion::hazardous::kem::xwing::*;
 
@@ -208,24 +210,22 @@ fn fuzz_xwing(seeded_rng: &mut ChaChaRng) {
     );
     assert_eq!(
         orion_kp.public().as_ref(),
-        &other_encapkey.clone().as_bytes()
+        other_encapkey.clone().to_bytes().as_slice()
     );
 
     // We encaspulate using x-wing-crateand decapsulate with Orion
     // because x-wing doesn't allow to deterministically encapsulate.
     let (orion_ss, orion_ct) = XWing::encap_deterministic(orion_kp.public(), &eseed).unwrap();
-    let (other_ct, other_ss) = other_encapkey.encapsulate(seeded_rng).unwrap();
+    let (other_ct, other_ss) = other_encapkey.encapsulate_with_rng(seeded_rng);
 
     // We can't do this equivalence check becuase x-wing crate doesn't allow deterministic
     //assert_eq!(orion_ct, &other_ct.clone().into_bytes()[..]);
     //assert_eq!(orion_ss, &other_ss.clone().into_bytes()[..]);
 
-    let orion_ss_other =
-        XWing::decap(orion_kp.private(), &Ciphertext::from(other_ct.as_bytes())).unwrap();
+    let orion_ss_other = XWing::decap(orion_kp.private(), &Ciphertext::from(other_ct.0)).unwrap();
     let ctbytes: [u8; CIPHERTEXT_SIZE] = orion_ct.as_ref().try_into().unwrap();
-    let other_ss_orion = other_decapkey
-        .decapsulate(&x_wing::Ciphertext::from(&ctbytes))
-        .unwrap();
+    let kemct = kem::Ciphertext::<x_wing::XWingKem>::from(ctbytes);
+    let other_ss_orion = other_decapkey.decapsulate(&x_wing::Ciphertext::try_from(kemct).unwrap());
 
     assert_eq!(orion_ss_other.unprotected_as_bytes(), &other_ss[..]);
     assert_eq!(&other_ss_orion[..], orion_ss.unprotected_as_bytes());

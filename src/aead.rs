@@ -12,10 +12,10 @@ use orion::hazardous::stream::{
 };
 use sodiumoxide::crypto::aead::chacha20poly1305_ietf;
 use sodiumoxide::crypto::aead::xchacha20poly1305_ietf;
-use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, RngCore};
+use utils::*;
 
 /// `orion::hazardous::aead::chacha20poly1305`
-fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut key = vec![0u8; CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
 
@@ -86,7 +86,7 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 }
 
 /// `orion::hazardous::aead::xchacha20poly1305`
-fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut key = vec![0u8; CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
 
