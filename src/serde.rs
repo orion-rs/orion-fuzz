@@ -5,8 +5,8 @@ extern crate orion;
 extern crate serde;
 
 use core::fmt::Debug;
-use serde::de::DeserializeOwned;
 use serde::Serialize;
+use serde::de::DeserializeOwned;
 use std::convert::TryFrom;
 
 fn fuzz_serde_impl<'a, T: Serialize + DeserializeOwned + PartialEq + Debug + TryFrom<&'a [u8]>>(

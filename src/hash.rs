@@ -7,23 +7,23 @@ pub mod utils;
 
 use sha3 as other_sha3;
 
-use orion::hazardous::hash::sha2::sha256::{Digest as Sha256Digest, Sha256, SHA256_BLOCKSIZE};
-use orion::hazardous::hash::sha2::sha384::{Digest as Sha384Digest, Sha384, SHA384_BLOCKSIZE};
-use orion::hazardous::hash::sha2::sha512::{Digest as Sha512Digest, Sha512, SHA512_BLOCKSIZE};
+use orion::hazardous::hash::sha2::sha256::{Digest as Sha256Digest, SHA256_BLOCKSIZE, Sha256};
+use orion::hazardous::hash::sha2::sha384::{Digest as Sha384Digest, SHA384_BLOCKSIZE, Sha384};
+use orion::hazardous::hash::sha2::sha512::{Digest as Sha512Digest, SHA512_BLOCKSIZE, Sha512};
 
-use orion::hazardous::hash::sha3::sha3_224::{Digest as Sha3_224Digest, Sha3_224, SHA3_224_RATE};
-use orion::hazardous::hash::sha3::sha3_256::{Digest as Sha3_256Digest, Sha3_256, SHA3_256_RATE};
-use orion::hazardous::hash::sha3::sha3_384::{Digest as Sha3_384Digest, Sha3_384, SHA3_384_RATE};
-use orion::hazardous::hash::sha3::sha3_512::{Digest as Sha3_512Digest, Sha3_512, SHA3_512_RATE};
+use orion::hazardous::hash::sha3::sha3_224::{Digest as Sha3_224Digest, SHA3_224_RATE, Sha3_224};
+use orion::hazardous::hash::sha3::sha3_256::{Digest as Sha3_256Digest, SHA3_256_RATE, Sha3_256};
+use orion::hazardous::hash::sha3::sha3_384::{Digest as Sha3_384Digest, SHA3_384_RATE, Sha3_384};
+use orion::hazardous::hash::sha3::sha3_512::{Digest as Sha3_512Digest, SHA3_512_RATE, Sha3_512};
 
 use orion::{errors::UnknownCryptoError, hazardous::hash::blake2::blake2b};
 use std::marker::PhantomData;
-use utils::{make_seeded_rng, ChaChaRng, Rng};
+use utils::*;
 
 const BLAKE2B_BLOCKSIZE: usize = 128;
 
-fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1..=64);
+fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
+    let outsize: usize = seeded_rng.random_range(1..=64);
 
     let mut orion_ctx: blake2b::Blake2b;
     let mut other_ctx: blake2_rfc::blake2b::Blake2b;

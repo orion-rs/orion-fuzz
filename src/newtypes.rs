@@ -5,7 +5,7 @@ extern crate orion;
 pub mod typedefs {
 
     pub fn fuzz_chacha20_secret_key(fuzzer_input: &[u8]) {
-        use orion::hazardous::stream::chacha20::{SecretKey, CHACHA_KEYSIZE};
+        use orion::hazardous::stream::chacha20::{CHACHA_KEYSIZE, SecretKey};
 
         if fuzzer_input.len() != CHACHA_KEYSIZE {
             assert!(SecretKey::from_slice(fuzzer_input).is_err());
@@ -29,7 +29,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_chacha20_nonce(fuzzer_input: &[u8]) {
-        use orion::hazardous::stream::chacha20::{Nonce, IETF_CHACHA_NONCESIZE};
+        use orion::hazardous::stream::chacha20::{IETF_CHACHA_NONCESIZE, Nonce};
 
         if fuzzer_input.len() != IETF_CHACHA_NONCESIZE {
             assert!(Nonce::from_slice(fuzzer_input).is_err());
@@ -179,7 +179,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_pbkdf2_sha512_password(fuzzer_input: &[u8]) {
-        use orion::hazardous::hash::sha2::sha512::{Sha512, SHA512_BLOCKSIZE, SHA512_OUTSIZE};
+        use orion::hazardous::hash::sha2::sha512::{SHA512_BLOCKSIZE, SHA512_OUTSIZE, Sha512};
         use orion::hazardous::kdf::pbkdf2::sha512::Password;
 
         let password = Password::from_slice(fuzzer_input).unwrap();
@@ -214,7 +214,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_hmac_sha512_secret_key(fuzzer_input: &[u8]) {
-        use orion::hazardous::hash::sha2::sha512::{Sha512, SHA512_BLOCKSIZE, SHA512_OUTSIZE};
+        use orion::hazardous::hash::sha2::sha512::{SHA512_BLOCKSIZE, SHA512_OUTSIZE, Sha512};
         use orion::hazardous::mac::hmac::sha512::SecretKey;
 
         let sk = SecretKey::from_slice(fuzzer_input).unwrap();
@@ -290,7 +290,7 @@ pub mod typedefs {
     }
 
     pub fn fuzz_poly1305_tag(fuzzer_input: &[u8]) {
-        use orion::hazardous::mac::poly1305::{Tag, POLY1305_OUTSIZE};
+        use orion::hazardous::mac::poly1305::{POLY1305_OUTSIZE, Tag};
 
         if fuzzer_input.len() != POLY1305_OUTSIZE {
             assert!(Tag::from_slice(fuzzer_input).is_err());

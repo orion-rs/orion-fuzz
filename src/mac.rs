@@ -12,7 +12,7 @@ use orion::hazardous::mac::blake2b;
 use orion::hazardous::mac::hmac;
 use orion::hazardous::mac::poly1305;
 use sodiumoxide::crypto::onetimeauth;
-use utils::{make_seeded_rng, rand_vec_in_range, ChaChaRng, Rng, RngCore};
+use utils::*;
 
 const POLY1305_BLOCKSIZE: usize = 16;
 
@@ -192,7 +192,7 @@ where
     }
 
     /// Fuzz the Orion implementation and check results with ring.
-    pub fn fuzz(&self, seeded_rng: &mut ChaChaRng, fuzzer_input: &[u8]) {
+    pub fn fuzz(&self, seeded_rng: &mut ChaCha8Rng, fuzzer_input: &[u8]) {
         let key = rand_vec_in_range(seeded_rng, 0, T::get_blocksize() * 2);
 
         // orion
@@ -249,7 +249,7 @@ where
     }
 }
 
-fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut key = vec![0u8; 32];
     seeded_rng.fill_bytes(&mut key);
 
@@ -293,8 +293,8 @@ fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
 const BLAKE2B_BLOCKSIZE: usize = 128;
 
-fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
-    let outsize: usize = seeded_rng.gen_range(1..=64);
+fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
+    let outsize: usize = seeded_rng.random_range(1..=64);
 
     let mut orion_ctx: blake2b::Blake2b;
     let mut other_ctx: blake2_rfc::blake2b::Blake2b;

@@ -6,12 +6,12 @@ extern crate x25519_dalek;
 
 use orion::hazardous::ecc::x25519;
 use std::convert::TryFrom;
-use utils::{make_seeded_rng, ChaChaRng, RngCore};
+use utils::*;
 
 pub mod utils;
 
 /// `orion::hazardous::ecc::x25519`
-fn fuzz_x25519(seeded_rng: &mut ChaChaRng) {
+fn fuzz_x25519(seeded_rng: &mut ChaCha8Rng) {
     // Key-agreement
     let mut alice_k = [0u8; x25519::PRIVATE_KEY_SIZE];
     let mut bob_k = [0u8; x25519::PRIVATE_KEY_SIZE];

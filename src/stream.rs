@@ -7,12 +7,12 @@ pub mod utils;
 use chacha::{ChaCha, KeyStream};
 use orion::hazardous::stream::chacha20;
 use orion::hazardous::stream::xchacha20;
-use utils::{make_seeded_rng, ChaChaRng, RngCore};
+use utils::*;
 
 const CHACHA_BLOCKSIZE: usize = 64;
 
 /// `orion::hazardous::stream::chacha20`
-fn fuzz_chacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+fn fuzz_chacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut key = [0u8; chacha20::CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
 
@@ -59,7 +59,7 @@ fn fuzz_chacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 }
 
 /// `orion::hazardous::stream::xchacha20`
-fn fuzz_xchacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+fn fuzz_xchacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut key = [0u8; chacha20::CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
 
@@ -128,7 +128,7 @@ fn check_counter_overflow(input: &[u8], initial_counter: u32) -> bool {
 /// `orion::hazardous::stream::xchacha20` + `orion::hazardous::stream::chacha20`
 /// Because there seem to be no crates that support different initial counters,
 /// we need to test it separately here.
-fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
+fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut key = [0u8; chacha20::CHACHA_KEYSIZE];
     seeded_rng.fill_bytes(&mut key);
 
@@ -159,22 +159,26 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaChaRng) {
 
     // If either one fails, then both should fail.
     if will_counter_overflow {
-        assert!(chacha20::encrypt(
-            &orion_key,
-            &orion_nonce,
-            random_counter,
-            plaintext,
-            &mut orion_ct
-        )
-        .is_err());
-        assert!(xchacha20::encrypt(
-            &orion_key,
-            &x_orion_nonce,
-            random_counter,
-            plaintext,
-            &mut x_orion_ct
-        )
-        .is_err());
+        assert!(
+            chacha20::encrypt(
+                &orion_key,
+                &orion_nonce,
+                random_counter,
+                plaintext,
+                &mut orion_ct
+            )
+            .is_err()
+        );
+        assert!(
+            xchacha20::encrypt(
+                &orion_key,
+                &x_orion_nonce,
+                random_counter,
+                plaintext,
+                &mut x_orion_ct
+            )
+            .is_err()
+        );
     } else {
         chacha20::encrypt(
             &orion_key,
