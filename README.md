@@ -10,6 +10,10 @@ To start fuzzing, you must install the same version of honggfuzz as the one  spe
 cargo install --force honggfuzz --vers 0.5.60
 ```
 
+**Fedora**:
+- In case of ZSTD-related errors, make sure `libzstd`, `libzstd-devel` and `libzstd-static` are installed then run with: `LDFLAGS="-lzstd" cargo hfuzz run aead`
+
+
 By default, the master branch of orion is used for fuzzing. If another version needs to be fuzzed, specify the version
 in the `Cargo.toml` accordingly.
 
