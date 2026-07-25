@@ -5,7 +5,7 @@ authors = ["brycx <brycx@protonmail.com>"]
 edition = "2024"
 
 [dependencies]
-honggfuzz = "0.5.60"
+honggfuzz = "0.5.61"
 rand = { version = "0.10.1", features = ["chacha"] }
 sodiumoxide = "0.2.6"
 ring = "0.17.8"

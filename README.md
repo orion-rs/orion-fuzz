@@ -7,7 +7,7 @@ Fuzzing is done using [honggfuzz-rs](https://github.com/rust-fuzz/honggfuzz-rs).
 To start fuzzing, you must install the same version of honggfuzz as the one  specified in the `Cargo.toml`:
 
 ```
-cargo install --force honggfuzz --vers 0.5.60
+cargo install --force honggfuzz --vers 0.5.61
 ```
 
 **Fedora**:
