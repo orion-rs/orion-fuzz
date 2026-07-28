@@ -1,9 +1,4 @@
-#[macro_use]
-extern crate honggfuzz;
-extern crate orion;
-extern crate sodiumoxide;
-extern crate x25519_dalek;
-
+use honggfuzz::fuzz;
 use orion::hazardous::ecc::x25519;
 use std::convert::TryFrom;
 use utils::*;
@@ -18,9 +13,9 @@ fn fuzz_x25519(seeded_rng: &mut ChaCha8Rng) {
     seeded_rng.fill_bytes(&mut alice_k);
     seeded_rng.fill_bytes(&mut bob_k);
 
-    let alice_secret = x25519::PrivateKey::from_slice(&alice_k).unwrap();
+    let alice_secret = x25519::PrivateKey::try_from(&alice_k).unwrap();
     let alice_public = x25519::PublicKey::try_from(&alice_secret).unwrap();
-    let bob_secret = x25519::PrivateKey::from_slice(&bob_k).unwrap();
+    let bob_secret = x25519::PrivateKey::try_from(&bob_k).unwrap();
     let bob_public = x25519::PublicKey::try_from(&bob_secret).unwrap();
 
     let alice_shared = x25519::key_agreement(&alice_secret, &bob_public).unwrap();
@@ -29,8 +24,8 @@ fn fuzz_x25519(seeded_rng: &mut ChaCha8Rng) {
     assert_eq!(alice_shared, bob_shared);
 
     // x25519_dalek (we use the bare-byte function since this is the one documented as adherent to RFC)
-    let dalek_alice_public: [u8; 32] = alice_public.to_bytes();
-    let dalek_bob_public: [u8; 32] = bob_public.to_bytes();
+    let dalek_alice_public: [u8; 32] = alice_public.as_ref().try_into().unwrap();
+    let dalek_bob_public: [u8; 32] = bob_public.as_ref().try_into().unwrap();
     let dalek_alice_shared = x25519_dalek::x25519(alice_k, dalek_bob_public);
     let dalek_bob_shared = x25519_dalek::x25519(bob_k, dalek_alice_public);
 
@@ -52,11 +47,11 @@ fn fuzz_kex() {
 
     // sodiumoxide - keys
     let client_sk =
-        kx::SecretKey::from_slice(client_session.private_key().unprotected_as_bytes()).unwrap();
-    let client_pk = kx::PublicKey::from_slice(&client_public_key.to_bytes()).unwrap();
+        kx::SecretKey::from_slice(client_session.private_key().unprotected_as_ref()).unwrap();
+    let client_pk = kx::PublicKey::from_slice(client_public_key.as_ref()).unwrap();
     let server_sk =
-        kx::SecretKey::from_slice(server_session.private_key().unprotected_as_bytes()).unwrap();
-    let server_pk = kx::PublicKey::from_slice(&server_public_key.to_bytes()).unwrap();
+        kx::SecretKey::from_slice(server_session.private_key().unprotected_as_ref()).unwrap();
+    let server_pk = kx::PublicKey::from_slice(server_public_key.as_ref()).unwrap();
 
     // sodiumoxide - key exchange
     let (client_recv, client_trans) =
@@ -79,19 +74,19 @@ fn fuzz_kex() {
         .unwrap();
 
     assert_eq!(
-        client_shared.receiving().unprotected_as_bytes(),
+        client_shared.receiving().unprotected_as_ref(),
         client_recv.as_ref()
     );
     assert_eq!(
-        client_shared.transport().unprotected_as_bytes(),
+        client_shared.transport().unprotected_as_ref(),
         client_trans.as_ref()
     );
     assert_eq!(
-        server_shared.receiving().unprotected_as_bytes(),
+        server_shared.receiving().unprotected_as_ref(),
         server_recv.as_ref()
     );
     assert_eq!(
-        server_shared.transport().unprotected_as_bytes(),
+        server_shared.transport().unprotected_as_ref(),
         server_trans.as_ref()
     );
 }

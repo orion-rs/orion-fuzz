@@ -1,11 +1,6 @@
-#[macro_use]
-extern crate honggfuzz;
-extern crate fips203;
-extern crate orion;
-
 use fips203::traits::{Decaps, Encaps, KeyGen, SerDes};
-use kem::Decapsulator;
-use kem::KeyExport;
+use honggfuzz::fuzz;
+use orion::KP;
 use orion::hazardous::kem::*;
 use utils::*;
 
@@ -16,7 +11,7 @@ fn fuzz_mlkem512(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::kem::mlkem512::*;
 
     if let (Ok(_ek), Ok(_dk)) = (
-        EncapsulationKey::from_slice(data),
+        EncapsulationKey::try_from(data),
         DecapsulationKey::unchecked_from_slice(data),
     ) {
         panic!("this should never happen")
@@ -33,7 +28,7 @@ fn fuzz_mlkem512(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     let mut explicit_randomness = [0u8; 32];
     seeded_rng.fill_bytes(&mut explicit_randomness);
 
-    let orion_kp = KeyPair::try_from(&Seed::from_slice(&dz).unwrap()).unwrap();
+    let orion_kp = KeyPair::try_from(&Seed::try_from(&dz).unwrap()).unwrap();
     let (other_encapkey, other_decapkey) = fips203::ml_kem_512::KG::keygen_from_seed(d, z);
     assert_eq!(
         orion_kp.public().as_ref(),
@@ -43,30 +38,36 @@ fn fuzz_mlkem512(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     // We encaspulate for fips203-crate and the other way around
     let (orion_ss, orion_ct) = orion_kp
         .public()
-        .encap_deterministic(&explicit_randomness)
+        .encap_deterministic(&ExplicitRandom::from(explicit_randomness))
         .unwrap();
     let (other_ss, other_ct) = other_encapkey.encaps_from_seed(&explicit_randomness);
 
     assert_eq!(orion_ct, &other_ct.clone().into_bytes()[..]);
     assert_eq!(orion_ss, &other_ss.clone().into_bytes()[..]);
 
-    let orion_ss_other = mlkem512::MlKem512::decap(
-        orion_kp.private(),
-        &mlkem512::Ciphertext::from(other_ct.into_bytes()),
-    )
-    .unwrap();
+    let orion_ss_other = orion_kp
+        .decap(&mlkem512::Ciphertext::from(other_ct.clone().into_bytes()))
+        .unwrap();
+    assert_eq!(
+        orion_ss_other,
+        orion_kp
+            .private()
+            .decap(&mlkem512::Ciphertext::from(other_ct.into_bytes()))
+            .unwrap()
+    );
+
     let ctbytes: [u8; 768] = orion_ct.as_ref().try_into().unwrap();
     let other_ss_orion = other_decapkey
         .try_decaps(&fips203::ml_kem_512::CipherText::try_from_bytes(ctbytes).unwrap())
         .unwrap();
 
     assert_eq!(
-        orion_ss_other.unprotected_as_bytes(),
+        orion_ss_other.unprotected_as_ref(),
         &other_ss.into_bytes()[..]
     );
     assert_eq!(
         &other_ss_orion.into_bytes()[..],
-        orion_ss.unprotected_as_bytes()
+        orion_ss.unprotected_as_ref()
     );
 }
 
@@ -75,7 +76,7 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::kem::mlkem768::*;
 
     if let (Ok(_ek), Ok(_dk)) = (
-        EncapsulationKey::from_slice(data),
+        EncapsulationKey::try_from(data),
         DecapsulationKey::unchecked_from_slice(data),
     ) {
         panic!("this should never happen")
@@ -92,7 +93,7 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     let mut explicit_randomness = [0u8; 32];
     seeded_rng.fill_bytes(&mut explicit_randomness);
 
-    let orion_kp = KeyPair::try_from(&Seed::from_slice(&dz).unwrap()).unwrap();
+    let orion_kp = KeyPair::try_from(&Seed::try_from(&dz).unwrap()).unwrap();
     let (other_encapkey, other_decapkey) = fips203::ml_kem_768::KG::keygen_from_seed(d, z);
     assert_eq!(
         orion_kp.public().as_ref(),
@@ -102,30 +103,36 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     // We encaspulate for fips203-crate and the other way around
     let (orion_ss, orion_ct) = orion_kp
         .public()
-        .encap_deterministic(&explicit_randomness)
+        .encap_deterministic(&ExplicitRandom::from(explicit_randomness))
         .unwrap();
     let (other_ss, other_ct) = other_encapkey.encaps_from_seed(&explicit_randomness);
 
     assert_eq!(orion_ct, &other_ct.clone().into_bytes()[..]);
     assert_eq!(orion_ss, &other_ss.clone().into_bytes()[..]);
 
-    let orion_ss_other = mlkem768::MlKem768::decap(
-        orion_kp.private(),
-        &mlkem768::Ciphertext::from(other_ct.into_bytes()),
-    )
-    .unwrap();
+    let orion_ss_other = orion_kp
+        .private()
+        .decap(&mlkem768::Ciphertext::from(other_ct.clone().into_bytes()))
+        .unwrap();
+    assert_eq!(
+        orion_ss_other,
+        orion_kp
+            .private()
+            .decap(&mlkem768::Ciphertext::from(other_ct.into_bytes()))
+            .unwrap()
+    );
     let ctbytes: [u8; 1088] = orion_ct.as_ref().try_into().unwrap();
     let other_ss_orion = other_decapkey
         .try_decaps(&fips203::ml_kem_768::CipherText::try_from_bytes(ctbytes).unwrap())
         .unwrap();
 
     assert_eq!(
-        orion_ss_other.unprotected_as_bytes(),
+        orion_ss_other.unprotected_as_ref(),
         &other_ss.into_bytes()[..]
     );
     assert_eq!(
         &other_ss_orion.into_bytes()[..],
-        orion_ss.unprotected_as_bytes()
+        orion_ss.unprotected_as_ref()
     );
 }
 
@@ -134,7 +141,7 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::kem::mlkem1024::*;
 
     if let (Ok(_ek), Ok(_dk)) = (
-        EncapsulationKey::from_slice(data),
+        EncapsulationKey::try_from(data),
         DecapsulationKey::unchecked_from_slice(data),
     ) {
         panic!("this should never happen")
@@ -151,7 +158,7 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     let mut explicit_randomness = [0u8; 32];
     seeded_rng.fill_bytes(&mut explicit_randomness);
 
-    let orion_kp = KeyPair::try_from(&Seed::from_slice(&dz).unwrap()).unwrap();
+    let orion_kp = KeyPair::try_from(&Seed::try_from(&dz).unwrap()).unwrap();
     let (other_encapkey, other_decapkey) = fips203::ml_kem_1024::KG::keygen_from_seed(d, z);
     assert_eq!(
         orion_kp.public().as_ref(),
@@ -161,74 +168,90 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     // We encaspulate for fips203-crate and the other way around
     let (orion_ss, orion_ct) = orion_kp
         .public()
-        .encap_deterministic(&explicit_randomness)
+        .encap_deterministic(&ExplicitRandom::from(explicit_randomness))
         .unwrap();
     let (other_ss, other_ct) = other_encapkey.encaps_from_seed(&explicit_randomness);
 
     assert_eq!(orion_ct, &other_ct.clone().into_bytes()[..]);
     assert_eq!(orion_ss, &other_ss.clone().into_bytes()[..]);
 
-    let orion_ss_other = mlkem1024::MlKem1024::decap(
-        orion_kp.private(),
-        &mlkem1024::Ciphertext::from(other_ct.into_bytes()),
-    )
-    .unwrap();
+    let orion_ss_other = orion_kp
+        .private()
+        .decap(&mlkem1024::Ciphertext::from(other_ct.clone().into_bytes()))
+        .unwrap();
+    assert_eq!(
+        orion_ss_other,
+        orion_kp
+            .private()
+            .decap(&mlkem1024::Ciphertext::from(other_ct.into_bytes()))
+            .unwrap()
+    );
     let ctbytes: [u8; 1568] = orion_ct.as_ref().try_into().unwrap();
     let other_ss_orion = other_decapkey
         .try_decaps(&fips203::ml_kem_1024::CipherText::try_from_bytes(ctbytes).unwrap())
         .unwrap();
 
     assert_eq!(
-        orion_ss_other.unprotected_as_bytes(),
+        orion_ss_other.unprotected_as_ref(),
         &other_ss.into_bytes()[..]
     );
     assert_eq!(
         &other_ss_orion.into_bytes()[..],
-        orion_ss.unprotected_as_bytes()
+        orion_ss.unprotected_as_ref()
     );
 }
 
 /// `orion::hazardous::kem::xwing`
-fn fuzz_xwing(seeded_rng: &mut ChaCha8Rng) {
-    use kem::{Decapsulate, Encapsulate};
+fn fuzz_xwing(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
+    use kem::{Decapsulate, Decapsulator, Encapsulate, KeyExport};
     use orion::hazardous::kem::xwing::*;
+
+    if let (Ok(_ek), Ok(_dk)) = (
+        EncapsulationKey::try_from(data),
+        DecapsulationKey::try_from(data),
+    ) {
+        panic!("this should never happen")
+    }
 
     // Generate seeds
     let mut seed = [0u8; 32];
     seeded_rng.fill_bytes(&mut seed);
+    // Make two RNGs for reproduceability (ChaCha8Rng has no Clone impl):
+    let mut orion_eseed = make_seeded_rng(data);
+    let mut other_eseed = make_seeded_rng(data);
     let mut eseed = [0u8; 64];
-    seeded_rng.fill_bytes(&mut eseed);
+    orion_eseed.fill_bytes(&mut eseed);
 
-    let orion_seed = Seed::from_slice(&seed).unwrap();
-    let orion_kp = KeyPair::try_from(&orion_seed).unwrap();
+    let orion_decapkey = DecapsulationKey::try_from(&seed).unwrap();
+    let orion_kp = KeyPair::try_from(&orion_decapkey).unwrap();
 
     let other_decapkey = x_wing::DecapsulationKey::from(seed);
     let other_encapkey = other_decapkey.encapsulation_key();
     assert_eq!(
-        orion_kp.private().unprotected_as_bytes(),
-        orion_seed.unprotected_as_bytes()
+        orion_kp.private().unprotected_as_ref(),
+        orion_decapkey.unprotected_as_ref()
     );
     assert_eq!(
         orion_kp.public().as_ref(),
         other_encapkey.clone().to_bytes().as_slice()
     );
 
-    // We encaspulate using x-wing-crateand decapsulate with Orion
-    // because x-wing doesn't allow to deterministically encapsulate.
-    let (orion_ss, orion_ct) = XWing::encap_deterministic(orion_kp.public(), &eseed).unwrap();
-    let (other_ct, other_ss) = other_encapkey.encapsulate_with_rng(seeded_rng);
+    let (orion_ss, orion_ct) = orion_kp
+        .public()
+        .encap_deterministic(&Eseed::from(eseed))
+        .unwrap();
+    let (other_ct, other_ss) = other_encapkey.encapsulate_with_rng(&mut other_eseed);
 
-    // We can't do this equivalence check becuase x-wing crate doesn't allow deterministic
-    //assert_eq!(orion_ct, &other_ct.clone().into_bytes()[..]);
-    //assert_eq!(orion_ss, &other_ss.clone().into_bytes()[..]);
+    assert_eq!(orion_ct, other_ct.clone().as_slice()[..]);
+    assert_eq!(orion_ss, other_ss.clone().as_slice()[..]);
 
-    let orion_ss_other = XWing::decap(orion_kp.private(), &Ciphertext::from(other_ct.0)).unwrap();
+    let orion_ss_other = orion_kp.decap(&Ciphertext::from(other_ct.0)).unwrap();
     let ctbytes: [u8; CIPHERTEXT_SIZE] = orion_ct.as_ref().try_into().unwrap();
     let kemct = kem::Ciphertext::<x_wing::XWingKem>::from(ctbytes);
     let other_ss_orion = other_decapkey.decapsulate(&x_wing::Ciphertext::try_from(kemct).unwrap());
 
-    assert_eq!(orion_ss_other.unprotected_as_bytes(), &other_ss[..]);
-    assert_eq!(&other_ss_orion[..], orion_ss.unprotected_as_bytes());
+    assert_eq!(orion_ss_other.unprotected_as_ref(), &other_ss[..]);
+    assert_eq!(&other_ss_orion[..], orion_ss.unprotected_as_ref());
 }
 
 fn main() {
@@ -242,7 +265,7 @@ fn main() {
             fuzz_mlkem768(&mut seeded_rng, data);
             fuzz_mlkem1024(&mut seeded_rng, data);
             // Test `orion::hazardous::kem::xwing`
-            fuzz_xwing(&mut seeded_rng);
+            fuzz_xwing(&mut seeded_rng, data);
         });
     }
 }

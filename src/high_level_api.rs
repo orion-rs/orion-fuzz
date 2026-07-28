@@ -1,6 +1,4 @@
-#[macro_use]
-extern crate honggfuzz;
-extern crate orion;
+use honggfuzz::fuzz;
 pub mod utils;
 
 use utils::*;
@@ -10,7 +8,7 @@ fn fuzz_aead(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut key = [0u8; 32];
     seeded_rng.fill_bytes(&mut key);
 
-    let aead_key = orion::aead::SecretKey::from_slice(&key).unwrap();
+    let aead_key = orion::aead::SecretKey::try_from(&key).unwrap();
 
     if fuzzer_input.is_empty() {
         assert!(orion::aead::seal(&aead_key, fuzzer_input).is_err());
@@ -27,9 +25,9 @@ fn fuzz_pwhash(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     seeded_rng.fill_bytes(&mut password);
 
     if password.is_empty() {
-        assert!(orion::pwhash::Password::from_slice(&password).is_err());
+        assert!(orion::pwhash::Password::try_from(&password).is_err());
     } else {
-        let pwhash_password = orion::pwhash::Password::from_slice(&password).unwrap();
+        let pwhash_password = orion::pwhash::Password::try_from(&password).unwrap();
         let memory: u32 = seeded_rng.random_range(0..=1024);
         let iterations: u32 = seeded_rng.random_range(0..=10);
 
@@ -52,13 +50,13 @@ fn fuzz_kdf(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
 
     if password.is_empty() || salt.is_empty() {
         if password.is_empty() {
-            assert!(orion::kdf::Password::from_slice(&password).is_err());
+            assert!(orion::kdf::Password::try_from(&password).is_err());
         } else if salt.is_empty() {
-            assert!(orion::kdf::Salt::from_slice(&salt).is_err());
+            assert!(orion::kdf::Salt::try_from(&salt).is_err());
         }
     } else {
-        let kdf_password = orion::kdf::Password::from_slice(&password).unwrap();
-        let kdf_salt = orion::kdf::Salt::from_slice(&salt).unwrap();
+        let kdf_password = orion::kdf::Password::try_from(&password).unwrap();
+        let kdf_salt = orion::kdf::Salt::try_from(&salt).unwrap();
         let memory: u32 = seeded_rng.random_range(0..=1024);
         let iterations: u32 = seeded_rng.random_range(0..=10);
         let length: u32 = seeded_rng.random_range(0..768);
@@ -69,7 +67,6 @@ fn fuzz_kdf(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
                     .is_err()
             );
         } else {
-            dbg!(password, salt, iterations, memory, length);
             let password_hash_first =
                 orion::kdf::derive_key(&kdf_password, &kdf_salt, iterations, memory, length)
                     .unwrap();
@@ -87,9 +84,9 @@ fn fuzz_auth(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     seeded_rng.fill_bytes(&mut key);
 
     if key.is_empty() {
-        assert!(orion::auth::SecretKey::from_slice(&key).is_err());
+        assert!(orion::auth::SecretKey::try_from(&key).is_err());
     } else {
-        let auth_key = orion::auth::SecretKey::from_slice(&key).unwrap();
+        let auth_key = orion::auth::SecretKey::try_from(&key).unwrap();
         if auth_key.len() < 32 || auth_key.len() > 64 {
             assert!(orion::auth::authenticate(&auth_key, fuzzer_input).is_err());
         } else {

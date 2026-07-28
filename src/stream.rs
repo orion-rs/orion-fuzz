@@ -1,10 +1,7 @@
-#[macro_use]
-extern crate honggfuzz;
-extern crate chacha;
-extern crate orion;
 pub mod utils;
 
 use chacha::{ChaCha, KeyStream};
+use honggfuzz::fuzz;
 use orion::hazardous::stream::chacha20;
 use orion::hazardous::stream::xchacha20;
 use utils::*;
@@ -26,36 +23,30 @@ fn fuzz_chacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     };
 
     // orion
-    let orion_key = chacha20::SecretKey::from_slice(&key).unwrap();
-    let orion_nonce = chacha20::Nonce::from_slice(&nonce).unwrap();
-
-    let mut orion_pt = vec![0u8; plaintext.len()];
-    let mut orion_ct = vec![0u8; plaintext.len()];
-
-    // Counter must be 0, as that is what the chacha crate uses.
-    chacha20::encrypt(&orion_key, &orion_nonce, 0, plaintext, &mut orion_ct).unwrap();
-    chacha20::decrypt(&orion_key, &orion_nonce, 0, &orion_ct, &mut orion_pt).unwrap();
-    assert_eq!(&orion_pt[..], plaintext);
+    let orion_key = chacha20::SecretKey::from(key);
+    let orion_nonce = chacha20::Nonce::from(nonce);
+    let mut orion_ctx = chacha20::ChaCha20::new(&orion_key, &orion_nonce);
+    let mut orion_ct = plaintext.to_vec();
+    orion_ctx.xor_keystream_into(&mut orion_ct).unwrap();
+    assert_eq!(orion_ctx.byte_position(), plaintext.len() as u64);
+    assert_eq!(
+        orion_ctx.keystream_remaining(),
+        chacha20::MAX_KEYSTREAM_BYTES - plaintext.len() as u64
+    );
 
     // chacha
-    // The chacha crate does in-place encryption.
     let mut chacha_ct = plaintext.to_vec();
-    // Different structs because they don't reset counter
     let mut stream_enc = ChaCha::new_ietf(&key, &nonce);
     let mut stream_dec = ChaCha::new_ietf(&key, &nonce);
-
-    stream_enc
-        .xor_read(&mut chacha_ct)
-        .expect("hit end of stream far too soon");
+    stream_enc.xor_read(&mut chacha_ct).unwrap();
+    assert_eq!(orion_ct, chacha_ct);
 
     let mut chacha_pt = chacha_ct.clone();
-    stream_dec
-        .xor_read(&mut chacha_pt)
-        .expect("hit end of stream far too soon");
-
-    assert_eq!(plaintext, &chacha_pt[..]);
-    assert_eq!(orion_ct, chacha_ct);
-    assert_eq!(orion_pt, chacha_pt);
+    stream_dec.xor_read(&mut chacha_pt).unwrap();
+    orion_ctx.set_position(0);
+    orion_ctx.xor_keystream_into(&mut orion_ct).unwrap();
+    assert_eq!(plaintext, orion_ct.as_slice());
+    assert_eq!(orion_ct, chacha_pt);
 }
 
 /// `orion::hazardous::stream::xchacha20`
@@ -73,36 +64,30 @@ fn fuzz_xchacha20(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     };
 
     // orion
-    let orion_key = xchacha20::SecretKey::from_slice(&key).unwrap();
-    let orion_nonce = xchacha20::Nonce::from_slice(&nonce).unwrap();
-
-    let mut orion_pt = vec![0u8; plaintext.len()];
-    let mut orion_ct = vec![0u8; plaintext.len()];
-
-    // Counter must be 0, as that is what the chacha crate uses.
-    xchacha20::encrypt(&orion_key, &orion_nonce, 0, plaintext, &mut orion_ct).unwrap();
-    xchacha20::decrypt(&orion_key, &orion_nonce, 0, &orion_ct, &mut orion_pt).unwrap();
-    assert_eq!(&orion_pt[..], plaintext);
+    let orion_key = xchacha20::SecretKey::from(key);
+    let orion_nonce = xchacha20::Nonce::from(nonce);
+    let mut orion_ctx = xchacha20::XChaCha20::new(&orion_key, &orion_nonce);
+    let mut orion_ct = plaintext.to_vec();
+    orion_ctx.xor_keystream_into(&mut orion_ct).unwrap();
+    assert_eq!(orion_ctx.byte_position(), plaintext.len() as u64);
+    assert_eq!(
+        orion_ctx.keystream_remaining(),
+        chacha20::MAX_KEYSTREAM_BYTES - plaintext.len() as u64
+    );
 
     // chacha
-    // The chacha crate does in-place encryption.
     let mut chacha_ct = plaintext.to_vec();
-    // Different structs because they don't reset counter
     let mut stream_enc = ChaCha::new_xchacha20(&key, &nonce);
     let mut stream_dec = ChaCha::new_xchacha20(&key, &nonce);
-
-    stream_enc
-        .xor_read(&mut chacha_ct)
-        .expect("hit end of stream far too soon");
+    stream_enc.xor_read(&mut chacha_ct).unwrap();
+    assert_eq!(orion_ct, chacha_ct);
 
     let mut chacha_pt = chacha_ct.clone();
-    stream_dec
-        .xor_read(&mut chacha_pt)
-        .expect("hit end of stream far too soon");
-
-    assert_eq!(plaintext, &chacha_pt[..]);
-    assert_eq!(orion_ct, chacha_ct);
-    assert_eq!(orion_pt, chacha_pt);
+    stream_dec.xor_read(&mut chacha_pt).unwrap();
+    orion_ctx.set_position(0);
+    orion_ctx.xor_keystream_into(&mut orion_ct).unwrap();
+    assert_eq!(plaintext, orion_ct.as_slice());
+    assert_eq!(orion_ct, chacha_pt);
 }
 
 // Test if an initial counter will overflow when processing input bytes.
@@ -113,7 +98,8 @@ fn check_counter_overflow(input: &[u8], initial_counter: u32) -> bool {
     let mut res = false;
     let mut counter = initial_counter;
 
-    for _ in input.chunks(CHACHA_BLOCKSIZE) {
+    // Skip 1 as we'd always want to generate at least one.
+    for _ in input.chunks(CHACHA_BLOCKSIZE).skip(1) {
         if counter.checked_add(1).is_none() {
             res = true;
             return res;
@@ -147,78 +133,48 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     };
 
     // orion
-    let orion_key = chacha20::SecretKey::from_slice(&key).unwrap();
-    let orion_nonce = chacha20::Nonce::from_slice(&nonce).unwrap();
+    let orion_key = chacha20::SecretKey::from(key);
+    let orion_nonce_ietf = chacha20::Nonce::from(nonce);
+    let orion_nonce_x = xchacha20::Nonce::from(x_nonce);
 
-    let x_orion_nonce = xchacha20::Nonce::from_slice(&x_nonce).unwrap();
+    let mut chacha20_ctx = chacha20::ChaCha20::new(&orion_key, &orion_nonce_ietf);
+    let mut xchacha20_ctx = xchacha20::XChaCha20::new(&orion_key, &orion_nonce_x);
 
-    let mut orion_ct = vec![0u8; plaintext.len()];
-    let mut x_orion_ct = vec![0u8; plaintext.len()];
+    chacha20_ctx.set_position(random_counter);
+    xchacha20_ctx.set_position(random_counter);
 
+    let mut ct = plaintext.to_vec();
+    let mut xct = plaintext.to_vec();
     let will_counter_overflow: bool = check_counter_overflow(plaintext, random_counter);
 
     // If either one fails, then both should fail.
     if will_counter_overflow {
-        assert!(
-            chacha20::encrypt(
-                &orion_key,
-                &orion_nonce,
-                random_counter,
-                plaintext,
-                &mut orion_ct
-            )
-            .is_err()
-        );
-        assert!(
-            xchacha20::encrypt(
-                &orion_key,
-                &x_orion_nonce,
-                random_counter,
-                plaintext,
-                &mut x_orion_ct
-            )
-            .is_err()
-        );
+        assert!(chacha20_ctx.xor_keystream_into(&mut ct).is_err());
+        assert!(xchacha20_ctx.xor_keystream_into(&mut xct).is_err());
     } else {
-        chacha20::encrypt(
-            &orion_key,
-            &orion_nonce,
-            random_counter,
-            plaintext,
-            &mut orion_ct,
-        )
-        .unwrap();
-        xchacha20::encrypt(
-            &orion_key,
-            &x_orion_nonce,
-            random_counter,
-            plaintext,
-            &mut x_orion_ct,
-        )
-        .unwrap();
+        chacha20_ctx.xor_keystream_into(&mut ct).unwrap();
+        xchacha20_ctx.xor_keystream_into(&mut xct).unwrap();
 
-        let mut orion_pt = vec![0u8; plaintext.len()];
-        let mut x_orion_pt = vec![0u8; plaintext.len()];
+        if !chacha20_ctx.is_exhausted() && !xchacha20_ctx.is_exhausted() {
+            // Reset
+            chacha20_ctx.set_position(random_counter);
+            xchacha20_ctx.set_position(random_counter);
+            // Decrypt
+            chacha20_ctx.xor_keystream_into(&mut ct).unwrap();
+            xchacha20_ctx.xor_keystream_into(&mut xct).unwrap();
+        } else {
+            let mut chacha20_ctx = chacha20::ChaCha20::new(&orion_key, &orion_nonce_ietf);
+            let mut xchacha20_ctx = xchacha20::XChaCha20::new(&orion_key, &orion_nonce_x);
 
-        chacha20::decrypt(
-            &orion_key,
-            &orion_nonce,
-            random_counter,
-            &orion_ct,
-            &mut orion_pt,
-        )
-        .unwrap();
-        xchacha20::decrypt(
-            &orion_key,
-            &x_orion_nonce,
-            random_counter,
-            &x_orion_ct,
-            &mut x_orion_pt,
-        )
-        .unwrap();
+            chacha20_ctx.set_position(random_counter);
+            xchacha20_ctx.set_position(random_counter);
 
-        assert_eq!(&orion_pt[..], plaintext);
-        assert_eq!(&x_orion_pt[..], plaintext);
+            chacha20_ctx.xor_keystream_into(&mut ct).unwrap();
+            xchacha20_ctx.xor_keystream_into(&mut xct).unwrap();
+        }
+
+        assert_eq!(ct.as_slice(), plaintext);
+        assert_eq!(xct.as_slice(), plaintext);
     }
 }
 

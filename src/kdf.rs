@@ -1,8 +1,4 @@
-#[macro_use]
-extern crate honggfuzz;
-extern crate argon2;
-extern crate orion;
-extern crate ring;
+use honggfuzz::fuzz;
 pub mod utils;
 
 use argon2::{Config, Variant, Version};
@@ -43,10 +39,10 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
 
     // orion
     if orion_okm.len() > 255 * SHA256_OUTSIZE {
-        assert!(hkdf::sha256::derive_key(&salt, ikm, Some(&info), &mut orion_okm).is_err());
+        assert!(hkdf::HkdfSha256::derive_key(&salt, ikm, Some(&info), &mut orion_okm).is_err());
         return;
     }
-    hkdf::sha256::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
+    hkdf::HkdfSha256::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
 
     // ring
     let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA256, &salt);
@@ -62,10 +58,10 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
 
     // orion
     if orion_okm.len() > 255 * SHA384_OUTSIZE {
-        assert!(hkdf::sha384::derive_key(&salt, ikm, Some(&info), &mut orion_okm).is_err());
+        assert!(hkdf::HkdfSha384::derive_key(&salt, ikm, Some(&info), &mut orion_okm).is_err());
         return;
     }
-    hkdf::sha384::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
+    hkdf::HkdfSha384::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
 
     // ring
     let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA384, &salt);
@@ -81,10 +77,10 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
 
     // orion
     if orion_okm.len() > 255 * SHA512_OUTSIZE {
-        assert!(hkdf::sha512::derive_key(&salt, ikm, Some(&info), &mut orion_okm).is_err());
+        assert!(hkdf::HkdfSha512::derive_key(&salt, ikm, Some(&info), &mut orion_okm).is_err());
         return;
     }
-    hkdf::sha512::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
+    hkdf::HkdfSha512::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
 
     // ring
     let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA512, &salt);
@@ -109,7 +105,7 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     // SHA-256
 
     // orion
-    let orion_password = pbkdf2::sha256::Password::from_slice(password).unwrap();
+    let orion_password = pbkdf2::sha256::Password::try_from(password).unwrap();
     pbkdf2::sha256::derive_key(&orion_password, &salt, iterations as usize, &mut orion_dk).unwrap();
 
     // ring
@@ -126,7 +122,7 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     // SHA-384
 
     // orion
-    let orion_password = pbkdf2::sha384::Password::from_slice(password).unwrap();
+    let orion_password = pbkdf2::sha384::Password::try_from(password).unwrap();
     pbkdf2::sha384::derive_key(&orion_password, &salt, iterations as usize, &mut orion_dk).unwrap();
 
     // ring
@@ -143,7 +139,7 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     // SHA-512
 
     // orion
-    let orion_password = pbkdf2::sha512::Password::from_slice(password).unwrap();
+    let orion_password = pbkdf2::sha512::Password::try_from(password).unwrap();
     pbkdf2::sha512::derive_key(&orion_password, &salt, iterations as usize, &mut orion_dk).unwrap();
 
     // ring

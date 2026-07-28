@@ -1,10 +1,5 @@
-#[macro_use]
-extern crate honggfuzz;
-extern crate bincode;
-extern crate orion;
-extern crate serde;
-
 use core::fmt::Debug;
+use honggfuzz::fuzz;
 use serde::Serialize;
 use serde::de::DeserializeOwned;
 use std::convert::TryFrom;

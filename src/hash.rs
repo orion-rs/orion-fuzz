@@ -227,7 +227,7 @@ impl ShaComparableType<Sha3_224Digest> for other_sha3::Sha3_224 {
         hasher.update(data);
         let hash = hasher.finalize();
 
-        Sha3_224Digest::from_slice(hash.as_ref()).unwrap()
+        Sha3_224Digest::try_from(hash.as_slice()).unwrap()
     }
 }
 
@@ -238,7 +238,7 @@ impl ShaComparableType<Sha3_256Digest> for other_sha3::Sha3_256 {
         hasher.update(data);
         let hash = hasher.finalize();
 
-        Sha3_256Digest::from_slice(hash.as_ref()).unwrap()
+        Sha3_256Digest::try_from(hash.as_slice()).unwrap()
     }
 }
 
@@ -249,7 +249,7 @@ impl ShaComparableType<Sha3_384Digest> for other_sha3::Sha3_384 {
         hasher.update(data);
         let hash = hasher.finalize();
 
-        Sha3_384Digest::from_slice(hash.as_ref()).unwrap()
+        Sha3_384Digest::try_from(hash.as_slice()).unwrap()
     }
 }
 
@@ -260,7 +260,7 @@ impl ShaComparableType<Sha3_512Digest> for other_sha3::Sha3_512 {
         hasher.update(data);
         let hash = hasher.finalize();
 
-        Sha3_512Digest::from_slice(hash.as_ref()).unwrap()
+        Sha3_512Digest::try_from(hash.as_slice()).unwrap()
     }
 }
 

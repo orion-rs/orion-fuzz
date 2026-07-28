@@ -1,8 +1,4 @@
-#[macro_use]
-extern crate honggfuzz;
-extern crate orion;
-extern crate ring;
-extern crate sodiumoxide;
+use honggfuzz::fuzz;
 pub mod utils;
 
 use std::marker::PhantomData;
@@ -27,19 +23,19 @@ trait HmacKey {
 
 impl HmacKey for hmac::sha256::SecretKey {
     fn from_slice(slice: &[u8]) -> Result<Self, UnknownCryptoError> {
-        Self::from_slice(slice)
+        Self::try_from(slice)
     }
 }
 
 impl HmacKey for hmac::sha384::SecretKey {
     fn from_slice(slice: &[u8]) -> Result<Self, UnknownCryptoError> {
-        Self::from_slice(slice)
+        Self::try_from(slice)
     }
 }
 
 impl HmacKey for hmac::sha512::SecretKey {
     fn from_slice(slice: &[u8]) -> Result<Self, UnknownCryptoError> {
-        Self::from_slice(slice)
+        Self::try_from(slice)
     }
 }
 
@@ -49,19 +45,19 @@ trait HmacTagAsBytes {
 
 impl HmacTagAsBytes for hmac::sha256::Tag {
     fn as_bytes(&self) -> &[u8] {
-        self.unprotected_as_bytes()
+        self.unprotected_as_ref()
     }
 }
 
 impl HmacTagAsBytes for hmac::sha384::Tag {
     fn as_bytes(&self) -> &[u8] {
-        self.unprotected_as_bytes()
+        self.unprotected_as_ref()
     }
 }
 
 impl HmacTagAsBytes for hmac::sha512::Tag {
     fn as_bytes(&self) -> &[u8] {
-        self.unprotected_as_bytes()
+        self.unprotected_as_ref()
     }
 }
 
@@ -254,7 +250,7 @@ fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     seeded_rng.fill_bytes(&mut key);
 
     // orion
-    let orion_key = poly1305::OneTimeKey::from_slice(&key).unwrap();
+    let orion_key = poly1305::OneTimeKey::try_from(&key).unwrap();
     let mut orion_ctx = poly1305::Poly1305::new(&orion_key);
     orion_ctx.update(fuzzer_input).unwrap();
 
@@ -286,9 +282,9 @@ fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let orion_tag = orion_ctx.finalize().unwrap();
     let orion_one_shot = poly1305::Poly1305::poly1305(&orion_key, &collected_data).unwrap();
 
-    assert_eq!(other_tag.as_ref(), orion_tag.unprotected_as_bytes());
+    assert_eq!(other_tag.as_ref(), orion_tag.unprotected_as_ref());
     assert_eq!(orion_one_shot, orion_tag_with_reset);
-    assert_eq!(other_tag.as_ref(), orion_one_shot.unprotected_as_bytes());
+    assert_eq!(other_tag.as_ref(), orion_one_shot.unprotected_as_ref());
 }
 
 const BLAKE2B_BLOCKSIZE: usize = 128;
@@ -300,7 +296,7 @@ fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut other_ctx: blake2_rfc::blake2b::Blake2b;
 
     let key = rand_vec_in_range(seeded_rng, 1, 64);
-    let orion_key = blake2b::SecretKey::from_slice(&key).unwrap();
+    let orion_key = blake2b::SecretKey::try_from(&key).unwrap();
     orion_ctx = blake2b::Blake2b::new(&orion_key, outsize).unwrap();
     other_ctx = blake2_rfc::blake2b::Blake2b::with_key(outsize, &key);
 

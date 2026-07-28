@@ -1,7 +1,4 @@
-#[macro_use]
-extern crate honggfuzz;
-extern crate orion;
-extern crate sodiumoxide;
+use honggfuzz::fuzz;
 pub mod utils;
 
 use core::convert::TryFrom;
@@ -34,8 +31,8 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
         sodium_stream::Stream::init_push(&sodium_stream::Key::from_slice(&key).unwrap()).unwrap();
 
     let mut orion_state_enc = StreamXChaCha20Poly1305::new(
-        &SecretKey::from_slice(&key[..]).unwrap(),
-        &Nonce::from_slice(sodium_header.as_ref()).unwrap(),
+        &SecretKey::try_from(&key[..]).unwrap(),
+        &Nonce::try_from(sodium_header.as_ref()).unwrap(),
     );
 
     // `seal_chunk()`
@@ -69,8 +66,8 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     }
 
     let mut orion_state_dec = StreamXChaCha20Poly1305::new(
-        &SecretKey::from_slice(&key[..]).unwrap(),
-        &Nonce::from_slice(sodium_header.as_ref()).unwrap(),
+        &SecretKey::try_from(&key[..]).unwrap(),
+        &Nonce::try_from(sodium_header.as_ref()).unwrap(),
     );
 
     let mut sodium_state_dec = sodium_stream::Stream::init_pull(

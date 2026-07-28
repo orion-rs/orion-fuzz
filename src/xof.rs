@@ -1,7 +1,4 @@
-#[macro_use]
-extern crate honggfuzz;
-
-extern crate orion;
+use honggfuzz::fuzz;
 
 pub mod utils;
 use orion::errors::UnknownCryptoError;
