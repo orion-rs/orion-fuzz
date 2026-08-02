@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate honggfuzz;
 extern crate blake2_rfc;
+extern crate blake3 as other_blake3;
 extern crate orion;
 extern crate ring;
 pub mod utils;
@@ -16,11 +17,14 @@ use orion::hazardous::hash::sha3::sha3_256::{Digest as Sha3_256Digest, SHA3_256_
 use orion::hazardous::hash::sha3::sha3_384::{Digest as Sha3_384Digest, SHA3_384_RATE, Sha3_384};
 use orion::hazardous::hash::sha3::sha3_512::{Digest as Sha3_512Digest, SHA3_512_RATE, Sha3_512};
 
+use orion::hazardous::hash::blake3::{Blake3, Blake3Keyed, SecretKey as Blake3SecretKey};
 use orion::{errors::UnknownCryptoError, hazardous::hash::blake2::blake2b};
 use std::marker::PhantomData;
 use utils::*;
 
 const BLAKE2B_BLOCKSIZE: usize = 128;
+const BLAKE3_CHUNKSIZE: usize = 1024;
+const BLAKE3_KEYSIZE: usize = 32;
 
 fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let outsize: usize = seeded_rng.random_range(1..=64);
@@ -69,6 +73,92 @@ fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     if outsize == 64 {
         let orion_one_shot = blake2b::Hasher::Blake2b512.digest(&collected_data).unwrap();
         assert_eq!(orion_one_shot, other_hash.as_bytes());
+    }
+}
+
+fn fuzz_blake3(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
+    let outsize: usize = seeded_rng.random_range(0..=8192);
+
+    let mut key_bytes = [0u8; BLAKE3_KEYSIZE];
+    seeded_rng.fill_bytes(&mut key_bytes);
+    let secret_key = Blake3SecretKey::from_slice(&key_bytes).unwrap();
+
+    let mut orion_ctx = Blake3::new();
+    let mut orion_keyed_ctx = Blake3Keyed::new(&secret_key);
+    let mut other_ctx = other_blake3::Hasher::new();
+    let mut other_keyed_ctx = other_blake3::Hasher::new_keyed(&key_bytes);
+
+    let mut collected_data: Vec<u8> = Vec::new();
+
+    macro_rules! feed (($data:expr) => ({
+        let data: &[u8] = $data;
+        collected_data.extend_from_slice(data);
+        orion_ctx.update(data).unwrap();
+        orion_keyed_ctx.update(data).unwrap();
+        other_ctx.update(data);
+        other_keyed_ctx.update(data);
+    }));
+
+    feed!(fuzzer_input);
+
+    if fuzzer_input.len() > BLAKE3_CHUNKSIZE {
+        feed!(b"");
+    }
+    if fuzzer_input.len() > BLAKE3_CHUNKSIZE * 2 {
+        feed!(b"Extra");
+    }
+    if fuzzer_input.len() > BLAKE3_CHUNKSIZE * 3 {
+        feed!(&[0u8; 256]);
+    }
+    if fuzzer_input.len() > BLAKE3_CHUNKSIZE * 4 {
+        feed!(&vec![0u8; BLAKE3_CHUNKSIZE - 1]);
+    }
+
+    let mut orion_hash = vec![0u8; outsize];
+    let mut other_hash = vec![0u8; outsize];
+    orion_ctx.finalize(&mut orion_hash).unwrap();
+    other_ctx.finalize_xof().fill(&mut other_hash);
+    assert_eq!(orion_hash, other_hash);
+
+    let mut orion_keyed_hash = vec![0u8; outsize];
+    let mut other_keyed_hash = vec![0u8; outsize];
+    orion_keyed_ctx.finalize(&mut orion_keyed_hash).unwrap();
+    other_keyed_ctx.finalize_xof().fill(&mut other_keyed_hash);
+    assert_eq!(orion_keyed_hash, other_keyed_hash);
+
+    if outsize >= 16 {
+        assert_ne!(orion_hash, orion_keyed_hash);
+    }
+
+    assert!(orion_ctx.finalize(&mut orion_hash).is_err());
+    assert!(orion_ctx.update(b"Extra").is_err());
+    assert!(orion_keyed_ctx.finalize(&mut orion_keyed_hash).is_err());
+    assert!(orion_keyed_ctx.update(b"Extra").is_err());
+
+    orion_ctx.reset();
+    orion_keyed_ctx.reset();
+    orion_ctx.update(&collected_data).unwrap();
+    orion_keyed_ctx.update(&collected_data).unwrap();
+
+    let mut orion_reset_hash = vec![0u8; outsize];
+    let mut orion_reset_keyed_hash = vec![0u8; outsize];
+    orion_ctx.finalize(&mut orion_reset_hash).unwrap();
+    orion_keyed_ctx
+        .finalize(&mut orion_reset_keyed_hash)
+        .unwrap();
+    assert_eq!(orion_reset_hash, other_hash);
+    assert_eq!(orion_reset_keyed_hash, other_keyed_hash);
+
+    // XOF requesting less bytes must than buffered block gives a prefix of the total
+    if outsize > 0 {
+        let short_outsize: usize = seeded_rng.random_range(1..=outsize);
+        let mut orion_short_hash = vec![0u8; short_outsize];
+
+        let mut orion_short_ctx = Blake3::new();
+        orion_short_ctx.update(&collected_data).unwrap();
+        orion_short_ctx.finalize(&mut orion_short_hash).unwrap();
+
+        assert_eq!(orion_short_hash.as_slice(), &orion_hash[..short_outsize]);
     }
 }
 
@@ -321,6 +411,8 @@ fn main() {
 
             // Test `orion::hazardous::hash::blake2::blake2b`
             fuzz_blake2b(data, &mut seeded_rng);
+            // Test `orion::hazardous::hash::blake3`
+            fuzz_blake3(data, &mut seeded_rng);
             // Test `orion::hazardous::hash::sha2`
             sha256_fuzzer.fuzz(data);
             sha384_fuzzer.fuzz(data);
