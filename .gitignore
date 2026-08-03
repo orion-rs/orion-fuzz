@@ -12,7 +12,4 @@ Cargo.lock
 /hfuzz_target/
 
 .idea/
-
-/hfuzz_workspace
-
 .DS_Store
