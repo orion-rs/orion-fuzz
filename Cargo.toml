@@ -5,7 +5,7 @@ authors = ["brycx <brycx@protonmail.com>"]
 edition = "2024"
 
 [dependencies]
-honggfuzz = "0.5.61"
+honggfuzz = "0.5.62"
 rand = { version = "0.10.1", features = ["chacha"] }
 sodiumoxide = "0.2.6"
 ring = "0.17.8"
@@ -23,10 +23,11 @@ kem = "0.3.0"
 hpke = "0.14.0" 
 scrypt = "0.12.0"
 blake3 = "1"
+fips204 = "0.4.6"
 
 [dependencies.orion]
 git = "https://github.com/orion-rs/orion"
-branch = "xwing-hpke"
+branch = "mldsa"
 features = ["serde"]
 
 [[bin]]
@@ -80,6 +81,10 @@ path = "src/kem.rs"
 [[bin]]
 name = "hpke"
 path = "src/hpke.rs"
+
+[[bin]]
+name = "dsa"
+path = "src/dsa.rs"
 
 [profile.release]
 opt-level = 3

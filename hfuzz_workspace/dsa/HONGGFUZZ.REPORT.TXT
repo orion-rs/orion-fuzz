@@ -1,0 +1,146 @@
+=====================================================================
+TIME: 2026-08-11.18:06:23
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/dsa 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: 00000000000000000000000000000000.00000000.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/dsa/SIGABRT.PC.7ffff7e3032c.STACK.df7927b80.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 56301
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e3032c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 0000000df7927b80
+STACK:
+ <0x00007ffff7dd615e> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbd6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555fde3a> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555fcce9> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555c1e0a> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555fcf72> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555ec552> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555e1b29> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555ecd3d> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555610ecc> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555610de3> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x000055555558f7b5> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555595241> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x000055555558638f> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555957c5> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555595fac> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x000055555559473a> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555fc527> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555946f3> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00007ffff7dbf5b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbf668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x0000555555580365> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+=====================================================================
+=====================================================================
+TIME: 2026-08-11.18:06:57
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/dsa 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: 994a4000000000004ad9000000000000.00000002.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/dsa/SIGABRT.PC.7ffff7e3032c.STACK.19fed6b989.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 57768
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e3032c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 00000019fed6b989
+STACK:
+ <0x00007ffff7dd615e> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbd6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555db5ba> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555da469> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x000055555559f57a> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555da6f2> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555c9cd2> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555bf2a9> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555ca4bd> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555ee64c> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555ee563> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x000055555557e87c> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555581fd2> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x000055555557c79f> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555582225> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555829ac> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x000055555558184a> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555d9ca7> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555581803> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00007ffff7dbf5b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbf668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x0000555555579a25> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+=====================================================================
+=====================================================================
+TIME: 2026-08-11.18:10:51
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/dsa 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: 994a4000000000004ad9000000000000.00000002.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/dsa/SIGABRT.PC.7ffff7e3032c.STACK.19681a894e.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 59682
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e3032c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 00000019681a894e
+STACK:
+ <0x00007ffff7dd615e> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbd6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x0000555555684ffa> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555683ea9> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555648fba> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555684132> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555673744> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555668ce9> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555673efd> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x000055555569808c> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x0000555555698052> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555cd4ff> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x000055555559f873> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555cd855> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555ce03c> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555ca48a> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555556836e7> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00005555555ca443> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+ <0x00007ffff7dbf5b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbf668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x0000555555590365> [func:UNKNOWN file: line:0 module:/home/user/orion-fuzz-mldsa/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/dsa]
+=====================================================================
