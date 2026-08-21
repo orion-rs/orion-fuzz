@@ -1,0 +1,49 @@
+=====================================================================
+TIME: 2026-08-22.01:35:24
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/hash 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: feade085bd5a828538162448532633af.00000080.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/hash/SIGABRT.PC.7ffff7e30a2c.STACK.18628536e4.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 118735
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e30a2c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 00000018628536e4
+STACK:
+ <0x00007ffff7dd6bde> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbe6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555f7d3a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x00005555555f6be9> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x00005555555bbcda> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x00005555555f6e72> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x00005555555e6452> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x00005555555dba29> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x00005555555e6c3d> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x000055555560b04c> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x000055555560af63> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x000055555559aa7a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x0000555555582854> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x000055555557dfec> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x0000555555583995> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x0000555555580fec> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x000055555557cf2a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x00005555555f6427> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x000055555557cee3> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+ <0x00007ffff7dc05b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dc0668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x000055555557c665> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/hash]
+=====================================================================

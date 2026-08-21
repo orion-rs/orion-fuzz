@@ -24,7 +24,7 @@ fn fuzz_serde_impl_password_hash(fuzzer_input: &[u8]) {
     use orion::pwhash::PasswordHash;
 
     let input = String::from_utf8_lossy(fuzzer_input).into_owned();
-    if let Ok(newtype) = PasswordHash::from_encoded(&input) {
+    if let Ok(newtype) = PasswordHash::try_from(input.as_str()) {
         match (
             bincode::serialize(fuzzer_input),
             bincode::serialize(&newtype),
