@@ -27,7 +27,7 @@ fips204 = "0.4.6"
 
 [dependencies.orion]
 git = "https://github.com/orion-rs/orion"
-branch = "mldsa"
+branch = "v0.18.0"
 features = ["serde"]
 
 [[bin]]

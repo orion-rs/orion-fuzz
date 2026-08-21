@@ -4,8 +4,8 @@ extern crate fips204;
 extern crate orion;
 
 use fips204::traits::{KeyGen, SerDes, Signer, Verifier};
-use utils::*;
 use orion::KP;
+use utils::*;
 
 pub mod utils;
 
@@ -66,11 +66,7 @@ fn fuzz_mldsa44(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     );
 
     let sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
-    assert!(other_public.verify(
-        data,
-        &sigbytes,
-        &vec![0u8; ctxsize]
-    ));
+    assert!(other_public.verify(data, &sigbytes, &vec![0u8; ctxsize]));
 }
 
 /// `orion::hazardous::dsa::mldsa65`
@@ -130,11 +126,7 @@ fn fuzz_mldsa65(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     );
 
     let sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
-    assert!(other_public.verify(
-        data,
-        &sigbytes,
-        &vec![0u8; ctxsize]
-    ));
+    assert!(other_public.verify(data, &sigbytes, &vec![0u8; ctxsize]));
 }
 
 /// `orion::hazardous::dsa::mldsa87`
@@ -194,11 +186,7 @@ fn fuzz_mldsa87(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     );
 
     let sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
-    assert!(other_public.verify(
-        data,
-        &sigbytes,
-        &vec![0u8; ctxsize]
-    ));
+    assert!(other_public.verify(data, &sigbytes, &vec![0u8; ctxsize]));
 }
 
 fn main() {
