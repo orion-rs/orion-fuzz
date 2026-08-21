@@ -130,9 +130,11 @@ fn fuzz_blake3(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
         assert_ne!(orion_hash, orion_keyed_hash);
     }
 
-    assert!(orion_ctx.squeeze(&mut orion_hash).is_ok());
+    let mut orion_extra = vec![0u8; outsize];
+    assert!(orion_ctx.squeeze(&mut orion_extra).is_ok());
     assert!(orion_ctx.absorb(b"Extra").is_err());
-    assert!(orion_keyed_ctx.squeeze(&mut orion_keyed_hash).is_ok());
+    let mut orion_extra = vec![0u8; outsize];
+    assert!(orion_keyed_ctx.squeeze(&mut orion_extra).is_ok());
     assert!(orion_keyed_ctx.absorb(b"Extra").is_err());
 
     orion_ctx.reset();
