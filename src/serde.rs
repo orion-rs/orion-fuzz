@@ -20,25 +20,6 @@ fn fuzz_serde_impl<'a, T: Serialize + DeserializeOwned + PartialEq + Debug + Try
     }
 }
 
-fn fuzz_serde_impl_password_hash(fuzzer_input: &[u8]) {
-    use orion::pwhash::PasswordHash;
-
-    let input = String::from_utf8_lossy(fuzzer_input).into_owned();
-    if let Ok(newtype) = PasswordHash::try_from(input.as_str()) {
-        match (
-            bincode::serialize(fuzzer_input),
-            bincode::serialize(&newtype),
-        ) {
-            (Ok(from_raw), Ok(from_type)) => {
-                assert_eq!(from_raw, from_type);
-                let newtype_roundtrip: PasswordHash = bincode::deserialize(&from_raw).unwrap();
-                assert_eq!(newtype_roundtrip, newtype);
-            }
-            _ => panic!("Failed serialization after successful try_from()"),
-        }
-    }
-}
-
 fn main() {
     loop {
         fuzz!(|data: &[u8]| {
@@ -50,14 +31,33 @@ fn main() {
             fuzz_serde_impl::<orion::hazardous::hash::sha2::sha256::Digest>(data);
             fuzz_serde_impl::<orion::hazardous::hash::sha2::sha384::Digest>(data);
             fuzz_serde_impl::<orion::hazardous::hash::sha2::sha512::Digest>(data);
+            fuzz_serde_impl::<orion::hazardous::hash::sha3::sha3_224::Digest>(data);
+            fuzz_serde_impl::<orion::hazardous::hash::sha3::sha3_256::Digest>(data);
+            fuzz_serde_impl::<orion::hazardous::hash::sha3::sha3_384::Digest>(data);
+            fuzz_serde_impl::<orion::hazardous::hash::sha3::sha3_512::Digest>(data);
             fuzz_serde_impl::<orion::hazardous::mac::hmac::sha256::Tag>(data);
             fuzz_serde_impl::<orion::hazardous::mac::hmac::sha384::Tag>(data);
             fuzz_serde_impl::<orion::hazardous::mac::hmac::sha512::Tag>(data);
             fuzz_serde_impl::<orion::hazardous::mac::blake2b::Tag>(data);
+            fuzz_serde_impl::<orion::hazardous::mac::blake3::Tag>(data);
             fuzz_serde_impl::<orion::kdf::Salt>(data);
             fuzz_serde_impl::<orion::auth::Tag>(data);
-
-            fuzz_serde_impl_password_hash(data);
+            fuzz_serde_impl::<orion::hazardous::kdf::argon2::PasswordHash>(data);
+            fuzz_serde_impl::<orion::hazardous::kdf::scrypt::PasswordHash>(data);
+            fuzz_serde_impl::<orion::hazardous::dsa::mldsa44::VerifyingKey>(data);
+            fuzz_serde_impl::<orion::hazardous::dsa::mldsa44::Signature>(data);
+            fuzz_serde_impl::<orion::hazardous::dsa::mldsa65::VerifyingKey>(data);
+            fuzz_serde_impl::<orion::hazardous::dsa::mldsa65::Signature>(data);
+            fuzz_serde_impl::<orion::hazardous::dsa::mldsa87::VerifyingKey>(data);
+            fuzz_serde_impl::<orion::hazardous::dsa::mldsa87::Signature>(data);
+            fuzz_serde_impl::<orion::hazardous::kem::mlkem512::EncapsulationKey>(data);
+            fuzz_serde_impl::<orion::hazardous::kem::mlkem512::Ciphertext>(data);
+            fuzz_serde_impl::<orion::hazardous::kem::mlkem768::EncapsulationKey>(data);
+            fuzz_serde_impl::<orion::hazardous::kem::mlkem768::Ciphertext>(data);
+            fuzz_serde_impl::<orion::hazardous::kem::mlkem1024::EncapsulationKey>(data);
+            fuzz_serde_impl::<orion::hazardous::kem::mlkem1024::Ciphertext>(data);
+            fuzz_serde_impl::<orion::hazardous::kem::xwing::EncapsulationKey>(data);
+            fuzz_serde_impl::<orion::hazardous::kem::xwing::Ciphertext>(data);
         });
     }
 }
