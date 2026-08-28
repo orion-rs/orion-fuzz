@@ -5,6 +5,7 @@ use core::convert::TryFrom;
 use orion::hazardous::aead::streaming::*;
 use orion::hazardous::stream::chacha20::SecretKey;
 use sodiumoxide::crypto::secretstream::xchacha20poly1305 as sodium_stream;
+use std::cmp::max;
 use utils::*;
 
 /// Randomly select which tag should be passed to sealing a chunk.
@@ -36,8 +37,8 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     );
 
     // `seal_chunk()`
-    let rnd_chunksize = seeded_rng.next_u32() as usize;
-    let mut collected_enc: Vec<u8> = Vec::new();
+    let rnd_chunksize: usize = seeded_rng.random_range(1..=max(1, fuzzer_input.len()));
+    let mut collected_chunks: Vec<Vec<u8>> = Vec::new();
     let mut collected_ad: Vec<Vec<u8>> = Vec::new();
 
     for input_chunk in fuzzer_input.chunks(rnd_chunksize) {
@@ -56,7 +57,7 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
             .unwrap();
 
         assert_eq!(orion_msg, sodium_msg);
-        collected_enc.extend_from_slice(&orion_msg);
+        collected_chunks.push(orion_msg);
         collected_ad.push(ad);
 
         // Finalizing a sodiumoxide state with Tag:Final consumes the stream.
@@ -77,13 +78,8 @@ fn fuzz_secret_stream(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     .unwrap();
 
     // `open_chunk()`
-    let dec_rnd_chunksize = rnd_chunksize + ABYTES;
-
-    for (idx, input_chunk) in collected_enc.chunks(dec_rnd_chunksize).enumerate() {
-        let ad = collected_ad.get(idx).unwrap();
-
+    for (input_chunk, ad) in collected_chunks.iter().zip(collected_ad.iter()) {
         let mut orion_msg: Vec<u8> = vec![0u8; input_chunk.len() - ABYTES];
-
         let _orion_tag = orion_state_dec
             .open_chunk(input_chunk, Some(ad), &mut orion_msg)
             .unwrap();

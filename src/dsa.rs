@@ -9,25 +9,86 @@ use utils::*;
 
 pub mod utils;
 
+fn fuzz_keys(fuzzer_input: &[u8]) {
+    use orion::hazardous::dsa::{mldsa44, mldsa65, mldsa87};
+
+    // ML-DSA44
+    let mut buf = [0u8; mldsa44::VERIFYING_KEY_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mldsa44::VERIFYING_KEY_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(pk) = mldsa44::VerifyingKey::try_from(&buf[..]) {
+        assert_eq!(pk.as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mldsa44::SIGNING_KEY_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mldsa44::SIGNING_KEY_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(sk) = mldsa44::SigningKey::try_from(&buf[..]) {
+        assert_eq!(sk.unprotected_as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mldsa44::SIGNATURE_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mldsa44::SIGNATURE_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(sig) = mldsa44::Signature::try_from(&buf[..]) {
+        assert_eq!(sig.as_ref(), &buf[..]);
+    }
+
+    // ML-DSA65
+    let mut buf = [0u8; mldsa65::VERIFYING_KEY_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mldsa65::VERIFYING_KEY_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(pk) = mldsa65::VerifyingKey::try_from(&buf[..]) {
+        assert_eq!(pk.as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mldsa65::SIGNING_KEY_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mldsa65::SIGNING_KEY_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(sk) = mldsa65::SigningKey::try_from(&buf[..]) {
+        assert_eq!(sk.unprotected_as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mldsa65::SIGNATURE_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mldsa65::SIGNATURE_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(sig) = mldsa65::Signature::try_from(&buf[..]) {
+        assert_eq!(sig.as_ref(), &buf[..]);
+    }
+
+    // ML-DSA87
+    let mut buf = [0u8; mldsa87::VERIFYING_KEY_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mldsa87::VERIFYING_KEY_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(pk) = mldsa87::VerifyingKey::try_from(&buf[..]) {
+        assert_eq!(pk.as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mldsa87::SIGNING_KEY_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mldsa87::SIGNING_KEY_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(sk) = mldsa87::SigningKey::try_from(&buf[..]) {
+        assert_eq!(sk.unprotected_as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mldsa87::SIGNATURE_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mldsa87::SIGNATURE_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(sig) = mldsa87::Signature::try_from(&buf[..]) {
+        assert_eq!(sig.as_ref(), &buf[..]);
+    }
+}
+
 /// `orion::hazardous::dsa::mldsa44`
 fn fuzz_mldsa44(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::dsa::mldsa44::*;
-
-    if let (Ok(_sk), Ok(_pk), Ok(_sig)) = (
-        SigningKey::try_from(data),
-        VerifyingKey::try_from(data),
-        Signature::try_from(data),
-    ) {
-        panic!("this should never happen")
-    }
 
     // Generate seeds
     let mut seed = [0u8; SEED_SIZE];
     let mut rnd = [0u8; RAND_SIZE];
     seeded_rng.fill_bytes(&mut seed);
     seeded_rng.fill_bytes(&mut rnd);
-
-    let ctxsize = seeded_rng.random_range(0..=255);
+    let ctx = rand_vec_in_range(seeded_rng, 0, 255);
 
     let orion_kp = KeyPair::try_from(&Seed::try_from(&seed).unwrap()).unwrap();
     let (other_public, other_private) = fips204::ml_dsa_44::KG::keygen_from_seed(&seed);
@@ -43,15 +104,9 @@ fn fuzz_mldsa44(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     // We sign `data` and compare and verify cross-crate
     let orion_sig = orion_kp
         .private()
-        .sign_with_rnd(
-            data,
-            &vec![0u8; ctxsize],
-            &ExplicitRandom::try_from(&rnd).unwrap(),
-        )
+        .sign_with_rnd(data, &ctx, &ExplicitRandom::try_from(&rnd).unwrap())
         .unwrap();
-    let other_sig = other_private
-        .try_sign_with_seed(&rnd, data, &vec![0u8; ctxsize])
-        .unwrap();
+    let other_sig = other_private.try_sign_with_seed(&rnd, data, &ctx).unwrap();
 
     assert_eq!(orion_sig, other_sig.clone().as_slice());
     assert!(
@@ -59,35 +114,41 @@ fn fuzz_mldsa44(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             .public()
             .verify(
                 data,
-                &vec![0u8; ctxsize],
+                &ctx,
                 &Signature::try_from(other_sig.clone().as_slice()).unwrap()
             )
             .is_ok()
     );
 
-    let sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
-    assert!(other_public.verify(data, &sigbytes, &vec![0u8; ctxsize]));
+    let mut sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
+    assert!(other_public.verify(data, &sigbytes, &ctx));
+
+    mutate_value(data, &mut sigbytes);
+    if let Ok(sigmutated) = Signature::try_from(&sigbytes) {
+        match (
+            orion_kp.public().verify(data, &ctx, &sigmutated),
+            other_public.verify(data, &sigbytes, &ctx),
+        ) {
+            (Ok(_), true) => (),
+            (Err(_), false) => (),
+            _ => panic!(
+                "{}",
+                format!("Disagreed on mutated signature: {:?}.", &sigbytes)
+            ),
+        }
+    }
 }
 
 /// `orion::hazardous::dsa::mldsa65`
 fn fuzz_mldsa65(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::dsa::mldsa65::*;
 
-    if let (Ok(_sk), Ok(_pk), Ok(_sig)) = (
-        SigningKey::try_from(data),
-        VerifyingKey::try_from(data),
-        Signature::try_from(data),
-    ) {
-        panic!("this should never happen")
-    }
-
     // Generate seeds
     let mut seed = [0u8; SEED_SIZE];
     let mut rnd = [0u8; RAND_SIZE];
     seeded_rng.fill_bytes(&mut seed);
     seeded_rng.fill_bytes(&mut rnd);
-
-    let ctxsize = seeded_rng.random_range(0..=255);
+    let ctx = rand_vec_in_range(seeded_rng, 0, 255);
 
     let orion_kp = KeyPair::try_from(&Seed::try_from(&seed).unwrap()).unwrap();
     let (other_public, other_private) = fips204::ml_dsa_65::KG::keygen_from_seed(&seed);
@@ -103,15 +164,9 @@ fn fuzz_mldsa65(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     // We sign `data` and compare and verify cross-crate
     let orion_sig = orion_kp
         .private()
-        .sign_with_rnd(
-            data,
-            &vec![0u8; ctxsize],
-            &ExplicitRandom::try_from(&rnd).unwrap(),
-        )
+        .sign_with_rnd(data, &ctx, &ExplicitRandom::try_from(&rnd).unwrap())
         .unwrap();
-    let other_sig = other_private
-        .try_sign_with_seed(&rnd, data, &vec![0u8; ctxsize])
-        .unwrap();
+    let other_sig = other_private.try_sign_with_seed(&rnd, data, &ctx).unwrap();
 
     assert_eq!(orion_sig, other_sig.clone().as_slice());
     assert!(
@@ -119,35 +174,41 @@ fn fuzz_mldsa65(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             .public()
             .verify(
                 data,
-                &vec![0u8; ctxsize],
+                &ctx,
                 &Signature::try_from(other_sig.clone().as_slice()).unwrap()
             )
             .is_ok()
     );
 
-    let sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
-    assert!(other_public.verify(data, &sigbytes, &vec![0u8; ctxsize]));
+    let mut sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
+    assert!(other_public.verify(data, &sigbytes, &ctx));
+
+    mutate_value(data, &mut sigbytes);
+    if let Ok(sigmutated) = Signature::try_from(&sigbytes) {
+        match (
+            orion_kp.public().verify(data, &ctx, &sigmutated),
+            other_public.verify(data, &sigbytes, &ctx),
+        ) {
+            (Ok(_), true) => (),
+            (Err(_), false) => (),
+            _ => panic!(
+                "{}",
+                format!("Disagreed on mutated signature: {:?}.", &sigbytes)
+            ),
+        }
+    }
 }
 
 /// `orion::hazardous::dsa::mldsa87`
 fn fuzz_mldsa87(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::dsa::mldsa87::*;
 
-    if let (Ok(_sk), Ok(_pk), Ok(_sig)) = (
-        SigningKey::try_from(data),
-        VerifyingKey::try_from(data),
-        Signature::try_from(data),
-    ) {
-        panic!("this should never happen")
-    }
-
     // Generate seeds
     let mut seed = [0u8; SEED_SIZE];
     let mut rnd = [0u8; RAND_SIZE];
     seeded_rng.fill_bytes(&mut seed);
     seeded_rng.fill_bytes(&mut rnd);
-
-    let ctxsize = seeded_rng.random_range(0..=255);
+    let ctx = rand_vec_in_range(seeded_rng, 0, 255);
 
     let orion_kp = KeyPair::try_from(&Seed::try_from(&seed).unwrap()).unwrap();
     let (other_public, other_private) = fips204::ml_dsa_87::KG::keygen_from_seed(&seed);
@@ -163,15 +224,9 @@ fn fuzz_mldsa87(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     // We sign `data` and compare and verify cross-crate
     let orion_sig = orion_kp
         .private()
-        .sign_with_rnd(
-            data,
-            &vec![0u8; ctxsize],
-            &ExplicitRandom::try_from(&rnd).unwrap(),
-        )
+        .sign_with_rnd(data, &ctx, &ExplicitRandom::try_from(&rnd).unwrap())
         .unwrap();
-    let other_sig = other_private
-        .try_sign_with_seed(&rnd, data, &vec![0u8; ctxsize])
-        .unwrap();
+    let other_sig = other_private.try_sign_with_seed(&rnd, data, &ctx).unwrap();
 
     assert_eq!(orion_sig, other_sig.clone().as_slice());
     assert!(
@@ -179,14 +234,29 @@ fn fuzz_mldsa87(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             .public()
             .verify(
                 data,
-                &vec![0u8; ctxsize],
+                &ctx,
                 &Signature::try_from(other_sig.clone().as_slice()).unwrap()
             )
             .is_ok()
     );
 
-    let sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
-    assert!(other_public.verify(data, &sigbytes, &vec![0u8; ctxsize]));
+    let mut sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
+    assert!(other_public.verify(data, &sigbytes, &ctx));
+
+    mutate_value(data, &mut sigbytes);
+    if let Ok(sigmutated) = Signature::try_from(&sigbytes) {
+        match (
+            orion_kp.public().verify(data, &ctx, &sigmutated),
+            other_public.verify(data, &sigbytes, &ctx),
+        ) {
+            (Ok(_), true) => (),
+            (Err(_), false) => (),
+            _ => panic!(
+                "{}",
+                format!("Disagreed on mutated signature: {:?}.", &sigbytes)
+            ),
+        }
+    }
 }
 
 fn main() {
@@ -194,6 +264,8 @@ fn main() {
         fuzz!(|data: &[u8]| {
             // Seed the RNG
             let mut seeded_rng = make_seeded_rng(data);
+
+            fuzz_keys(data);
 
             // Test `orion::hazardous::dsa::mldsa*`
             fuzz_mldsa44(&mut seeded_rng, data);

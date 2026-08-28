@@ -28,7 +28,7 @@ impl From<ring::hkdf::Okm<'_, RingHkdf<usize>>> for RingHkdf<Vec<u8>> {
 }
 
 fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
-    let outsize: usize = seeded_rng.random_range(1..=16320);
+    let outsize: usize = seeded_rng.random_range(1..=((255 * SHA512_OUTSIZE) * 2));
 
     let ikm = fuzzer_input;
     let salt = rand_vec_in_range(seeded_rng, 0, 128);
@@ -36,48 +36,42 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut orion_okm = vec![0u8; outsize];
 
     // SHA-256
-
-    // orion
     if orion_okm.len() > 255 * SHA256_OUTSIZE {
         assert!(
             hkdf::Hkdf::<hkdf::SHA256>::derive_key(&salt, ikm, Some(&info), &mut orion_okm)
                 .is_err()
-        );
-        return;
+        )
+    } else {
+        hkdf::Hkdf::<hkdf::SHA256>::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
+
+        let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA256, &salt);
+        let RingHkdf(other_okm) = other_salt
+            .extract(ikm)
+            .expand(&[&info], RingHkdf(orion_okm.len()))
+            .unwrap()
+            .into();
+
+        assert_eq!(orion_okm, other_okm);
     }
-    hkdf::Hkdf::<hkdf::SHA256>::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
-
-    // ring
-    let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA256, &salt);
-    let RingHkdf(other_okm) = other_salt
-        .extract(ikm)
-        .expand(&[&info], RingHkdf(orion_okm.len()))
-        .unwrap()
-        .into();
-
-    assert_eq!(orion_okm, other_okm);
 
     // SHA-384
-
-    // orion
     if orion_okm.len() > 255 * SHA384_OUTSIZE {
         assert!(
             hkdf::Hkdf::<hkdf::SHA384>::derive_key(&salt, ikm, Some(&info), &mut orion_okm)
                 .is_err()
         );
-        return;
+    } else {
+        hkdf::Hkdf::<hkdf::SHA384>::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
+
+        let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA384, &salt);
+        let RingHkdf(other_okm) = other_salt
+            .extract(ikm)
+            .expand(&[&info], RingHkdf(orion_okm.len()))
+            .unwrap()
+            .into();
+
+        assert_eq!(orion_okm, other_okm);
     }
-    hkdf::Hkdf::<hkdf::SHA384>::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
-
-    // ring
-    let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA384, &salt);
-    let RingHkdf(other_okm) = other_salt
-        .extract(ikm)
-        .expand(&[&info], RingHkdf(orion_okm.len()))
-        .unwrap()
-        .into();
-
-    assert_eq!(orion_okm, other_okm);
 
     // SHA-512
 
@@ -87,19 +81,18 @@ fn fuzz_hkdf(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
             hkdf::Hkdf::<hkdf::SHA512>::derive_key(&salt, ikm, Some(&info), &mut orion_okm)
                 .is_err()
         );
-        return;
+    } else {
+        hkdf::Hkdf::<hkdf::SHA512>::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
+
+        let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA512, &salt);
+        let RingHkdf(other_okm) = other_salt
+            .extract(ikm)
+            .expand(&[&info], RingHkdf(orion_okm.len()))
+            .unwrap()
+            .into();
+
+        assert_eq!(orion_okm, other_okm);
     }
-    hkdf::Hkdf::<hkdf::SHA512>::derive_key(&salt, ikm, Some(&info), &mut orion_okm).unwrap();
-
-    // ring
-    let other_salt = ring::hkdf::Salt::new(ring::hkdf::HKDF_SHA512, &salt);
-    let RingHkdf(other_okm) = other_salt
-        .extract(ikm)
-        .expand(&[&info], RingHkdf(orion_okm.len()))
-        .unwrap()
-        .into();
-
-    assert_eq!(orion_okm, other_okm);
 }
 
 fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {

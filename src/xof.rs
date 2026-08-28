@@ -2,9 +2,9 @@ use honggfuzz::fuzz;
 
 pub mod utils;
 use orion::errors::UnknownCryptoError;
+use orion::hazardous::hash::blake3::Blake3;
 use orion::hazardous::hash::sha3::shake128::{SHAKE_128_RATE, Shake128};
 use orion::hazardous::hash::sha3::shake256::{SHAKE_256_RATE, Shake256};
-use orion::hazardous::hash::blake3::Blake3;
 use std::marker::PhantomData;
 use utils::*;
 extern crate blake3 as other_blake3;
@@ -83,7 +83,6 @@ impl XofComparableType for other_blake3::Hasher {
         reader.fill(dest);
     }
 }
-
 
 /// A SHAKE fuzzer.
 struct ShakeFuzzer<T, O> {

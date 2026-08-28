@@ -24,3 +24,20 @@ pub fn rand_vec_in_range(seeded_rng: &mut ChaCha8Rng, lb: usize, ub: usize) -> V
 
     bytes
 }
+
+/// Based on fuzzer_input, mutate a value with a XOR mask.
+pub fn mutate_value(fuzzer_input: &[u8], value: &mut [u8]) {
+    let offset: usize = if fuzzer_input.is_empty() {
+        0
+    } else {
+        fuzzer_input[0] as usize
+    };
+
+    let mask: u8 = if fuzzer_input.len() < 2 {
+        1
+    } else {
+        fuzzer_input[1]
+    };
+
+    value[offset % value.len()] ^= mask;
+}

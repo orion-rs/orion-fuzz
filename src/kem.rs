@@ -6,16 +6,101 @@ use utils::*;
 
 pub mod utils;
 
+fn fuzz_keys(fuzzer_input: &[u8]) {
+    use orion::hazardous::kem::{mlkem512, mlkem768, mlkem1024, xwing};
+
+    // ML-KEM512
+    let mut buf = [0u8; mlkem512::EK_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mlkem512::EK_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(ek) = mlkem512::EncapsulationKey::try_from(&buf[..]) {
+        assert_eq!(ek.as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mlkem512::DK_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mlkem512::DK_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(dk) = mlkem512::DecapsulationKey::unchecked_from_slice(&buf[..]) {
+        assert_eq!(dk.unprotected_as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mlkem512::CIPHERTEXT_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mlkem512::CIPHERTEXT_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(ct) = mlkem512::Ciphertext::try_from(&buf[..]) {
+        assert_eq!(ct.as_ref(), &buf[..]);
+    }
+
+    // ML-KEM768
+    let mut buf = [0u8; mlkem768::EK_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mlkem768::EK_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(ek) = mlkem768::EncapsulationKey::try_from(&buf[..]) {
+        assert_eq!(ek.as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mlkem768::DK_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mlkem768::DK_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(dk) = mlkem768::DecapsulationKey::unchecked_from_slice(&buf[..]) {
+        assert_eq!(dk.unprotected_as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mlkem768::CIPHERTEXT_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mlkem768::CIPHERTEXT_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(ct) = mlkem768::Ciphertext::try_from(&buf[..]) {
+        assert_eq!(ct.as_ref(), &buf[..]);
+    }
+
+    // ML-KEM1024
+    let mut buf = [0u8; mlkem1024::EK_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mlkem1024::EK_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(ek) = mlkem1024::EncapsulationKey::try_from(&buf[..]) {
+        assert_eq!(ek.as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mlkem1024::DK_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mlkem1024::DK_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(dk) = mlkem1024::DecapsulationKey::unchecked_from_slice(&buf[..]) {
+        assert_eq!(dk.unprotected_as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; mlkem1024::CIPHERTEXT_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), mlkem1024::CIPHERTEXT_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(ct) = mlkem1024::Ciphertext::try_from(&buf[..]) {
+        assert_eq!(ct.as_ref(), &buf[..]);
+    }
+
+    // X-Wing
+    let mut buf = [0u8; xwing::EK_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), xwing::EK_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(ek) = xwing::EncapsulationKey::try_from(&buf[..]) {
+        assert_eq!(ek.as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; xwing::DK_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), xwing::DK_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(dk) = xwing::DecapsulationKey::try_from(&buf[..]) {
+        assert_eq!(dk.unprotected_as_ref(), &buf[..]);
+    }
+
+    let mut buf = [0u8; xwing::CIPHERTEXT_SIZE];
+    let n = core::cmp::min(fuzzer_input.len(), xwing::CIPHERTEXT_SIZE);
+    buf[..n].copy_from_slice(&fuzzer_input[..n]);
+    if let Ok(ct) = xwing::Ciphertext::try_from(&buf[..]) {
+        assert_eq!(ct.as_ref(), &buf[..]);
+    }
+}
+
 /// `orion::hazardous::kem::mlkem512`
 fn fuzz_mlkem512(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::kem::mlkem512::*;
-
-    if let (Ok(_ek), Ok(_dk)) = (
-        EncapsulationKey::try_from(data),
-        DecapsulationKey::unchecked_from_slice(data),
-    ) {
-        panic!("this should never happen")
-    }
 
     // Generate seeds
     let mut dz = [0u8; 64];
@@ -56,7 +141,7 @@ fn fuzz_mlkem512(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             .unwrap()
     );
 
-    let ctbytes: [u8; 768] = orion_ct.as_ref().try_into().unwrap();
+    let mut ctbytes: [u8; 768] = orion_ct.as_ref().try_into().unwrap();
     let other_ss_orion = other_decapkey
         .try_decaps(&fips203::ml_kem_512::CipherText::try_from_bytes(ctbytes).unwrap())
         .unwrap();
@@ -69,18 +154,29 @@ fn fuzz_mlkem512(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
         &other_ss_orion.into_bytes()[..],
         orion_ss.unprotected_as_ref()
     );
+
+    mutate_value(data, &mut ctbytes);
+    if let (Ok(orion_ctmutated), Ok(other_mutated)) = (
+        mlkem512::Ciphertext::try_from(&ctbytes),
+        fips203::ml_kem_512::CipherText::try_from_bytes(ctbytes),
+    ) {
+        match (
+            orion_kp.private().decap(&orion_ctmutated),
+            other_decapkey.try_decaps(&other_mutated),
+        ) {
+            (Ok(_), Ok(_)) => (),
+            (Err(_), Err(_)) => (),
+            _ => panic!(
+                "{}",
+                format!("Disagreed on mutated ciphertext: {:?}.", &ctbytes)
+            ),
+        }
+    }
 }
 
 /// `orion::hazardous::kem::mlkem768`
 fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::kem::mlkem768::*;
-
-    if let (Ok(_ek), Ok(_dk)) = (
-        EncapsulationKey::try_from(data),
-        DecapsulationKey::unchecked_from_slice(data),
-    ) {
-        panic!("this should never happen")
-    }
 
     // Generate seeds
     let mut dz = [0u8; 64];
@@ -111,7 +207,6 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     assert_eq!(orion_ss, &other_ss.clone().into_bytes()[..]);
 
     let orion_ss_other = orion_kp
-        .private()
         .decap(&mlkem768::Ciphertext::from(other_ct.clone().into_bytes()))
         .unwrap();
     assert_eq!(
@@ -121,7 +216,7 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             .decap(&mlkem768::Ciphertext::from(other_ct.into_bytes()))
             .unwrap()
     );
-    let ctbytes: [u8; 1088] = orion_ct.as_ref().try_into().unwrap();
+    let mut ctbytes: [u8; 1088] = orion_ct.as_ref().try_into().unwrap();
     let other_ss_orion = other_decapkey
         .try_decaps(&fips203::ml_kem_768::CipherText::try_from_bytes(ctbytes).unwrap())
         .unwrap();
@@ -134,18 +229,29 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
         &other_ss_orion.into_bytes()[..],
         orion_ss.unprotected_as_ref()
     );
+
+    mutate_value(data, &mut ctbytes);
+    if let (Ok(orion_ctmutated), Ok(other_mutated)) = (
+        mlkem768::Ciphertext::try_from(&ctbytes),
+        fips203::ml_kem_768::CipherText::try_from_bytes(ctbytes),
+    ) {
+        match (
+            orion_kp.private().decap(&orion_ctmutated),
+            other_decapkey.try_decaps(&other_mutated),
+        ) {
+            (Ok(_), Ok(_)) => (),
+            (Err(_), Err(_)) => (),
+            _ => panic!(
+                "{}",
+                format!("Disagreed on mutated ciphertext: {:?}.", &ctbytes)
+            ),
+        }
+    }
 }
 
 /// `orion::hazardous::kem::mlkem1024`
 fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use orion::hazardous::kem::mlkem1024::*;
-
-    if let (Ok(_ek), Ok(_dk)) = (
-        EncapsulationKey::try_from(data),
-        DecapsulationKey::unchecked_from_slice(data),
-    ) {
-        panic!("this should never happen")
-    }
 
     // Generate seeds
     let mut dz = [0u8; 64];
@@ -176,7 +282,6 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     assert_eq!(orion_ss, &other_ss.clone().into_bytes()[..]);
 
     let orion_ss_other = orion_kp
-        .private()
         .decap(&mlkem1024::Ciphertext::from(other_ct.clone().into_bytes()))
         .unwrap();
     assert_eq!(
@@ -186,7 +291,7 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             .decap(&mlkem1024::Ciphertext::from(other_ct.into_bytes()))
             .unwrap()
     );
-    let ctbytes: [u8; 1568] = orion_ct.as_ref().try_into().unwrap();
+    let mut ctbytes: [u8; 1568] = orion_ct.as_ref().try_into().unwrap();
     let other_ss_orion = other_decapkey
         .try_decaps(&fips203::ml_kem_1024::CipherText::try_from_bytes(ctbytes).unwrap())
         .unwrap();
@@ -199,19 +304,30 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
         &other_ss_orion.into_bytes()[..],
         orion_ss.unprotected_as_ref()
     );
+
+    mutate_value(data, &mut ctbytes);
+    if let (Ok(orion_ctmutated), Ok(other_mutated)) = (
+        mlkem1024::Ciphertext::try_from(&ctbytes),
+        fips203::ml_kem_1024::CipherText::try_from_bytes(ctbytes),
+    ) {
+        match (
+            orion_kp.private().decap(&orion_ctmutated),
+            other_decapkey.try_decaps(&other_mutated),
+        ) {
+            (Ok(_), Ok(_)) => (),
+            (Err(_), Err(_)) => (),
+            _ => panic!(
+                "{}",
+                format!("Disagreed on mutated ciphertext: {:?}.", &ctbytes)
+            ),
+        }
+    }
 }
 
 /// `orion::hazardous::kem::xwing`
 fn fuzz_xwing(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     use kem::{Decapsulate, Decapsulator, Encapsulate, KeyExport};
     use orion::hazardous::kem::xwing::*;
-
-    if let (Ok(_ek), Ok(_dk)) = (
-        EncapsulationKey::try_from(data),
-        DecapsulationKey::try_from(data),
-    ) {
-        panic!("this should never happen")
-    }
 
     // Generate seeds
     let mut seed = [0u8; 32];
@@ -259,6 +375,8 @@ fn main() {
         fuzz!(|data: &[u8]| {
             // Seed the RNG
             let mut seeded_rng = make_seeded_rng(data);
+
+            fuzz_keys(data);
 
             // Test `orion::hazardous::kem::mlkem*`
             fuzz_mlkem512(&mut seeded_rng, data);
