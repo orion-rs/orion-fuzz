@@ -33,10 +33,9 @@ pub fn mutate_value(fuzzer_input: &[u8], value: &mut [u8]) {
         fuzzer_input[0] as usize
     };
 
-    let mask: u8 = if fuzzer_input.len() < 2 {
-        1
-    } else {
-        fuzzer_input[1]
+    let mask: u8 = match fuzzer_input.get(1) {
+        Some(0) | None => 1,
+        Some(&m) => m,
     };
 
     value[offset % value.len()] ^= mask;
