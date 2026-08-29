@@ -5,6 +5,7 @@ use std::marker::PhantomData;
 
 use orion::errors::UnknownCryptoError;
 use orion::hazardous::mac::blake2b;
+use orion::hazardous::mac::blake3 as orion_blake3;
 use orion::hazardous::mac::hmac;
 use orion::hazardous::mac::poly1305;
 use sodiumoxide::crypto::onetimeauth;
@@ -73,6 +74,8 @@ trait HmacFuzzType<T: PartialEq + HmacTagAsBytes, S: HmacKey> {
 
     fn hmac(secret_key: &S, data: &[u8]) -> Result<T, UnknownCryptoError>;
 
+    fn verify(expected: &T, secret_key: &S, data: &[u8]) -> Result<(), UnknownCryptoError>;
+
     fn get_blocksize() -> usize;
 }
 
@@ -98,6 +101,14 @@ impl HmacFuzzType<hmac::sha256::Tag, hmac::sha256::SecretKey> for hmac::sha256::
         data: &[u8],
     ) -> Result<hmac::sha256::Tag, UnknownCryptoError> {
         hmac::sha256::HmacSha256::hmac(secret_key, data)
+    }
+
+    fn verify(
+        expected: &hmac::sha256::Tag,
+        secret_key: &hmac::sha256::SecretKey,
+        data: &[u8],
+    ) -> Result<(), UnknownCryptoError> {
+        hmac::sha256::HmacSha256::verify(expected, secret_key, data)
     }
 
     fn get_blocksize() -> usize {
@@ -129,6 +140,14 @@ impl HmacFuzzType<hmac::sha384::Tag, hmac::sha384::SecretKey> for hmac::sha384::
         hmac::sha384::HmacSha384::hmac(secret_key, data)
     }
 
+    fn verify(
+        expected: &hmac::sha384::Tag,
+        secret_key: &hmac::sha384::SecretKey,
+        data: &[u8],
+    ) -> Result<(), UnknownCryptoError> {
+        hmac::sha384::HmacSha384::verify(expected, secret_key, data)
+    }
+
     fn get_blocksize() -> usize {
         orion::hazardous::hash::sha2::sha384::SHA384_BLOCKSIZE
     }
@@ -156,6 +175,14 @@ impl HmacFuzzType<hmac::sha512::Tag, hmac::sha512::SecretKey> for hmac::sha512::
         data: &[u8],
     ) -> Result<hmac::sha512::Tag, UnknownCryptoError> {
         hmac::sha512::HmacSha512::hmac(secret_key, data)
+    }
+
+    fn verify(
+        expected: &hmac::sha512::Tag,
+        secret_key: &hmac::sha512::SecretKey,
+        data: &[u8],
+    ) -> Result<(), UnknownCryptoError> {
+        hmac::sha512::HmacSha512::verify(expected, secret_key, data)
     }
 
     fn get_blocksize() -> usize {
@@ -242,6 +269,7 @@ where
         assert_eq!(orion_one_shot, orion_tag);
         assert_eq!(orion_one_shot, orion_tag_with_reset);
         assert_eq!(other_one_shot.as_ref(), orion_tag.as_bytes());
+        assert!(T::verify(&orion_one_shot, &orion_key, &collected_data).is_ok());
     }
 }
 
@@ -285,6 +313,7 @@ fn fuzz_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     assert_eq!(other_tag.as_ref(), orion_tag.unprotected_as_ref());
     assert_eq!(orion_one_shot, orion_tag_with_reset);
     assert_eq!(other_tag.as_ref(), orion_one_shot.unprotected_as_ref());
+    assert!(poly1305::Poly1305::verify(&orion_one_shot, &orion_key, &collected_data).is_ok());
 }
 
 const BLAKE2B_BLOCKSIZE: usize = 128;
@@ -326,6 +355,43 @@ fn fuzz_blake2b(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let orion_hash = orion_ctx.finalize().unwrap();
 
     assert_eq!(orion_hash, other_hash.as_bytes());
+    assert!(blake2b::Blake2b::verify(&orion_hash, &orion_key, outsize, &collected_data).is_ok());
+}
+
+const BLAKE3_CHUNKLEN: usize = 1024;
+
+fn fuzz_blake3(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
+    let mut orion_ctx: orion_blake3::Blake3;
+    // Streamin for this is tested in hash.rs as BLAKE3 exposes keyed_hash as well
+
+    let mut keybytes = [0u8; 32];
+    seeded_rng.fill(&mut keybytes);
+    let orion_key = orion_blake3::SecretKey::try_from(&keybytes).unwrap();
+    orion_ctx = orion_blake3::Blake3::new(&orion_key);
+
+    orion_ctx.update(fuzzer_input).unwrap();
+
+    let mut collected_data: Vec<u8> = Vec::new();
+    collected_data.extend_from_slice(fuzzer_input);
+
+    if fuzzer_input.len() > BLAKE3_CHUNKLEN {
+        orion_ctx.update(b"").unwrap();
+        collected_data.extend_from_slice(b"");
+    }
+    if fuzzer_input.len() > BLAKE3_CHUNKLEN * 2 {
+        orion_ctx.update(b"Extra").unwrap();
+        collected_data.extend_from_slice(b"Extra");
+    }
+    if fuzzer_input.len() > BLAKE3_CHUNKLEN * 3 {
+        orion_ctx.update(&[0u8; 256]).unwrap();
+        collected_data.extend_from_slice(&[0u8; 256]);
+    }
+
+    let other_hash = blake3::keyed_hash(&keybytes, &collected_data);
+    let orion_hash = orion_ctx.finalize().unwrap();
+
+    assert_eq!(orion_hash, other_hash.as_bytes());
+    assert!(orion_blake3::Blake3::verify(&orion_hash, &orion_key, &collected_data).is_ok());
 }
 
 fn main() {
@@ -359,6 +425,8 @@ fn main() {
             fuzz_poly1305(data, &mut seeded_rng);
             // Test `orion::hazardous::blake2b`
             fuzz_blake2b(data, &mut seeded_rng);
+            // Test `orion::hazardous::blake3`
+            fuzz_blake3(data, &mut seeded_rng);
         });
     }
 }
