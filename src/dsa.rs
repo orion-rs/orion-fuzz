@@ -133,7 +133,7 @@ fn fuzz_mldsa44(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             (Err(_), false) => (),
             _ => panic!(
                 "{}",
-                format!("Disagreed on mutated signature: {:?}.", &sigbytes)
+                format!("Disagreed on mutated signature: {:?}.", sigbytes)
             ),
         }
     }
@@ -193,7 +193,7 @@ fn fuzz_mldsa65(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             (Err(_), false) => (),
             _ => panic!(
                 "{}",
-                format!("Disagreed on mutated signature: {:?}.", &sigbytes)
+                format!("Disagreed on mutated signature: {:?}.", sigbytes)
             ),
         }
     }
@@ -253,7 +253,7 @@ fn fuzz_mldsa87(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             (Err(_), false) => (),
             _ => panic!(
                 "{}",
-                format!("Disagreed on mutated signature: {:?}.", &sigbytes)
+                format!("Disagreed on mutated signature: {:?}.", sigbytes)
             ),
         }
     }

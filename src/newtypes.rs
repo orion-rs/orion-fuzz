@@ -391,6 +391,24 @@ pub mod typedefs {
         use orion::hazardous::kem::mlkem1024::{MlKem1024SharedSecret, SHARED_SECRET_SIZE};
         fuzz_secret::<MlKem1024SharedSecret>(SHARED_SECRET_SIZE, SHARED_SECRET_SIZE, fuzzer_input);
     }
+
+    pub fn fuzz_argon2_password_hash(fuzzer_input: &[u8]) {
+        use orion::hazardous::kdf::argon2::PasswordHash;
+
+        if let Ok(hash) = PasswordHash::try_from(fuzzer_input) {
+            assert_eq!(hash.unprotected_as_ref::<[u8]>(), fuzzer_input);
+            assert!(!hash.is_empty());
+        }
+    }
+
+    pub fn fuzz_scrypt_password_hash(fuzzer_input: &[u8]) {
+        use orion::hazardous::kdf::scrypt::PasswordHash;
+
+        if let Ok(hash) = PasswordHash::try_from(fuzzer_input) {
+            assert_eq!(hash.unprotected_as_ref::<[u8]>(), fuzzer_input);
+            assert!(!hash.is_empty());
+        }
+    }
 }
 
 pub mod hltypes {
@@ -419,16 +437,6 @@ pub mod hltypes {
     fuzz_type_variable_length!(fuzz_secret_key, SecretKey, unprotected_as_ref);
     fuzz_type_variable_length!(fuzz_salt, Salt, as_ref);
     fuzz_type_variable_length!(fuzz_password, Password, unprotected_as_ref);
-
-    pub fn fuzz_passwordhash(fuzzer_input: &[u8]) {
-        use orion::pwhash::PasswordHash;
-
-        let input = String::from_utf8_lossy(fuzzer_input);
-        if let Ok(hash) = PasswordHash::from_encoded(&input) {
-            assert_eq!(hash.unprotected_as_encoded(), input);
-            assert!(!hash.is_empty());
-        }
-    }
 }
 
 fn main() {
@@ -471,12 +479,13 @@ fn main() {
             typedefs::fuzz_mlkem1024_keys(data);
             typedefs::fuzz_mlkem1024_ciphertext(data);
             typedefs::fuzz_mlkem1024_shared_secret(data);
+            typedefs::fuzz_argon2_password_hash(data);
+            typedefs::fuzz_scrypt_password_hash(data);
 
             // hltypes
             hltypes::fuzz_secret_key(data);
             hltypes::fuzz_password(data);
             hltypes::fuzz_salt(data);
-            hltypes::fuzz_passwordhash(data);
         });
     }
 }

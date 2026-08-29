@@ -168,7 +168,7 @@ fn fuzz_mlkem512(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             (Err(_), Err(_)) => (),
             _ => panic!(
                 "{}",
-                format!("Disagreed on mutated ciphertext: {:?}.", &ctbytes)
+                format!("Disagreed on mutated ciphertext: {:?}.", ctbytes)
             ),
         }
     }
@@ -243,7 +243,7 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             (Err(_), Err(_)) => (),
             _ => panic!(
                 "{}",
-                format!("Disagreed on mutated ciphertext: {:?}.", &ctbytes)
+                format!("Disagreed on mutated ciphertext: {:?}.", ctbytes)
             ),
         }
     }
@@ -318,7 +318,7 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             (Err(_), Err(_)) => (),
             _ => panic!(
                 "{}",
-                format!("Disagreed on mutated ciphertext: {:?}.", &ctbytes)
+                format!("Disagreed on mutated ciphertext: {:?}.", ctbytes)
             ),
         }
     }

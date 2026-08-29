@@ -108,7 +108,7 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
 
     // orion
     pbkdf2::Pbkdf2::<pbkdf2::SHA256>::derive_key(
-        &password,
+        password,
         &salt,
         iterations as usize,
         &mut orion_dk,
@@ -130,7 +130,7 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
 
     // orion
     pbkdf2::Pbkdf2::<pbkdf2::SHA384>::derive_key(
-        &password,
+        password,
         &salt,
         iterations as usize,
         &mut orion_dk,
@@ -152,7 +152,7 @@ fn fuzz_pbkdf2(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
 
     // orion
     pbkdf2::Pbkdf2::<pbkdf2::SHA512>::derive_key(
-        &password,
+        password,
         &salt,
         iterations as usize,
         &mut orion_dk,

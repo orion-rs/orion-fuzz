@@ -75,8 +75,6 @@ impl XofComparableType for shake::Shake256 {
 
 impl XofComparableType for other_blake3::Hasher {
     fn digest(data: &[u8], dest: &mut [u8]) {
-        use shake::digest::{ExtendableOutput, Update, XofReader};
-
         let mut hasher = other_blake3::Hasher::new();
         hasher.update(data);
         let mut reader = hasher.finalize_xof();

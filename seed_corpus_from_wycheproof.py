@@ -34,7 +34,6 @@ ROUTES: list[tuple[str, tuple[str, ...]]] = [
     ("pynacl/pynacl_secretstream_test_vectors", ("aead_stream",)),
 ]
 
-
 def target_for(relpath: str) -> tuple[str, ...]:
     for prefix, targets in ROUTES:
         if relpath.startswith(prefix):
@@ -67,7 +66,8 @@ def write_seed(out_dir: Path, data: bytes) -> bool:
 
 def main(testvector_dir: Path, hfuzz_workspace: Path):
     if not testvector_dir.is_dir():
-        print(f"testvector_dir not found: {testvector_dir}\n", file=sys.stderr)
+        print(f"testvector_dir not found: {testvector_dir}\n",
+              file=sys.stderr)
         sys.exit(1)
 
     written_per_target: dict[str, int] = {}
@@ -99,7 +99,5 @@ def main(testvector_dir: Path, hfuzz_workspace: Path):
 
 if __name__ == "__main__":
     testvector_dir = Path(sys.argv[1])
-    workspace = (
-        Path(sys.argv[2]) if len(sys.argv) > 2 else Path.cwd() / "hfuzz_workspace"
-    )
+    workspace = Path(sys.argv[2]) if len(sys.argv) > 2 else Path.cwd() / "hfuzz_workspace"
     main(testvector_dir, workspace)
