@@ -64,18 +64,34 @@ fn fuzz_dhkem_x25519_hkdf_sha256_modebase(seeded_rng: &mut ChaCha8Rng, data: &[u
 
     let aad = rand_vec_in_range(seeded_rng, 0, 64);
     let plaintext = data;
-    let mut orion_ct = vec![0u8; plaintext.len() + 16];
-    hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
-    let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
-    //assert_eq!(&orion_ct, &other_ct);
+    let mut orion_cts: Vec<Vec<u8>> = Vec::new();
+    let mut other_cts: Vec<Vec<u8>> = Vec::new();
+    let n = seeded_rng.random_range(1..=16);
 
-    let mut orion_pt = vec![0u8; plaintext.len()];
-    hpke_recipient.open(&other_ct, &aad, &mut orion_pt).unwrap();
-    let other_plaintext = other_hpke_context_recipient
-        .open(&orion_ct, &aad)
-        .expect("invalid ciphertext!");
+    for _ in 0..n {
+        let mut orion_ct = vec![0u8; plaintext.len() + 16];
+        hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
+        let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+        // Non-deterministic instances
+        assert_ne!(&orion_ct, &other_ct);
+        if let Some(prev) = orion_cts.last().as_ref() {
+            // nonce should forward making distinct ciphertexts for smae PT
+            assert_ne!(prev.as_slice(), orion_ct.as_slice());
+        }
 
-    assert_eq!(orion_pt, other_plaintext);
+        orion_cts.push(orion_ct);
+        other_cts.push(other_ct);
+    }
+
+    for (orion_ct, other_ct) in orion_cts.iter().zip(other_cts.iter()) {
+        let mut orion_pt = vec![0u8; plaintext.len()];
+        hpke_recipient.open(other_ct, &aad, &mut orion_pt).unwrap();
+        let other_plaintext = other_hpke_context_recipient
+            .open(orion_ct, &aad)
+            .expect("invalid ciphertext!");
+
+        assert_eq!(orion_pt, other_plaintext);
+    }
 
     let exporter_context = rand_vec_in_range(seeded_rng, 0, 64);
     let mut out_export_orion = rand_vec_in_range(seeded_rng, 1, 64);
@@ -166,17 +182,34 @@ fn fuzz_dhkem_x25519_hkdf_sha256_modepsk(seeded_rng: &mut ChaCha8Rng, data: &[u8
 
     let aad = rand_vec_in_range(seeded_rng, 0, 64);
     let plaintext = data;
-    let mut orion_ct = vec![0u8; plaintext.len() + 16];
-    hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
-    let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+    let mut orion_cts: Vec<Vec<u8>> = Vec::new();
+    let mut other_cts: Vec<Vec<u8>> = Vec::new();
+    let n = seeded_rng.random_range(1..=16);
 
-    let mut orion_pt = vec![0u8; plaintext.len()];
-    hpke_recipient.open(&other_ct, &aad, &mut orion_pt).unwrap();
-    let other_plaintext = other_hpke_context_recipient
-        .open(&orion_ct, &aad)
-        .expect("invalid ciphertext!");
+    for _ in 0..n {
+        let mut orion_ct = vec![0u8; plaintext.len() + 16];
+        hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
+        let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+        // Non-deterministic instances
+        assert_ne!(&orion_ct, &other_ct);
+        if let Some(prev) = orion_cts.last().as_ref() {
+            // nonce should forward making distinct ciphertexts for smae PT
+            assert_ne!(prev.as_slice(), orion_ct.as_slice());
+        }
 
-    assert_eq!(orion_pt, other_plaintext);
+        orion_cts.push(orion_ct);
+        other_cts.push(other_ct);
+    }
+
+    for (orion_ct, other_ct) in orion_cts.iter().zip(other_cts.iter()) {
+        let mut orion_pt = vec![0u8; plaintext.len()];
+        hpke_recipient.open(other_ct, &aad, &mut orion_pt).unwrap();
+        let other_plaintext = other_hpke_context_recipient
+            .open(orion_ct, &aad)
+            .expect("invalid ciphertext!");
+
+        assert_eq!(orion_pt, other_plaintext);
+    }
 
     let exporter_context = rand_vec_in_range(seeded_rng, 0, 64);
     let mut out_export_orion = rand_vec_in_range(seeded_rng, 1, 64);
@@ -275,17 +308,34 @@ fn fuzz_dhkem_x25519_hkdf_sha256_modeauth(seeded_rng: &mut ChaCha8Rng, data: &[u
 
     let aad = rand_vec_in_range(seeded_rng, 0, 64);
     let plaintext = data;
-    let mut orion_ct = vec![0u8; plaintext.len() + 16];
-    hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
-    let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+    let mut orion_cts: Vec<Vec<u8>> = Vec::new();
+    let mut other_cts: Vec<Vec<u8>> = Vec::new();
+    let n = seeded_rng.random_range(1..=16);
 
-    let mut orion_pt = vec![0u8; plaintext.len()];
-    hpke_recipient.open(&other_ct, &aad, &mut orion_pt).unwrap();
-    let other_plaintext = other_hpke_context_recipient
-        .open(&orion_ct, &aad)
-        .expect("invalid ciphertext!");
+    for _ in 0..n {
+        let mut orion_ct = vec![0u8; plaintext.len() + 16];
+        hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
+        let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+        // Non-deterministic instances
+        assert_ne!(&orion_ct, &other_ct);
+        if let Some(prev) = orion_cts.last().as_ref() {
+            // nonce should forward making distinct ciphertexts for smae PT
+            assert_ne!(prev.as_slice(), orion_ct.as_slice());
+        }
 
-    assert_eq!(orion_pt, other_plaintext);
+        orion_cts.push(orion_ct);
+        other_cts.push(other_ct);
+    }
+
+    for (orion_ct, other_ct) in orion_cts.iter().zip(other_cts.iter()) {
+        let mut orion_pt = vec![0u8; plaintext.len()];
+        hpke_recipient.open(other_ct, &aad, &mut orion_pt).unwrap();
+        let other_plaintext = other_hpke_context_recipient
+            .open(orion_ct, &aad)
+            .expect("invalid ciphertext!");
+
+        assert_eq!(orion_pt, other_plaintext);
+    }
 
     let exporter_context = rand_vec_in_range(seeded_rng, 0, 64);
     let mut out_export_orion = rand_vec_in_range(seeded_rng, 1, 64);
@@ -395,17 +445,34 @@ fn fuzz_dhkem_x25519_hkdf_sha256_modeauthpsk(seeded_rng: &mut ChaCha8Rng, data: 
 
     let aad = rand_vec_in_range(seeded_rng, 0, 64);
     let plaintext = data;
-    let mut orion_ct = vec![0u8; plaintext.len() + 16];
-    hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
-    let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+    let mut orion_cts: Vec<Vec<u8>> = Vec::new();
+    let mut other_cts: Vec<Vec<u8>> = Vec::new();
+    let n = seeded_rng.random_range(1..=16);
 
-    let mut orion_pt = vec![0u8; plaintext.len()];
-    hpke_recipient.open(&other_ct, &aad, &mut orion_pt).unwrap();
-    let other_plaintext = other_hpke_context_recipient
-        .open(&orion_ct, &aad)
-        .expect("invalid ciphertext!");
+    for _ in 0..n {
+        let mut orion_ct = vec![0u8; plaintext.len() + 16];
+        hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
+        let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+        // Non-deterministic instances
+        assert_ne!(&orion_ct, &other_ct);
+        if let Some(prev) = orion_cts.last().as_ref() {
+            // nonce should forward making distinct ciphertexts for smae PT
+            assert_ne!(prev.as_slice(), orion_ct.as_slice());
+        }
 
-    assert_eq!(orion_pt, other_plaintext);
+        orion_cts.push(orion_ct);
+        other_cts.push(other_ct);
+    }
+
+    for (orion_ct, other_ct) in orion_cts.iter().zip(other_cts.iter()) {
+        let mut orion_pt = vec![0u8; plaintext.len()];
+        hpke_recipient.open(other_ct, &aad, &mut orion_pt).unwrap();
+        let other_plaintext = other_hpke_context_recipient
+            .open(&orion_ct, &aad)
+            .expect("invalid ciphertext!");
+
+        assert_eq!(orion_pt, other_plaintext);
+    }
 
     let exporter_context = rand_vec_in_range(seeded_rng, 0, 64);
     let mut out_export_orion = rand_vec_in_range(seeded_rng, 1, 64);
@@ -484,18 +551,34 @@ fn fuzz_mlkem768_x25519_hkdf_sha256_modebase(seeded_rng: &mut ChaCha8Rng, data: 
 
     let aad = rand_vec_in_range(seeded_rng, 0, 64);
     let plaintext = data;
-    let mut orion_ct = vec![0u8; plaintext.len() + 16];
-    hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
-    let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
-    //assert_eq!(&orion_ct, &other_ct);
+    let mut orion_cts: Vec<Vec<u8>> = Vec::new();
+    let mut other_cts: Vec<Vec<u8>> = Vec::new();
+    let n = seeded_rng.random_range(1..=16);
 
-    let mut orion_pt = vec![0u8; plaintext.len()];
-    hpke_recipient.open(&other_ct, &aad, &mut orion_pt).unwrap();
-    let other_plaintext = other_hpke_context_recipient
-        .open(&orion_ct, &aad)
-        .expect("invalid ciphertext!");
+    for _ in 0..n {
+        let mut orion_ct = vec![0u8; plaintext.len() + 16];
+        hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
+        let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+        // Non-deterministic instances
+        assert_ne!(&orion_ct, &other_ct);
+        if let Some(prev) = orion_cts.last().as_ref() {
+            // nonce should forward making distinct ciphertexts for smae PT
+            assert_ne!(prev.as_slice(), orion_ct.as_slice());
+        }
 
-    assert_eq!(orion_pt, other_plaintext);
+        orion_cts.push(orion_ct);
+        other_cts.push(other_ct);
+    }
+
+    for (orion_ct, other_ct) in orion_cts.iter().zip(other_cts.iter()) {
+        let mut orion_pt = vec![0u8; plaintext.len()];
+        hpke_recipient.open(other_ct, &aad, &mut orion_pt).unwrap();
+        let other_plaintext = other_hpke_context_recipient
+            .open(orion_ct, &aad)
+            .expect("invalid ciphertext!");
+
+        assert_eq!(orion_pt, other_plaintext);
+    }
 
     let exporter_context = rand_vec_in_range(seeded_rng, 0, 64);
     let mut out_export_orion = rand_vec_in_range(seeded_rng, 1, 64);
@@ -583,17 +666,34 @@ fn fuzz_mlkem768_x25519_hkdf_sha256_modepsk(seeded_rng: &mut ChaCha8Rng, data: &
 
     let aad = rand_vec_in_range(seeded_rng, 0, 64);
     let plaintext = data;
-    let mut orion_ct = vec![0u8; plaintext.len() + 16];
-    hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
-    let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+    let mut orion_cts: Vec<Vec<u8>> = Vec::new();
+    let mut other_cts: Vec<Vec<u8>> = Vec::new();
+    let n = seeded_rng.random_range(1..=16);
 
-    let mut orion_pt = vec![0u8; plaintext.len()];
-    hpke_recipient.open(&other_ct, &aad, &mut orion_pt).unwrap();
-    let other_plaintext = other_hpke_context_recipient
-        .open(&orion_ct, &aad)
-        .expect("invalid ciphertext!");
+    for _ in 0..n {
+        let mut orion_ct = vec![0u8; plaintext.len() + 16];
+        hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
+        let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+        // Non-deterministic instances
+        assert_ne!(&orion_ct, &other_ct);
+        if let Some(prev) = orion_cts.last().as_ref() {
+            // nonce should forward making distinct ciphertexts for smae PT
+            assert_ne!(prev.as_slice(), orion_ct.as_slice());
+        }
 
-    assert_eq!(orion_pt, other_plaintext);
+        orion_cts.push(orion_ct);
+        other_cts.push(other_ct);
+    }
+
+    for (orion_ct, other_ct) in orion_cts.iter().zip(other_cts.iter()) {
+        let mut orion_pt = vec![0u8; plaintext.len()];
+        hpke_recipient.open(other_ct, &aad, &mut orion_pt).unwrap();
+        let other_plaintext = other_hpke_context_recipient
+            .open(orion_ct, &aad)
+            .expect("invalid ciphertext!");
+
+        assert_eq!(orion_pt, other_plaintext);
+    }
 
     let exporter_context = rand_vec_in_range(seeded_rng, 0, 64);
     let mut out_export_orion = rand_vec_in_range(seeded_rng, 1, 64);
@@ -675,18 +775,34 @@ fn fuzz_mlkem768_x25519_shake256_modebase(seeded_rng: &mut ChaCha8Rng, data: &[u
 
     let aad = rand_vec_in_range(seeded_rng, 0, 64);
     let plaintext = data;
-    let mut orion_ct = vec![0u8; plaintext.len() + 16];
-    hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
-    let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
-    //assert_eq!(&orion_ct, &other_ct);
+    let mut orion_cts: Vec<Vec<u8>> = Vec::new();
+    let mut other_cts: Vec<Vec<u8>> = Vec::new();
+    let n = seeded_rng.random_range(1..=16);
 
-    let mut orion_pt = vec![0u8; plaintext.len()];
-    hpke_recipient.open(&other_ct, &aad, &mut orion_pt).unwrap();
-    let other_plaintext = other_hpke_context_recipient
-        .open(&orion_ct, &aad)
-        .expect("invalid ciphertext!");
+    for _ in 0..n {
+        let mut orion_ct = vec![0u8; plaintext.len() + 16];
+        hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
+        let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+        // Non-deterministic instances
+        assert_ne!(&orion_ct, &other_ct);
+        if let Some(prev) = orion_cts.last().as_ref() {
+            // nonce should forward making distinct ciphertexts for smae PT
+            assert_ne!(prev.as_slice(), orion_ct.as_slice());
+        }
 
-    assert_eq!(orion_pt, other_plaintext);
+        orion_cts.push(orion_ct);
+        other_cts.push(other_ct);
+    }
+
+    for (orion_ct, other_ct) in orion_cts.iter().zip(other_cts.iter()) {
+        let mut orion_pt = vec![0u8; plaintext.len()];
+        hpke_recipient.open(other_ct, &aad, &mut orion_pt).unwrap();
+        let other_plaintext = other_hpke_context_recipient
+            .open(orion_ct, &aad)
+            .expect("invalid ciphertext!");
+
+        assert_eq!(orion_pt, other_plaintext);
+    }
 
     let exporter_context = rand_vec_in_range(seeded_rng, 0, 64);
     let mut out_export_orion = rand_vec_in_range(seeded_rng, 1, 64);
@@ -774,17 +890,34 @@ fn fuzz_mlkem768_x25519_shake256_modepsk(seeded_rng: &mut ChaCha8Rng, data: &[u8
 
     let aad = rand_vec_in_range(seeded_rng, 0, 64);
     let plaintext = data;
-    let mut orion_ct = vec![0u8; plaintext.len() + 16];
-    hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
-    let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+    let mut orion_cts: Vec<Vec<u8>> = Vec::new();
+    let mut other_cts: Vec<Vec<u8>> = Vec::new();
+    let n = seeded_rng.random_range(1..=16);
 
-    let mut orion_pt = vec![0u8; plaintext.len()];
-    hpke_recipient.open(&other_ct, &aad, &mut orion_pt).unwrap();
-    let other_plaintext = other_hpke_context_recipient
-        .open(&orion_ct, &aad)
-        .expect("invalid ciphertext!");
+    for _ in 0..n {
+        let mut orion_ct = vec![0u8; plaintext.len() + 16];
+        hpke_sender.seal(plaintext, &aad, &mut orion_ct).unwrap();
+        let other_ct = other_hpke_context_sender.seal(plaintext, &aad).unwrap();
+        // Non-deterministic instances
+        assert_ne!(&orion_ct, &other_ct);
+        if let Some(prev) = orion_cts.last().as_ref() {
+            // nonce should forward making distinct ciphertexts for smae PT
+            assert_ne!(prev.as_slice(), orion_ct.as_slice());
+        }
 
-    assert_eq!(orion_pt, other_plaintext);
+        orion_cts.push(orion_ct);
+        other_cts.push(other_ct);
+    }
+
+    for (orion_ct, other_ct) in orion_cts.iter().zip(other_cts.iter()) {
+        let mut orion_pt = vec![0u8; plaintext.len()];
+        hpke_recipient.open(other_ct, &aad, &mut orion_pt).unwrap();
+        let other_plaintext = other_hpke_context_recipient
+            .open(orion_ct, &aad)
+            .expect("invalid ciphertext!");
+
+        assert_eq!(orion_pt, other_plaintext);
+    }
 
     let exporter_context = rand_vec_in_range(seeded_rng, 0, 64);
     let mut out_export_orion = rand_vec_in_range(seeded_rng, 1, 64);

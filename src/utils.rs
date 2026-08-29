@@ -7,7 +7,7 @@ pub fn make_seeded_rng(fuzzer_input: &[u8]) -> ChaCha8Rng {
     let hashedinput =
         orion::hazardous::hash::sha3::sha3_256::Sha3_256::digest(fuzzer_input).unwrap();
     let mut seed_slice = [0u8; 32];
-    seed_slice.copy_from_slice(&hashedinput.as_ref());
+    seed_slice.copy_from_slice(hashedinput.as_ref());
 
     ChaCha8Rng::from_seed(seed_slice)
 }
