@@ -26,7 +26,7 @@ pub fn mutate_value(fuzzer_input: &[u8], value: &mut [u8]) {
     if value.is_empty() {
         return;
     }
-    
+
     let offset: usize = if fuzzer_input.is_empty() {
         0
     } else {

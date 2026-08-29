@@ -120,14 +120,15 @@ fn fuzz_mldsa44(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             .is_ok()
     );
 
-    let mut sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
+    let sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
     assert!(other_public.verify(data, &sigbytes, &ctx));
 
-    mutate_value(data, &mut sigbytes);
-    if let Ok(sigmutated) = Signature::try_from(&sigbytes) {
+    let mut mutated_sig = sigbytes;
+    mutate_value(data, &mut mutated_sig);
+    if let Ok(sigmutated) = Signature::try_from(&mutated_sig) {
         match (
             orion_kp.public().verify(data, &ctx, &sigmutated),
-            other_public.verify(data, &sigbytes, &ctx),
+            other_public.verify(data, &mutated_sig, &ctx),
         ) {
             (Ok(_), true) => (),
             (Err(_), false) => (),
@@ -191,14 +192,15 @@ fn fuzz_mldsa65(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             .is_ok()
     );
 
-    let mut sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
+    let sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
     assert!(other_public.verify(data, &sigbytes, &ctx));
 
-    mutate_value(data, &mut sigbytes);
-    if let Ok(sigmutated) = Signature::try_from(&sigbytes) {
+    let mut mutated_sig = sigbytes;
+    mutate_value(data, &mut mutated_sig);
+    if let Ok(sigmutated) = Signature::try_from(&mutated_sig) {
         match (
             orion_kp.public().verify(data, &ctx, &sigmutated),
-            other_public.verify(data, &sigbytes, &ctx),
+            other_public.verify(data, &mutated_sig, &ctx),
         ) {
             (Ok(_), true) => (),
             (Err(_), false) => (),
@@ -262,14 +264,15 @@ fn fuzz_mldsa87(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             .is_ok()
     );
 
-    let mut sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
+    let sigbytes: [u8; SIGNATURE_SIZE] = orion_sig.as_ref().try_into().unwrap();
     assert!(other_public.verify(data, &sigbytes, &ctx));
 
-    mutate_value(data, &mut sigbytes);
-    if let Ok(sigmutated) = Signature::try_from(&sigbytes) {
+    let mut mutated_sig = sigbytes;
+    mutate_value(data, &mut mutated_sig);
+    if let Ok(sigmutated) = Signature::try_from(&mutated_sig) {
         match (
             orion_kp.public().verify(data, &ctx, &sigmutated),
-            other_public.verify(data, &sigbytes, &ctx),
+            other_public.verify(data, &mutated_sig, &ctx),
         ) {
             (Ok(_), true) => (),
             (Err(_), false) => (),
