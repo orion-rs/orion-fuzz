@@ -468,7 +468,7 @@ fn fuzz_dhkem_x25519_hkdf_sha256_modeauthpsk(seeded_rng: &mut ChaCha8Rng, data: 
         let mut orion_pt = vec![0u8; plaintext.len()];
         hpke_recipient.open(other_ct, &aad, &mut orion_pt).unwrap();
         let other_plaintext = other_hpke_context_recipient
-            .open(&orion_ct, &aad)
+            .open(orion_ct, &aad)
             .expect("invalid ciphertext!");
 
         assert_eq!(orion_pt, other_plaintext);

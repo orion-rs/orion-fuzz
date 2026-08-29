@@ -102,6 +102,52 @@ fn fuzz_chacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     )
     .unwrap();
     assert_eq!(&plaintext_out_orion, plaintext);
+
+    // Muated ciphertexts - re-seal
+    let tag = chacha20poly1305::ChaCha20Poly1305::seal_inplace(
+        &orion_key,
+        &orion_nonce,
+        Some(&ad),
+        &mut plaintext_out_orion,
+    )
+    .unwrap();
+    let original_inplace = plaintext_out_orion.clone();
+    while original_inplace == plaintext_out_orion {
+        mutate_value(fuzzer_input, &mut plaintext_out_orion);
+    }
+    assert!(
+        chacha20poly1305::ChaCha20Poly1305::open_inplace(
+            &orion_key,
+            &orion_nonce,
+            &tag,
+            Some(&ad),
+            &mut plaintext_out_orion,
+        )
+        .is_err()
+    );
+
+    let original = ciphertext_with_tag_orion.clone();
+    while original == ciphertext_with_tag_orion {
+        mutate_value(fuzzer_input, &mut ciphertext_with_tag_orion);
+    }
+    match (
+        chacha20poly1305::ChaCha20Poly1305::open(
+            &orion_key,
+            &orion_nonce,
+            &ciphertext_with_tag_orion,
+            Some(&ad),
+            &mut plaintext_out_orion,
+        ),
+        chacha20poly1305_ietf::open(
+            &ciphertext_with_tag_orion,
+            Some(&ad),
+            &sodium_nonce,
+            &sodium_key,
+        ),
+    ) {
+        (Err(_), Err(_)) => (),
+        _ => panic!("disagreed on a mutated cipphertext!"),
+    }
 }
 
 /// `orion::hazardous::aead::xchacha20poly1305`
@@ -195,6 +241,52 @@ fn fuzz_xchacha20_poly1305(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     )
     .unwrap();
     assert_eq!(&plaintext_out_orion, plaintext);
+
+    // Muated ciphertexts - re-seal
+    let tag = xchacha20poly1305::XChaCha20Poly1305::seal_inplace(
+        &orion_key,
+        &orion_nonce,
+        Some(&ad),
+        &mut plaintext_out_orion,
+    )
+    .unwrap();
+    let original_inplace = plaintext_out_orion.clone();
+    while original_inplace == plaintext_out_orion {
+        mutate_value(fuzzer_input, &mut plaintext_out_orion);
+    }
+    assert!(
+        xchacha20poly1305::XChaCha20Poly1305::open_inplace(
+            &orion_key,
+            &orion_nonce,
+            &tag,
+            Some(&ad),
+            &mut plaintext_out_orion,
+        )
+        .is_err()
+    );
+
+    let original = ciphertext_with_tag_orion.clone();
+    while original == ciphertext_with_tag_orion {
+        mutate_value(fuzzer_input, &mut ciphertext_with_tag_orion);
+    }
+    match (
+        xchacha20poly1305::XChaCha20Poly1305::open(
+            &orion_key,
+            &orion_nonce,
+            &ciphertext_with_tag_orion,
+            Some(&ad),
+            &mut plaintext_out_orion,
+        ),
+        xchacha20poly1305_ietf::open(
+            &ciphertext_with_tag_orion,
+            Some(&ad),
+            &sodium_nonce,
+            &sodium_key,
+        ),
+    ) {
+        (Err(_), Err(_)) => (),
+        _ => panic!("disagreed on a mutated cipphertext!"),
+    }
 }
 
 fn main() {
