@@ -1,0 +1,240 @@
+=====================================================================
+TIME: 2026-08-22.00:45:16
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: 00d8f93000000000f9e8000000000000.00000003.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/high_level_api/SIGABRT.PC.7ffff7e30a2c.STACK.c4c83a1b2.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 55531
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e30a2c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 0000000c4c83a1b2
+STACK:
+ <0x00007ffff7dd6bde> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbe6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555cf8fa> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555ce7a9> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555559388a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555cea32> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555be012> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555b35e9> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555be7fd> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555e2e0c> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555e2be2> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555794c0> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555786e3> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x0000555555578fd5> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557f3fc> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557d88a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555cdfe7> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557d843> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00007ffff7dc05b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dc0668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555782e5> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+=====================================================================
+=====================================================================
+TIME: 2026-08-22.00:46:06
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: 1237d8580de960d80020a88bc0000000.00000100.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/high_level_api/SIGABRT.PC.7ffff7e30a2c.STACK.18364dc97d.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 55792
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e30a2c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 00000018364dc97d
+STACK:
+ <0x00007ffff7dd6bde> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbe6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555cccba> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555cbb69> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x0000555555590c2a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555cbdf2> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555bb3d2> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555b09a9> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555bbbbd> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555e01cc> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555dffa2> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x0000555555578a05> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x0000555555577aa3> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x0000555555578345> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557cc6c> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557bb7a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555cb3a7> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557bb33> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00007ffff7dc05b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dc0668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555776a5> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+=====================================================================
+=====================================================================
+TIME: 2026-08-22.00:46:15
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: 1237d8580de960d80020a88bc0000000.00000100.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/high_level_api/SIGABRT.PC.7ffff7e30a2c.STACK.decbb0bff.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 56042
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e30a2c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 0000000decbb0bff
+STACK:
+ <0x00007ffff7dd6bde> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbe6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555c1f7a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555c0e29> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x0000555555585f1a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555c10b2> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555b0692> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555a5c69> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555b0e7d> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555d503c> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555d4e12> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555758a5> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x0000555555574e05> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555751e5> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555795ac> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x0000555555578a1a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555c0667> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555789d3> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00007ffff7dc05b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dc0668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x0000555555574a25> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+=====================================================================
+=====================================================================
+TIME: 2026-08-22.00:50:24
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: 00d8f93000000000f9e8000000000000.00000003.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/high_level_api/SIGABRT.PC.7ffff7e30a2c.STACK.c724f1522.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 109664
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e30a2c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 0000000c724f1522
+STACK:
+ <0x00007ffff7dd6bde> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbe6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555cf93a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555ce7e9> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555938ba> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555cea72> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555be052> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555b3629> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555be83d> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555e2e4c> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555e2c22> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555794c0> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555786e3> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x0000555555578fd5> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557f42c> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557d8ba> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555ce027> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557d873> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00007ffff7dc05b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dc0668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555782e5> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+=====================================================================
+=====================================================================
+TIME: 2026-08-22.00:52:27
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: 00d8f93000000000f9e8000000000000.00000003.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/high_level_api/SIGABRT.PC.7ffff7e30a2c.STACK.fc9c3aa64.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 110308
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e30a2c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 0000000fc9c3aa64
+STACK:
+ <0x00007ffff7dd6bde> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbe6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555cf77a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555ce629> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555936ea> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555ce8b2> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555bde92> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555b3469> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555be67d> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555e2c8c> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555e2a62> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557948f> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555786a3> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x0000555555578f95> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557f25c> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557d88a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00005555555cde67> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x000055555557d843> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+ <0x00007ffff7dc05b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dc0668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555782a5> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/high_level_api]
+=====================================================================

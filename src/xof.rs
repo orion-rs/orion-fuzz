@@ -1,14 +1,13 @@
-#[macro_use]
-extern crate honggfuzz;
-
-extern crate orion;
+use honggfuzz::fuzz;
 
 pub mod utils;
 use orion::errors::UnknownCryptoError;
+use orion::hazardous::hash::blake3::Blake3;
 use orion::hazardous::hash::sha3::shake128::{SHAKE_128_RATE, Shake128};
 use orion::hazardous::hash::sha3::shake256::{SHAKE_256_RATE, Shake256};
 use std::marker::PhantomData;
 use utils::*;
+extern crate blake3 as other_blake3;
 
 // A wrapper trait to reduce duplicate functional test-code when fuzzing SHAKE128/SHAK256.
 trait XofFuzzType {
@@ -49,6 +48,9 @@ macro_rules! impl_shake_fuzztype_trait (($shake_variant:ident, $shake_bs:expr) =
 impl_shake_fuzztype_trait!(Shake128, SHAKE_128_RATE);
 impl_shake_fuzztype_trait!(Shake256, SHAKE_256_RATE);
 
+const BLAKE3_CHUNKSIZE: usize = 1024;
+impl_shake_fuzztype_trait!(Blake3, BLAKE3_CHUNKSIZE);
+
 impl XofComparableType for shake::Shake128 {
     fn digest(data: &[u8], dest: &mut [u8]) {
         use shake::digest::{ExtendableOutput, Update, XofReader};
@@ -68,6 +70,15 @@ impl XofComparableType for shake::Shake256 {
         hasher.update(data);
         let mut reader = hasher.finalize_xof();
         reader.read(dest);
+    }
+}
+
+impl XofComparableType for other_blake3::Hasher {
+    fn digest(data: &[u8], dest: &mut [u8]) {
+        let mut hasher = other_blake3::Hasher::new();
+        hasher.update(data);
+        let mut reader = hasher.finalize_xof();
+        reader.fill(dest);
     }
 }
 
@@ -141,6 +152,8 @@ fn main() {
         ShakeFuzzer::new(Shake128::new());
     let mut shake256_fuzzer: ShakeFuzzer<Shake256, shake::Shake256> =
         ShakeFuzzer::new(Shake256::new());
+    let mut blake3_fuzzer: ShakeFuzzer<Blake3, other_blake3::Hasher> =
+        ShakeFuzzer::new(Blake3::new());
 
     loop {
         fuzz!(|data: &[u8]| {
@@ -150,6 +163,8 @@ fn main() {
             // Test `orion::hazardous::hash::sha3::shake*`
             shake128_fuzzer.fuzz(data, &mut seeded_rng);
             shake256_fuzzer.fuzz(data, &mut seeded_rng);
+            // Test `orion::hazardous::hash::blake3`
+            blake3_fuzzer.fuzz(data, &mut seeded_rng);
         });
     }
 }
