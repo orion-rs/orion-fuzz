@@ -164,12 +164,20 @@ fn fuzz_mlkem512(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             orion_kp.private().decap(&orion_ctmutated),
             other_decapkey.try_decaps(&other_mutated),
         ) {
-            (Ok(_), Ok(_)) => (),
-            (Err(_), Err(_)) => (),
-            _ => panic!(
-                "{}",
-                format!("Disagreed on mutated ciphertext: {:?}.", ctbytes)
-            ),
+            // Test matching FO-transform
+            (Ok(orion_shared), Ok(other_shared)) => {
+                assert_eq!(
+                    &other_shared.into_bytes()[..],
+                    orion_shared.unprotected_as_ref()
+                );
+            }
+            // FO should always return, so the above is all we care about
+            _ => {
+                panic!(
+                    "{}",
+                    format!("Disagreed on mutated ciphertext: {:?}.", ctbytes)
+                )
+            }
         }
     }
 }
@@ -239,12 +247,20 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             orion_kp.private().decap(&orion_ctmutated),
             other_decapkey.try_decaps(&other_mutated),
         ) {
-            (Ok(_), Ok(_)) => (),
-            (Err(_), Err(_)) => (),
-            _ => panic!(
-                "{}",
-                format!("Disagreed on mutated ciphertext: {:?}.", ctbytes)
-            ),
+            // Test matching FO-transform
+            (Ok(orion_shared), Ok(other_shared)) => {
+                assert_eq!(
+                    &other_shared.into_bytes()[..],
+                    orion_shared.unprotected_as_ref()
+                );
+            }
+            // FO should always return, so the above is all we care about
+            _ => {
+                panic!(
+                    "{}",
+                    format!("Disagreed on mutated ciphertext: {:?}.", ctbytes)
+                )
+            }
         }
     }
 }
@@ -314,12 +330,20 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             orion_kp.private().decap(&orion_ctmutated),
             other_decapkey.try_decaps(&other_mutated),
         ) {
-            (Ok(_), Ok(_)) => (),
-            (Err(_), Err(_)) => (),
-            _ => panic!(
-                "{}",
-                format!("Disagreed on mutated ciphertext: {:?}.", ctbytes)
-            ),
+            // Test matching FO-transform
+            (Ok(orion_shared), Ok(other_shared)) => {
+                assert_eq!(
+                    &other_shared.into_bytes()[..],
+                    orion_shared.unprotected_as_ref()
+                );
+            }
+            // FO should always return, so the above is all we care about
+            _ => {
+                panic!(
+                    "{}",
+                    format!("Disagreed on mutated ciphertext: {:?}.", ctbytes)
+                )
+            }
         }
     }
 }
@@ -362,12 +386,35 @@ fn fuzz_xwing(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     assert_eq!(orion_ss, other_ss.clone().as_slice()[..]);
 
     let orion_ss_other = orion_kp.decap(&Ciphertext::from(other_ct.0)).unwrap();
-    let ctbytes: [u8; CIPHERTEXT_SIZE] = orion_ct.as_ref().try_into().unwrap();
+    let mut ctbytes: [u8; CIPHERTEXT_SIZE] = orion_ct.as_ref().try_into().unwrap();
     let kemct = kem::Ciphertext::<x_wing::XWingKem>::from(ctbytes);
     let other_ss_orion = other_decapkey.decapsulate(&x_wing::Ciphertext::try_from(kemct).unwrap());
 
     assert_eq!(orion_ss_other.unprotected_as_ref(), &other_ss[..]);
     assert_eq!(&other_ss_orion[..], orion_ss.unprotected_as_ref());
+
+    mutate_value(data, &mut ctbytes);
+    if let (Ok(orion_ctmutated), other_mutated) = (
+        Ciphertext::try_from(&ctbytes),
+        kem::Ciphertext::<x_wing::XWingKem>::from(ctbytes),
+    ) {
+        match (
+            orion_kp.private().decap(&orion_ctmutated),
+            other_decapkey.decapsulate(&x_wing::Ciphertext::try_from(other_mutated).unwrap()),
+        ) {
+            // Test matching FO-transform
+            (Ok(orion_shared), other_shared) => {
+                assert_eq!(orion_shared.unprotected_as_ref(), &other_shared[..]);
+            }
+            // FO should always return, so the above is all we care about
+            _ => {
+                panic!(
+                    "{}",
+                    format!("Disagreed on mutated ciphertext: {:?}.", ctbytes)
+                )
+            }
+        }
+    }
 }
 
 fn main() {

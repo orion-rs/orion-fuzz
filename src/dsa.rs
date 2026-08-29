@@ -137,6 +137,17 @@ fn fuzz_mldsa44(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             ),
         }
     }
+
+    let mut ctx = ctx.clone();
+    mutate_value(data, &mut ctx);
+    match (
+        orion_kp.public().verify(data, &ctx, &orion_sig),
+        other_public.verify(data, &sigbytes, &ctx),
+    ) {
+        (Ok(_), true) => (),
+        (Err(_), false) => (),
+        _ => panic!("{}", format!("Disagreed on mutated ctx: {:?}.", sigbytes)),
+    }
 }
 
 /// `orion::hazardous::dsa::mldsa65`
@@ -197,6 +208,17 @@ fn fuzz_mldsa65(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
             ),
         }
     }
+
+    let mut ctx = ctx.clone();
+    mutate_value(data, &mut ctx);
+    match (
+        orion_kp.public().verify(data, &ctx, &orion_sig),
+        other_public.verify(data, &sigbytes, &ctx),
+    ) {
+        (Ok(_), true) => (),
+        (Err(_), false) => (),
+        _ => panic!("{}", format!("Disagreed on mutated ctx: {:?}.", sigbytes)),
+    }
 }
 
 /// `orion::hazardous::dsa::mldsa87`
@@ -256,6 +278,17 @@ fn fuzz_mldsa87(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
                 format!("Disagreed on mutated signature: {:?}.", sigbytes)
             ),
         }
+    }
+
+    let mut ctx = ctx.clone();
+    mutate_value(data, &mut ctx);
+    match (
+        orion_kp.public().verify(data, &ctx, &orion_sig),
+        other_public.verify(data, &sigbytes, &ctx),
+    ) {
+        (Ok(_), true) => (),
+        (Err(_), false) => (),
+        _ => panic!("{}", format!("Disagreed on mutated ctx: {:?}.", sigbytes)),
     }
 }
 
