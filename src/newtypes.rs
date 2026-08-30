@@ -100,6 +100,16 @@ pub mod typedefs {
         );
     }
 
+    pub fn fuzz_blake3_tag(fuzzer_input: &[u8]) {
+        use orion::hazardous::mac::blake3::{Blake3Tag, TAG_SIZE};
+        fuzz_secret_arbitrary_bytes::<Blake3Tag>(TAG_SIZE, TAG_SIZE, fuzzer_input);
+    }
+
+    pub fn fuzz_blake3_secret_key(fuzzer_input: &[u8]) {
+        use orion::hazardous::mac::blake3::{Blake3Key, KEY_SIZE};
+        fuzz_secret_arbitrary_bytes::<Blake3Key>(KEY_SIZE, KEY_SIZE, fuzzer_input);
+    }
+
     pub fn fuzz_sha256_digest(fuzzer_input: &[u8]) {
         use orion::hazardous::hash::sha2::sha256::{SHA256_OUTSIZE, Sha256Digest};
         fuzz_public_arbitrary_bytes::<Sha256Digest>(SHA256_OUTSIZE, SHA256_OUTSIZE, fuzzer_input);
@@ -297,8 +307,11 @@ pub mod typedefs {
 
     /// `EncapsulationKey`/`DecapsulationKey` are fuzzed as part of `kem::fuzz_keys()`.
     pub fn fuzz_mlkem512_seed(fuzzer_input: &[u8]) {
-        use orion::hazardous::kem::mlkem512::{MlKemSeed, SEED_SIZE};
+        use orion::hazardous::kem::mlkem512::{
+            MlKemExplicitRandom, MlKemSeed, RAND_SIZE, SEED_SIZE,
+        };
         fuzz_secret_arbitrary_bytes::<MlKemSeed>(SEED_SIZE, SEED_SIZE, fuzzer_input);
+        fuzz_secret_arbitrary_bytes::<MlKemExplicitRandom>(RAND_SIZE, RAND_SIZE, fuzzer_input);
     }
 
     pub fn fuzz_mlkem512_ciphertext(fuzzer_input: &[u8]) {
@@ -321,8 +334,11 @@ pub mod typedefs {
 
     /// `EncapsulationKey`/`DecapsulationKey` are fuzzed as part of `kem::fuzz_keys()`.
     pub fn fuzz_mlkem768_seed(fuzzer_input: &[u8]) {
-        use orion::hazardous::kem::mlkem768::{MlKemSeed, SEED_SIZE};
+        use orion::hazardous::kem::mlkem768::{
+            MlKemExplicitRandom, MlKemSeed, RAND_SIZE, SEED_SIZE,
+        };
         fuzz_secret_arbitrary_bytes::<MlKemSeed>(SEED_SIZE, SEED_SIZE, fuzzer_input);
+        fuzz_secret_arbitrary_bytes::<MlKemExplicitRandom>(RAND_SIZE, RAND_SIZE, fuzzer_input);
     }
 
     pub fn fuzz_mlkem768_ciphertext(fuzzer_input: &[u8]) {
@@ -345,8 +361,11 @@ pub mod typedefs {
 
     /// `EncapsulationKey`/`DecapsulationKey` are fuzzed as part of `kem::fuzz_keys()`.
     pub fn fuzz_mlkem1024_seed(fuzzer_input: &[u8]) {
-        use orion::hazardous::kem::mlkem1024::{MlKemSeed, SEED_SIZE};
+        use orion::hazardous::kem::mlkem1024::{
+            MlKemExplicitRandom, MlKemSeed, RAND_SIZE, SEED_SIZE,
+        };
         fuzz_secret_arbitrary_bytes::<MlKemSeed>(SEED_SIZE, SEED_SIZE, fuzzer_input);
+        fuzz_secret_arbitrary_bytes::<MlKemExplicitRandom>(RAND_SIZE, RAND_SIZE, fuzzer_input);
     }
 
     pub fn fuzz_mlkem1024_ciphertext(fuzzer_input: &[u8]) {
@@ -383,6 +402,33 @@ pub mod typedefs {
             assert_eq!(hash.unprotected_as_ref::<[u8]>(), fuzzer_input);
             assert!(!hash.is_empty());
         }
+    }
+
+    /// `SigningKey`/`VerifyingKey`/`Signature` are fuzzed as part of `dsa::fuzz_keys()`.
+    pub fn fuzz_mldsa44_seed(fuzzer_input: &[u8]) {
+        use orion::hazardous::dsa::mldsa44::{
+            MlDsaExplicitRandom, MlDsaSeed, RAND_SIZE, SEED_SIZE,
+        };
+        fuzz_secret_arbitrary_bytes::<MlDsaSeed>(SEED_SIZE, SEED_SIZE, fuzzer_input);
+        fuzz_secret_arbitrary_bytes::<MlDsaExplicitRandom>(RAND_SIZE, RAND_SIZE, fuzzer_input);
+    }
+
+    /// `SigningKey`/`VerifyingKey`/`Signature` are fuzzed as part of `dsa::fuzz_keys()`.
+    pub fn fuzz_mldsa65_seed(fuzzer_input: &[u8]) {
+        use orion::hazardous::dsa::mldsa65::{
+            MlDsaExplicitRandom, MlDsaSeed, RAND_SIZE, SEED_SIZE,
+        };
+        fuzz_secret_arbitrary_bytes::<MlDsaSeed>(SEED_SIZE, SEED_SIZE, fuzzer_input);
+        fuzz_secret_arbitrary_bytes::<MlDsaExplicitRandom>(RAND_SIZE, RAND_SIZE, fuzzer_input);
+    }
+
+    /// `SigningKey`/`VerifyingKey`/`Signature` are fuzzed as part of `dsa::fuzz_keys()`.
+    pub fn fuzz_mldsa87_seed(fuzzer_input: &[u8]) {
+        use orion::hazardous::dsa::mldsa87::{
+            MlDsaExplicitRandom, MlDsaSeed, RAND_SIZE, SEED_SIZE,
+        };
+        fuzz_secret_arbitrary_bytes::<MlDsaSeed>(SEED_SIZE, SEED_SIZE, fuzzer_input);
+        fuzz_secret_arbitrary_bytes::<MlDsaExplicitRandom>(RAND_SIZE, RAND_SIZE, fuzzer_input);
     }
 }
 
@@ -456,6 +502,11 @@ fn main() {
             typedefs::fuzz_mlkem1024_shared_secret(data);
             typedefs::fuzz_argon2_password_hash(data);
             typedefs::fuzz_scrypt_password_hash(data);
+            typedefs::fuzz_blake3_tag(data);
+            typedefs::fuzz_blake3_secret_key(data);
+            typedefs::fuzz_mldsa44_seed(data);
+            typedefs::fuzz_mldsa65_seed(data);
+            typedefs::fuzz_mldsa87_seed(data);
 
             // hltypes
             hltypes::fuzz_secret_key(data);
