@@ -1,0 +1,96 @@
+=====================================================================
+TIME: 2026-08-29.14:19:16
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/mac 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: 0000000097fbff28000dc04a50000000.00000010.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/mac/SIGABRT.PC.7ffff7e30a2c.STACK.f52b4a1a2.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 263132
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e30a2c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 0000000f52b4a1a2
+STACK:
+ <0x00007ffff7dd6bde> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbe6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555df6fa> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555de5a9> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555a36ca> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555de832> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555cde44> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555c33e9> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555ce5fd> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555f29dc> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555f29a2> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555557f8a6> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555557e70a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555557cf54> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555558620c> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555557d08a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555ddde7> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555557d043> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00007ffff7dc05b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dc0668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x000055555557afa5> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+=====================================================================
+=====================================================================
+TIME: 2026-08-29.14:21:59
+=====================================================================
+FUZZER ARGS:
+ mutationsPerRun : 5
+ externalCmd     : NULL
+ fuzzStdin       : FALSE
+ timeout         : 1 (sec)
+ ignoreAddr      : (nil)
+ ASLimit         : 0 (MiB)
+ RSSLimit        : 0 (MiB)
+ DATALimit       : 0 (MiB)
+ wordlistFile    : NULL
+ dynFileMethod   : 
+ fuzzTarget      : hfuzz_target/x86_64-unknown-linux-gnu/release/mac 
+CRASH:
+DESCRIPTION: 
+ORIG_FNAME: 0000000097fbff28000dc04a50000000.00000010.honggfuzz.cov
+FUZZ_FNAME: hfuzz_workspace/mac/SIGABRT.PC.7ffff7e30a2c.STACK.c717c92d6.CODE.-6.ADDR.0.INSTR.mov____%eax,%r8d.fuzz
+PID: 263701
+SIGNAL: SIGABRT (6)
+PC: 0x7ffff7e30a2c
+FAULT ADDRESS: 0x0
+INSTRUCTION: mov____%eax,%r8d
+STACK HASH: 0000000c717c92d6
+STACK:
+ <0x00007ffff7dd6bde> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dbe6d0> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00005555555e033a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555df1e9> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555a42fa> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555df472> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555cea84> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555c4029> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555cf23d> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555f361c> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555f35e2> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555557c050> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555557ec48> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555557d414> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555866cc> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555557d54a> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00005555555dea27> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x000055555557d503> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+ <0x00007ffff7dc05b5> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x00007ffff7dc0668> [func:UNKNOWN file: line:0 module:/usr/lib64/libc.so.6]
+ <0x000055555557b3a5> [func:UNKNOWN file: line:0 module:/home/user/orion-v0.18.0/orion-fuzz/hfuzz_target/x86_64-unknown-linux-gnu/release/mac]
+=====================================================================
