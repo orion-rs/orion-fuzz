@@ -27,11 +27,10 @@ pub fn mutate_value(fuzzer_input: &[u8], value: &mut [u8]) {
         return;
     }
 
-    let offset: usize = if fuzzer_input.is_empty() {
-        0
-    } else {
-        fuzzer_input[0] as usize
-    };
+    let mut offsetbytes = [0u8; core::mem::size_of::<u32>()];
+    let take = core::cmp::min(fuzzer_input.len(), offsetbytes.len());
+    offsetbytes[..take].copy_from_slice(&fuzzer_input[..take]);
+    let offset: usize = u32::from_le_bytes(offsetbytes) as usize;
 
     let mask: u8 = match fuzzer_input.get(1) {
         Some(0) | None => 1,
