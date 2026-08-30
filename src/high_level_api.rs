@@ -123,6 +123,8 @@ fn fuzz_hpke(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let psk_id = rand_vec_in_range(seeded_rng, 1, u16::MAX as usize);
     let aad = rand_vec_in_range(seeded_rng, 0, 32);
 
+    // NOTE(brycx): Not deterministic KEM operation (internal RNG)
+
     let (mut hpke_sender, enc) =
         orion::hpke::HpkeBase::new_sender(recipient_kp.public(), &info).unwrap();
     let mut hpke_recipient =
@@ -148,6 +150,39 @@ fn fuzz_hpke(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     }
 }
 
+/// `orion::kem`
+fn fuzz_kem(seeded_rng: &mut ChaCha8Rng) {
+    use orion::KP;
+
+    let mut key = [0u8; 32];
+
+    // NOTE(brycx): Not deterministic KEM operation (internal RNG)
+
+    seeded_rng.fill_bytes(&mut key);
+    let alice = orion::kem::KeyPair::try_from(&orion::kem::DecapsulationKey::from(key)).unwrap();
+
+    seeded_rng.fill_bytes(&mut key);
+    let bob = orion::kem::KeyPair::try_from(&orion::kem::DecapsulationKey::from(key)).unwrap();
+
+    let (alice_shared, alice_ciphertext) = alice.public().encap().unwrap();
+    let (bob_shared, bob_ciphertext) = bob.public().encap().unwrap();
+
+    assert_eq!(alice_shared, bob.decap(&alice_ciphertext).unwrap());
+    assert_eq!(bob_shared, alice.decap(&bob_ciphertext).unwrap());
+}
+
+/// `orion::signer`
+fn fuzz_signer(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
+    let mut key = [0u8; 32];
+    seeded_rng.fill_bytes(&mut key);
+
+    // NOTE(brycx): Not deterministic ML-DSA operation (internal RNG)
+    let kp = orion::signer::SigningKeyPair::try_from(&orion::signer::Seed::from(key)).unwrap();
+    let ctx = &rand_vec_in_range(seeded_rng, 0, 255);
+    let sig = kp.sign(fuzzer_input, ctx).unwrap();
+    assert!(kp.verify(fuzzer_input, ctx, &sig).is_ok());
+}
+
 fn main() {
     loop {
         fuzz!(|data: &[u8]| {
@@ -166,6 +201,10 @@ fn main() {
             fuzz_hash(data);
             // Test `orion::hpke`
             fuzz_hpke(data, &mut seeded_rng);
+            // Test `orion::kem`
+            fuzz_kem(&mut seeded_rng);
+            // Test `orion::signer`
+            fuzz_signer(data, &mut seeded_rng);
         });
     }
 }
