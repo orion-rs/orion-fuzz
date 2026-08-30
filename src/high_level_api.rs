@@ -87,16 +87,12 @@ fn fuzz_auth(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut key = vec![0u8; seeded_rng.random_range(1..=64)];
     seeded_rng.fill_bytes(&mut key);
 
-    if key.is_empty() {
-        assert!(orion::auth::SecretKey::try_from(&key).is_err());
+    let auth_key = orion::auth::SecretKey::try_from(&key).unwrap();
+    if auth_key.len() < 32 || auth_key.len() > 64 {
+        assert!(orion::auth::authenticate(&auth_key, fuzzer_input).is_err());
     } else {
-        let auth_key = orion::auth::SecretKey::try_from(&key).unwrap();
-        if auth_key.len() < 32 || auth_key.len() > 64 {
-            assert!(orion::auth::authenticate(&auth_key, fuzzer_input).is_err());
-        } else {
-            let tag = orion::auth::authenticate(&auth_key, fuzzer_input).unwrap();
-            assert!(orion::auth::authenticate_verify(&tag, &auth_key, fuzzer_input).is_ok());
-        }
+        let tag = orion::auth::authenticate(&auth_key, fuzzer_input).unwrap();
+        assert!(orion::auth::authenticate_verify(&tag, &auth_key, fuzzer_input).is_ok());
     }
 }
 
