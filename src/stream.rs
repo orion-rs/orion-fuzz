@@ -124,7 +124,11 @@ fn fuzz_stream_counters(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
     let mut x_nonce = [0u8; xchacha20::XCHACHA_NONCESIZE];
     seeded_rng.fill_bytes(&mut x_nonce);
 
-    let random_counter: u32 = seeded_rng.next_u32();
+    let random_counter: u32 = if seeded_rng.random::<bool>() {
+        u32::MAX - seeded_rng.random_range(0..=256)
+    } else {
+        seeded_rng.next_u32()
+    };
 
     let plaintext = if fuzzer_input.is_empty() {
         &[0u8; 1]
