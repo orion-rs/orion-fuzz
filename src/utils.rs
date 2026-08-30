@@ -21,21 +21,40 @@ pub fn rand_vec_in_range(seeded_rng: &mut ChaCha8Rng, lb: usize, ub: usize) -> V
     bytes
 }
 
-/// Based on fuzzer_input, mutate a value with a XOR mask.
-pub fn mutate_value(fuzzer_input: &[u8], value: &mut [u8]) {
+/// Based on fuzzer_input, mutate value(s) with a XOR mask,
+/// with a fuzzer_input-derived stride (neighbouring bytes).
+pub fn mutate_value(fuzzer_input: &[u8], value: &mut [u8]) -> usize {
+    const MAX_FLIPS: usize = 8;
+
     if value.is_empty() {
-        return;
+        return 0;
     }
 
-    let mut offsetbytes = [0u8; core::mem::size_of::<u32>()];
-    let take = core::cmp::min(fuzzer_input.len(), offsetbytes.len());
-    offsetbytes[..take].copy_from_slice(&fuzzer_input[..take]);
-    let offset: usize = u32::from_le_bytes(offsetbytes) as usize;
+    let mut hdr = [0u8; 7];
+    let n = core::cmp::min(fuzzer_input.len(), hdr.len());
+    hdr[..n].copy_from_slice(&fuzzer_input[..n]);
 
-    let mask: u8 = match fuzzer_input.get(1) {
-        Some(0) | None => 1,
-        Some(&m) => m,
-    };
+    let offset = u32::from_le_bytes([hdr[0], hdr[1], hdr[2], hdr[3]]) as usize;
+    let mask = if hdr[4] == 0 { 1 } else { hdr[4] };
+    let flips = 1 + core::cmp::min(hdr[5].trailing_ones() as usize, MAX_FLIPS - 1);
+    let stride = 1 + hdr[6] as usize;
 
-    value[offset % value.len()] ^= mask;
+    let mut hit = [usize::MAX; MAX_FLIPS];
+    let mut changed = 0usize;
+
+    for i in 0..flips {
+        let idx = offset.wrapping_add(i * stride) % value.len();
+        if hit[..changed].contains(&idx) {
+            // Avoid flipping same byte twice reverting back to original.
+            continue;
+        }
+
+        value[idx] ^= mask.rotate_left(i as u32);
+        hit[changed] = idx;
+        changed += 1;
+    }
+
+    debug_assert!(changed >= 1);
+
+    changed
 }

@@ -124,8 +124,9 @@ fn fuzz_mldsa44(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     assert!(other_public.verify(data, &sigbytes, &ctx));
 
     let mut mutated_sig = sigbytes;
-    mutate_value(data, &mut mutated_sig);
-    if let Ok(sigmutated) = Signature::try_from(&mutated_sig) {
+    if mutate_value(data, &mut mutated_sig) > 0
+        && let Ok(sigmutated) = Signature::try_from(&mutated_sig)
+    {
         match (
             orion_kp.public().verify(data, &ctx, &sigmutated),
             other_public.verify(data, &mutated_sig, &ctx),
@@ -140,17 +141,18 @@ fn fuzz_mldsa44(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     }
 
     let mut mutated_ctx = ctx.clone();
-    mutate_value(data, &mut mutated_ctx);
-    match (
-        orion_kp.public().verify(data, &mutated_ctx, &orion_sig),
-        other_public.verify(data, &sigbytes, &mutated_ctx),
-    ) {
-        (Ok(_), true) => (),
-        (Err(_), false) => (),
-        _ => panic!(
-            "{}",
-            format!("Disagreed on mutated ctx: {:?}.", mutated_ctx)
-        ),
+    if mutate_value(data, &mut mutated_ctx) > 0 {
+        match (
+            orion_kp.public().verify(data, &mutated_ctx, &orion_sig),
+            other_public.verify(data, &sigbytes, &mutated_ctx),
+        ) {
+            (Ok(_), true) => (),
+            (Err(_), false) => (),
+            _ => panic!(
+                "{}",
+                format!("Disagreed on mutated ctx: {:?}.", mutated_ctx)
+            ),
+        }
     }
 }
 
@@ -199,8 +201,9 @@ fn fuzz_mldsa65(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     assert!(other_public.verify(data, &sigbytes, &ctx));
 
     let mut mutated_sig = sigbytes;
-    mutate_value(data, &mut mutated_sig);
-    if let Ok(sigmutated) = Signature::try_from(&mutated_sig) {
+    if mutate_value(data, &mut mutated_sig) > 0
+        && let Ok(sigmutated) = Signature::try_from(&mutated_sig)
+    {
         match (
             orion_kp.public().verify(data, &ctx, &sigmutated),
             other_public.verify(data, &mutated_sig, &ctx),
@@ -215,17 +218,18 @@ fn fuzz_mldsa65(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     }
 
     let mut mutated_ctx = ctx.clone();
-    mutate_value(data, &mut mutated_ctx);
-    match (
-        orion_kp.public().verify(data, &mutated_ctx, &orion_sig),
-        other_public.verify(data, &sigbytes, &mutated_ctx),
-    ) {
-        (Ok(_), true) => (),
-        (Err(_), false) => (),
-        _ => panic!(
-            "{}",
-            format!("Disagreed on mutated ctx: {:?}.", mutated_ctx)
-        ),
+    if mutate_value(data, &mut mutated_ctx) > 0 {
+        match (
+            orion_kp.public().verify(data, &mutated_ctx, &orion_sig),
+            other_public.verify(data, &sigbytes, &mutated_ctx),
+        ) {
+            (Ok(_), true) => (),
+            (Err(_), false) => (),
+            _ => panic!(
+                "{}",
+                format!("Disagreed on mutated ctx: {:?}.", mutated_ctx)
+            ),
+        }
     }
 }
 
@@ -274,8 +278,9 @@ fn fuzz_mldsa87(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     assert!(other_public.verify(data, &sigbytes, &ctx));
 
     let mut mutated_sig = sigbytes;
-    mutate_value(data, &mut mutated_sig);
-    if let Ok(sigmutated) = Signature::try_from(&mutated_sig) {
+    if mutate_value(data, &mut mutated_sig) > 0
+        && let Ok(sigmutated) = Signature::try_from(&mutated_sig)
+    {
         match (
             orion_kp.public().verify(data, &ctx, &sigmutated),
             other_public.verify(data, &mutated_sig, &ctx),
@@ -290,17 +295,18 @@ fn fuzz_mldsa87(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
     }
 
     let mut mutated_ctx = ctx.clone();
-    mutate_value(data, &mut mutated_ctx);
-    match (
-        orion_kp.public().verify(data, &mutated_ctx, &orion_sig),
-        other_public.verify(data, &sigbytes, &mutated_ctx),
-    ) {
-        (Ok(_), true) => (),
-        (Err(_), false) => (),
-        _ => panic!(
-            "{}",
-            format!("Disagreed on mutated ctx: {:?}.", mutated_ctx)
-        ),
+    if mutate_value(data, &mut mutated_ctx) > 0 {
+        match (
+            orion_kp.public().verify(data, &mutated_ctx, &orion_sig),
+            other_public.verify(data, &sigbytes, &mutated_ctx),
+        ) {
+            (Ok(_), true) => (),
+            (Err(_), false) => (),
+            _ => panic!(
+                "{}",
+                format!("Disagreed on mutated ctx: {:?}.", mutated_ctx)
+            ),
+        }
     }
 }
 

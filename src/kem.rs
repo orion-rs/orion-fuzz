@@ -155,11 +155,12 @@ fn fuzz_mlkem512(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
         orion_ss.unprotected_as_ref()
     );
 
-    mutate_value(data, &mut ctbytes);
-    if let (Ok(orion_ctmutated), Ok(other_mutated)) = (
-        mlkem512::Ciphertext::try_from(&ctbytes),
-        fips203::ml_kem_512::CipherText::try_from_bytes(ctbytes),
-    ) {
+    if mutate_value(data, &mut ctbytes) > 0
+        && let (Ok(orion_ctmutated), Ok(other_mutated)) = (
+            mlkem512::Ciphertext::try_from(&ctbytes),
+            fips203::ml_kem_512::CipherText::try_from_bytes(ctbytes),
+        )
+    {
         match (
             orion_kp.private().decap(&orion_ctmutated),
             other_decapkey.try_decaps(&other_mutated),
@@ -238,11 +239,12 @@ fn fuzz_mlkem768(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
         orion_ss.unprotected_as_ref()
     );
 
-    mutate_value(data, &mut ctbytes);
-    if let (Ok(orion_ctmutated), Ok(other_mutated)) = (
-        mlkem768::Ciphertext::try_from(&ctbytes),
-        fips203::ml_kem_768::CipherText::try_from_bytes(ctbytes),
-    ) {
+    if mutate_value(data, &mut ctbytes) > 0
+        && let (Ok(orion_ctmutated), Ok(other_mutated)) = (
+            mlkem768::Ciphertext::try_from(&ctbytes),
+            fips203::ml_kem_768::CipherText::try_from_bytes(ctbytes),
+        )
+    {
         match (
             orion_kp.private().decap(&orion_ctmutated),
             other_decapkey.try_decaps(&other_mutated),
@@ -321,11 +323,12 @@ fn fuzz_mlkem1024(seeded_rng: &mut ChaCha8Rng, data: &[u8]) {
         orion_ss.unprotected_as_ref()
     );
 
-    mutate_value(data, &mut ctbytes);
-    if let (Ok(orion_ctmutated), Ok(other_mutated)) = (
-        mlkem1024::Ciphertext::try_from(&ctbytes),
-        fips203::ml_kem_1024::CipherText::try_from_bytes(ctbytes),
-    ) {
+    if mutate_value(data, &mut ctbytes) > 0
+        && let (Ok(orion_ctmutated), Ok(other_mutated)) = (
+            mlkem1024::Ciphertext::try_from(&ctbytes),
+            fips203::ml_kem_1024::CipherText::try_from_bytes(ctbytes),
+        )
+    {
         match (
             orion_kp.private().decap(&orion_ctmutated),
             other_decapkey.try_decaps(&other_mutated),
