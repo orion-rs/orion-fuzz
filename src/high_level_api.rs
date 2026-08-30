@@ -24,7 +24,7 @@ fn fuzz_aead(fuzzer_input: &[u8], seeded_rng: &mut ChaCha8Rng) {
 
         let mut mutated_ciphertext = aead_ciphertext.clone();
         if mutate_value(fuzzer_input, &mut mutated_ciphertext) > 0 {
-            assert!(orion::aead::open(&aead_key, &aead_ciphertext).is_err());
+            assert!(orion::aead::open(&aead_key, &mutated_ciphertext).is_err());
         }
     }
 }
@@ -155,16 +155,10 @@ fn fuzz_kem(seeded_rng: &mut ChaCha8Rng) {
     // NOTE(brycx): Not deterministic KEM operation (internal RNG)
 
     seeded_rng.fill_bytes(&mut key);
-    let alice = orion::kem::KeyPair::try_from(&orion::kem::DecapsulationKey::from(key)).unwrap();
+    let kp = orion::kem::KeyPair::try_from(&orion::kem::DecapsulationKey::from(key)).unwrap();
+    let (shared_secret, ciphertext) = kp.public().encap().unwrap();
 
-    seeded_rng.fill_bytes(&mut key);
-    let bob = orion::kem::KeyPair::try_from(&orion::kem::DecapsulationKey::from(key)).unwrap();
-
-    let (alice_shared, alice_ciphertext) = alice.public().encap().unwrap();
-    let (bob_shared, bob_ciphertext) = bob.public().encap().unwrap();
-
-    assert_eq!(alice_shared, bob.decap(&alice_ciphertext).unwrap());
-    assert_eq!(bob_shared, alice.decap(&bob_ciphertext).unwrap());
+    assert_eq!(shared_secret, kp.decap(&ciphertext).unwrap());
 }
 
 /// `orion::signer`
